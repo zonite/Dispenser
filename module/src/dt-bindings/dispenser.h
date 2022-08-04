@@ -1,0 +1,10 @@
+#include <dt-bindings/gpio/gpio.h>
+
+#ifndef _DT_BINDINGS_DISPENSER_H
+#define _DT_BINDINGS_DISPENSER_H
+
+/* Bit 0 express polarity */
+//#define GPIO_ACTIVE_HIGH 0
+//#define GPIO_ACTIVE_LOW 1
+
+#endif

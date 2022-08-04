@@ -5,16 +5,24 @@ TEMPLATE = lib
 
 lupdate_only {
     SOURCES += \
-        src/chardev.c
+        src/chardev.c \
+        src/gpio.c \
+        src/interface.c \
+        src/interrupt.c \
+        src/param.c \
+        src/dispenser.c
+
+    HEADERS += \
+        src/dispenser.h
 }
 
 KERNEL_RELEASE = $$system(uname -r)
 
 INCLUDEPATH += \
-    /usr/lib/modules/$${KERNEL_RELEASE}/build/include \
-    /usr/lib/modules/$${KERNEL_RELEASE}/build/include/linux \
-    /usr/lib/modules/$${KERNEL_RELEASE}/build/arch/x86/include \
-    /usr/lib/modules/$${KERNEL_RELEASE}/build/arch/x86_x64/include
+    /lib/modules/$${KERNEL_RELEASE}/source/include \
+    /lib/modules/$${KERNEL_RELEASE}/source/include/linux \
+    /lib/modules/$${KERNEL_RELEASE}/source/arch/x86/include \
+    /lib/modules/$${KERNEL_RELEASE}/source/arm64/x86/include
 
 DEFINES += \
     __KERNEL__ \
@@ -31,3 +39,9 @@ makedriver.clean = src/*.ko src/*.o src/*.mod.c src/modules.order src/Module.sym
 makedriver.CONFIG += no_link
 QMAKE_EXTRA_COMPILERS += makedriver
 PRE_TARGETDEPS += compiler_makedriver_make_all
+
+DISTFILES += \
+    src/rpioverlay.dts
+
+HEADERS += \
+    src/dt-bindings/dispenser.h

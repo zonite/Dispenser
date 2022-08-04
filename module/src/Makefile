@@ -1,12 +1,20 @@
 #obj-m += dispenser.o
 obj-m := dispenser.o
-dispenser-objs := chardev.o interface.o param.o interrupt.o
+targets += $(dtb-y)
+#dispenser-objs := chardev.o interface.o param.o interrupt.o
 #list-multi := dispenser.o
 
 #INSTALL_MOD_PATH = /lib/modules/$(shell uname -r)/
 
-all:
+all: dt module
+	echo "Building Device tree and kernel module"
+
+module:
 	make -C /lib/modules/$(shell uname -r)/build M=$(PWD) modules
+
+dt: rpioverlay.dts
+	$(CPP) -nostdinc -I include -I arch -undef -x assembler-with-cpp -I /lib/modules/$(shell uname -r)/source/include rpioverlay.dts > rpioverlay.dts.preprocessed
+	dtc -@ -I dts -i /lib/modules/$(shell uname -r)/source/include -O dtb  -o rpioverlay.dtbo rpioverlay.dts.preprocessed
 
 clean:
 	make -C /lib/modules/$(shell uname -r)/build M=$(PWD) clean

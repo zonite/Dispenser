@@ -10,7 +10,8 @@
 #include "dispenser.h"
 
 //extern void *pDispenser = NULL;
-void *pDispenser = NULL;
+static void *pDispenser = NULL;
+static struct dispenser_config cConfig = { 0 };
 
 static void *alloc_mem(void)
 {

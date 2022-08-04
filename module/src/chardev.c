@@ -17,7 +17,7 @@ static struct cdev c_dev;
 static struct class *cl;
 static int Device_Open = 0;
 static char a_cMsg[BUF_LEN] = "Testi\n";
-static char *p_cMsg;
+//static char *p_cMsg;
 
 //Char dev functions                                                                              
 static int device_open(struct inode *, struct file *);
@@ -34,8 +34,8 @@ static void vma_close(struct vm_area_struct *vma)
 { module_put(THIS_MODULE); }
 
 static struct vm_operations_struct remap_vm_ops = {
- open: vma_open,
- close: vma_close
+ .open =  vma_open,
+ .close = vma_close
 };
 
 static struct file_operations fops = {
@@ -65,7 +65,7 @@ int init_chardev(void)
     return FAILURE;
   }
   
-  if (device_create(cl, NULL, Major, NULL, DEVICE_NAME) == NULL) {
+  if ((config->dev = device_create(cl, NULL, Major, NULL, DEVICE_NAME)) == NULL) {
     printk(KERN_ALERT "Device creation failed\n");
     class_destroy(cl);
     unregister_chrdev_region(Major, 1);
@@ -115,7 +115,7 @@ static int device_open(struct inode *inode, struct file *file)
   try_module_get(THIS_MODULE);
   printk(KERN_INFO "Dispenser open\n");
   
-  p_cMsg = a_cMsg;
+  //p_cMsg = a_cMsg;
   inode->i_size = PAGE_SIZE;
   
   return SUCCESS;
@@ -133,9 +133,12 @@ static int device_release(struct inode *inode, struct file *file)
 static ssize_t device_read(struct file *filp, char *buffer, size_t length, loff_t *offset)
 {
   int bytes_read = 0;
+  char *p_cMsg = 0;
   
-  if (*p_cMsg == 0)
+  if (*offset >= BUF_LEN || *offset < 0)
     return 0;
+
+  p_cMsg = a_cMsg + *offset;
   
   while (length && *p_cMsg) {
     put_user(*(p_cMsg++), buffer++);
@@ -143,6 +146,8 @@ static ssize_t device_read(struct file *filp, char *buffer, size_t length, loff_
     --length;
     ++bytes_read;
   }
+
+  *offset += bytes_read;
   
   return bytes_read;
 }
@@ -187,7 +192,7 @@ static int device_mmap(struct file *pFile, struct vm_area_struct *vma)
   return 0;
 }
   
-static long device_ioctl(struct file *, unsigned int ioctl_num, unsigned long ioctl_param)
+static long device_ioctl(struct file *filp, unsigned int ioctl_num, unsigned long ioctl_param)
 {
   printk(KERN_INFO "Dispenser ioctl %i\n", ioctl_num);
   //printk(KERN_INFO "Dispenser ioctl %ui, param %l\n", ioctl_num, ioctl_param);
