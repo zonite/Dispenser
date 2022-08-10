@@ -5,7 +5,10 @@
 
 #include "dispenser.h"
 
+static struct gpio_desc *button = NULL;
 
+
+/*
 static void gpio_init(struct io *io)
 {
     if (!io->init) {
@@ -39,9 +42,11 @@ static int gpio_setup(struct io *io, char io_port, char direction, char value, i
         return err;
     }
     */
-}
+//}
 
+/*
 static int gpio_set(struct io *io, char val)
 {
 
 }
+*/

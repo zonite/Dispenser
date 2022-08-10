@@ -33,12 +33,22 @@ static int dt_probe(struct platform_device *pdev)
     /* Check correct label */
     if (!device_property_present(dev, "label")) {
         printk("Dispenser - probe error! Label not found\n");
-        return -1;
+        return FAIL;
+    }
+    /* Check Button */
+    if (!device_property_present(dev, "button-gpio")) {
+        printk("Dispenser - probe error! Button not found\n");
+        return FAIL;
+    }
+    /* Check LED */
+    if (!device_property_present(dev, "led-gpio")) {
+        printk("Dispenser - probe error! Led not found\n");
+        return FAIL;
     }
     /*
     if (!device_property_present(dev, "local")) {
         printk("Dispenser - probe error! Local not found\n");
-        return -1;
+        return FAIL;
     }
     */
 
@@ -46,13 +56,42 @@ static int dt_probe(struct platform_device *pdev)
     ret = device_property_read_string(dev, "label", &label);
     if (ret) {
         printk("Dispenser: Could not read 'label'\n");
-        return -1;
+        return FAIL;
     }
     ret = device_property_read_u32(dev, "value", &value);
     if (ret) {
         printk("Dispenser: Could not read 'value'\n");
-        return -1;
+        return FAIL;
     }
+
+    p_sLed = gpio_device_open(dev, "led-gpio", GPIOD_OUT_LOW);
+    if (!p_sLed) {
+        printk("Dispenser: Led failed\n");
+        dt_remove(pdev);
+        return FAIL;
+    }
+
+    p_sButton = gpio_device_open(dev, "button-gpio", GPIOD_IN);
+    if (!p_sButton) {
+        printk("Dispenser: Button failed\n");
+        dt_remove(pdev);
+        return FAIL;
+    }
+
+    p_sCharge = gpio_device_open(dev, "charge-gpio", GPIOD_IN);
+    if (!p_sCharge) {
+        printk("Dispenser: Charge failed\n");
+        dt_remove(pdev);
+        return FAIL;
+    }
+
+    p_sDoor = gpio_device_open(dev, "door-gpio", GPIOD_IN);
+    if (!p_sDoor) {
+        printk("Dispenser: Door failed\n");
+        dt_remove(pdev);
+        return FAIL;
+    }
+
     printk("Dispenser: Loaded device tree for: %s\n", label);
 
     return 0;
@@ -61,6 +100,19 @@ static int dt_probe(struct platform_device *pdev)
 static int dt_remove(struct platform_device *pdev)
 {
     printk("Dispenser: Removing device tree\n");
+
+    if (p_sLed)
+        gpio_device_close(p_sLed);
+    if (p_sDoor)
+        gpio_device_close(p_sDoor);
+    if (p_sCharge)
+        gpio_device_close(p_sCharge);
+    if (p_sButton)
+        gpio_device_close(p_sButton);
+    p_sLed = NULL;
+    p_sDoor = NULL;
+    p_sCharge = NULL;
+    p_sButton = NULL;
 
     return 0;
 }

@@ -11,7 +11,8 @@ lupdate_only {
         src/interrupt.c \
         src/param.c \
         src/platform.c \
-        src/dispenser.c
+        src/dispenser.c \
+        src/gpio_device.c
 
     HEADERS += \
         src/dt-bindings/dispenser.h \
@@ -45,5 +46,6 @@ makedriver.clean = src/*.ko src/*.o src/*.mod.c src/modules.order src/Module.sym
 makedriver.CONFIG += no_link
 QMAKE_EXTRA_COMPILERS += makedriver
 PRE_TARGETDEPS += compiler_makedriver_make_all
+
 
 
