@@ -73,6 +73,8 @@ static void __exit dispenser_exit(void)
     free_mem(pDispenser);
     
   pDispenser = NULL;
+
+  platform_driver_unregister(&dispenser_driver);
 }
 
 module_init(dispenser_init);
