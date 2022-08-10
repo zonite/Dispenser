@@ -42,21 +42,25 @@ static void free_mem(void *mem)
 static int __init dispenser_init(void)
 {
   printk(KERN_INFO "Dispenser starting\n");
+  if (platform_driver_register(&dispenser_driver)) {
+      printk("Probe failed. Device tree not found!\n");
+      return FAIL;
+  }
 
   if (!pDispenser)
     pDispenser = alloc_mem();
 
   if (pDispenser < 0)
-    return -1;
+    return FAIL;
   
   if (init_chardev() < 0) {
     printk(KERN_ALERT "Init_chardev failed\n");
-    return -1;
+    return FAIL;
   }
   
   init_param();
   
-  return 0;
+  return SUCCESS;
 }
 
 static void __exit dispenser_exit(void)

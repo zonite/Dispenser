@@ -10,10 +10,18 @@ lupdate_only {
         src/interface.c \
         src/interrupt.c \
         src/param.c \
+        src/platform.c \
         src/dispenser.c
 
     HEADERS += \
+        src/dt-bindings/dispenser.h \
         src/dispenser.h
+
+    DISTFILES += \
+        src/rpioverlay.dts
+
+    OTHER_FILES += \
+            src/Makefile
 }
 
 KERNEL_RELEASE = $$system(uname -r)
@@ -28,8 +36,6 @@ DEFINES += \
     __KERNEL__ \
     KBUILD_MODNAME=\"\\\"\\\"\"
 
-OTHER_FILES += \
-    src/Makefile
 
 DUMMY_FILES = .
 makedriver.input = DUMMY_FILES
@@ -40,8 +46,4 @@ makedriver.CONFIG += no_link
 QMAKE_EXTRA_COMPILERS += makedriver
 PRE_TARGETDEPS += compiler_makedriver_make_all
 
-DISTFILES += \
-    src/rpioverlay.dts
 
-HEADERS += \
-    src/dt-bindings/dispenser.h

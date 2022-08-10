@@ -65,7 +65,7 @@ int init_chardev(void)
     return FAILURE;
   }
   
-  if ((config->dev = device_create(cl, NULL, Major, NULL, DEVICE_NAME)) == NULL) {
+  if ((cConfig.dev = device_create(cl, NULL, Major, NULL, DEVICE_NAME)) == NULL) {
     printk(KERN_ALERT "Device creation failed\n");
     class_destroy(cl);
     unregister_chrdev_region(Major, 1);

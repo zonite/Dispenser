@@ -9,7 +9,7 @@
         target-path = "/";
         __overlay__ {
             dispenser {
-                compatible = "brightlight,mydev";
+                compatible = "hortensis,dispenser";
                 status = "okay";
                 label = "Food Dispenser";
                 value = <12>;
@@ -18,14 +18,15 @@
                 led-gpio = <&gpio 10 GPIO_ACTIVE_HIGH>;
                 door-gpio = <&gpio 11 GPIO_ACTIVE_HIGH>;
 
-                col0 {
-                    slot0{
-                        up-gpio = <&gpio  GPIO_ACTIVE_HIGH>;
-                        down-gpio = <&gpio  GPIO_ACTIVE_HIGH>;
-                        release-gpio = <&gpio  GPIO_ACTIVE_HIGH>;
+                local {
+                    col0 {
+                        slot0{
+                            up-gpio = <&gpio  GPIO_ACTIVE_HIGH>;
+                            down-gpio = <&gpio  GPIO_ACTIVE_HIGH>;
+                            release-gpio = <&gpio  GPIO_ACTIVE_HIGH>;
+                        };
                     };
                 };
-
             };
         };
     };
