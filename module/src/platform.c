@@ -35,10 +35,12 @@ static int dt_probe(struct platform_device *pdev)
         printk("Dispenser - probe error! Label not found\n");
         return -1;
     }
+    /*
     if (!device_property_present(dev, "local")) {
         printk("Dispenser - probe error! Local not found\n");
         return -1;
     }
+    */
 
     // Read properties
     ret = device_property_read_string(dev, "label", &label);
