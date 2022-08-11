@@ -14,13 +14,14 @@ module:
 
 dt: rpioverlay.dts
 	$(CPP) -nostdinc -I include -I arch -undef -x assembler-with-cpp -I /lib/modules/$(shell uname -r)/source/include rpioverlay.dts > rpioverlay.dts.preprocessed
-	dtc -@ -I dts -i /lib/modules/$(shell uname -r)/source/include -O dtb  -o rpioverlay.dtbo rpioverlay.dts.preprocessed
+	dtc -@ -I dts -i /lib/modules/$(shell uname -r)/source/include -O dtb -o dispenser-rpi4.dtbo rpioverlay.dts.preprocessed
 
 clean:
 	make -C /lib/modules/$(shell uname -r)/build M=$(PWD) clean
 
 install:
 	cp *.ko /lib/modules/$(shell uname -r)/
+	cp -a dispenser-rpi4.dtbo /boot/overlays/
 	depmod
 
 test:

@@ -11,6 +11,8 @@
             dispenser {
                 compatible = "hortensis,dispenser";
                 status = "okay";
+                pinctrl-names = "default";
+                pinctrl-0 = <&push_buttons>;
                 label = "Food Dispenser";
                 value = <12>;
                 charge-gpio = <&gpio 8 GPIO_ACTIVE_HIGH>;
@@ -26,6 +28,12 @@
                             release-gpio = <&gpio  GPIO_ACTIVE_HIGH>;
                         };
                     };
+                };
+
+                push_buttons: push_buttons {
+                    brcm,pins = <22>;
+                    brcm,function = <0>; /* in */
+                    brcm,pull = <0>;
                 };
             };
         };
