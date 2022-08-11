@@ -64,28 +64,28 @@ static int dt_probe(struct platform_device *pdev)
         return FAIL;
     }
 
-    p_sLed = gpio_device_open(dev, "led-gpio", GPIOD_OUT_LOW);
+    p_sLed = gpio_device_open(dev, "led", GPIOD_OUT_LOW);
     if (!p_sLed) {
         printk("Dispenser: Led failed\n");
         dt_remove(pdev);
         return FAIL;
     }
 
-    p_sButton = gpio_device_open(dev, "button-gpio", GPIOD_IN);
+    p_sButton = gpio_device_open(dev, "button", GPIOD_IN);
     if (!p_sButton) {
         printk("Dispenser: Button failed\n");
         dt_remove(pdev);
         return FAIL;
     }
 
-    p_sCharge = gpio_device_open(dev, "charge-gpio", GPIOD_IN);
+    p_sCharge = gpio_device_open(dev, "charge", GPIOD_IN);
     if (!p_sCharge) {
         printk("Dispenser: Charge failed\n");
         dt_remove(pdev);
         return FAIL;
     }
 
-    p_sDoor = gpio_device_open(dev, "door-gpio", GPIOD_IN);
+    p_sDoor = gpio_device_open(dev, "door", GPIOD_IN);
     if (!p_sDoor) {
         printk("Dispenser: Door failed\n");
         dt_remove(pdev);
