@@ -11,7 +11,7 @@ static struct gpio_device* gpio_device_open(struct device *dev, const char *name
     struct gpio_device *out = NULL;
 
     if (IS_ERR(p)) {
-        printk("Dispenser: GPIO allocation failed for '%s'\n", name);
+        printk("Dispenser: GPIO allocation failed for '%s', pointer '%p', \n", name, p);
         return (struct gpio_device *)NULL;
     }
 
@@ -21,6 +21,7 @@ static struct gpio_device* gpio_device_open(struct device *dev, const char *name
     out->gpio = p;
 
     return out;
+    gpio_device_set(out, 0); //DEBUG
 }
 
 static void gpio_device_close(struct gpio_device *pgpio)
