@@ -10,8 +10,8 @@
 #include "dispenser.h"
 
 //extern void *pDispenser = NULL;
-static void *pDispenser = NULL;
-static struct dispenser_config cConfig = { 0 };
+//static void *pDispenser = NULL;
+//static struct dispenser_config cConfig = { 0 };
 
 static void *alloc_mem(void)
 {
@@ -42,16 +42,23 @@ static void free_mem(void *mem)
 static int __init dispenser_init(void)
 {
   printk(KERN_INFO "Dispenser starting\n");
-  if (platform_driver_register(&dispenser_driver)) {
+  if (!pDispenser_mmap)
+    pDispenser_mmap = alloc_mem();
+  if (pDispenser_mmap < 0)
+    return FAIL;
+
+  //if (dt_register()) {
+  if (platform_driver_register(&cDispenser.dispenser_driver)) {
       printk("Probe failed. Device tree not found!\n");
+
+      if (pDispenser_mmap)
+        free_mem(pDispenser_mmap);
+
+      pDispenser_mmap = NULL;
+
       return FAIL;
   }
 
-  if (!pDispenser)
-    pDispenser = alloc_mem();
-
-  if (pDispenser < 0)
-    return FAIL;
   
   if (init_chardev() < 0) {
     printk(KERN_ALERT "Init_chardev failed\n");
@@ -69,12 +76,12 @@ static void __exit dispenser_exit(void)
 
   cleanup_chardev();
 
-  if (pDispenser)
-    free_mem(pDispenser);
+  if (pDispenser_mmap)
+    free_mem(pDispenser_mmap);
     
-  pDispenser = NULL;
+  pDispenser_mmap = NULL;
 
-  platform_driver_unregister(&dispenser_driver);
+  platform_driver_unregister(&cDispenser.dispenser_driver);
 }
 
 module_init(dispenser_init);

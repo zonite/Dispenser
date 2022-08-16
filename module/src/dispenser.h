@@ -2,14 +2,19 @@
    Dispenser
 
  */
-#ifndef DISPENSER_H
-#define DISPENSER_H
+#ifndef DISPENSER_PRIVATE_H
+#define DISPENSER_PRIVATE_H
 
 #include <linux/module.h>
 #include <linux/kernel.h>
 #include <linux/interrupt.h>
 #include <linux/platform_device.h>
+
 #include <linux/gpio/consumer.h>
+#include <linux/timer.h>
+#include <linux/jiffies.h>
+
+#include <dispenser.h>
 
 #define DRIVER_AUTHOR "Matti Nykyri <matti@nykyri.eu>"
 #define DRIVER_DESC "Pet food dispenser"
@@ -23,18 +28,21 @@ MODULE_AUTHOR(DRIVER_AUTHOR);
 MODULE_DESCRIPTION(DRIVER_DESC);
 //MODULE_SUPPORTED_DEVICE("dispenser");
 
-/* Global static variables */
-static struct gpio_device *p_sLed;
-static struct gpio_device *p_sButton;
-static struct gpio_device *p_sDoor;
-static struct gpio_device *p_sCharge;
+/* Global Private structures */
 
-struct dispenser_config {
+struct dispenser_private {
     struct device *dev;
+    /*
     int charge;
     int button;
     int door;
     int led;
+    */
+    struct platform_driver dispenser_driver;
+    struct gpio_device *p_sLed;
+    struct gpio_device *p_sButton;
+    struct gpio_device *p_sDoor;
+    struct gpio_device *p_sCharge;
 };
 
 struct io {
@@ -44,9 +52,12 @@ struct io {
     int (*callback)(int irq, void * ident);
 };
 
-static void *pDispenser;
-static struct dispenser_config cConfig;
+/* Global static variables */
 
+static struct dispenser_mmap *pDispenser_mmap;
+static struct dispenser_private cDispenser;
+
+/* Global Functions */
 static int init_chardev(void);
 static void cleanup_chardev(void);
 static void init_param(void);
@@ -54,17 +65,19 @@ static void init_param(void);
 /* Platform */
 static int dt_probe(struct platform_device *pdev);
 static int dt_remove(struct platform_device *pdev);
-static struct platform_driver dispenser_driver;
+//static struct platform_driver dispenser_driver;
 
 /* GPIO */
 struct gpio_device {
     struct gpio_desc *gpio;
-    unsigned long timeout;
+    unsigned int timeout; //millisec
+    struct timer_list timer;
 };
 
 static struct gpio_device* gpio_device_open(struct device *dev, const char *name, enum gpiod_flags flags);
 static void gpio_device_close(struct gpio_device *pgpio);
 static void gpio_device_set(struct gpio_device *pgpio, char value);
+static void gpio_timer_callback(struct timer_list *timer);
 
 /*
 static void gpio_init(struct io *io);

@@ -11,8 +11,8 @@
             dispenser {
                 compatible = "hortensis,dispenser";
                 status = "okay";
-                pinctrl-names = "default";
-                pinctrl-0 = <&push_buttons>;
+                //pinctrl-names = "default";
+                //pinctrl-0 = <&push_buttons>;
                 label = "Food Dispenser";
                 value = <12>;
                 charge-gpio = <&gpio 8 GPIO_ACTIVE_HIGH>;
@@ -30,12 +30,32 @@
                     };
                 };
 
-                push_buttons: push_buttons {
-                    brcm,pins = <22>;
-                    brcm,function = <0>; /* in */
-                    brcm,pull = <0>;
-                };
+                //push_buttons: push_buttons {
+                //    brcm,pins = <22>;
+                //    brcm,function = <0>; /* in */
+                //    brcm,pull = <0>;
+                //};
             };
         };
     };
+
+    fragment@1 {
+        target = <&leds>;
+        __overlay__ {
+            pinctrl-names = "default";
+            pinctrl-0 = <&push_buttons>;
+        };
+    };
+
+    fragment@2 {
+        target = <&gpio>;
+        __overlay__ {
+            push_buttons: push_buttons {
+                brcm,pins = <22>;
+                brcm,function = <0>; /* in */
+                brcm,pull = <0>;
+            };
+        };
+    };
+
 };

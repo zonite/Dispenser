@@ -5,3 +5,6 @@ SUBDIRS += \
     test \
     daemon \
     module
+
+HEADERS += \
+    include/dispenser.h

@@ -65,7 +65,7 @@ int init_chardev(void)
     return FAILURE;
   }
   
-  if ((cConfig.dev = device_create(cl, NULL, Major, NULL, DEVICE_NAME)) == NULL) {
+  if ((cDispenser.dev = device_create(cl, NULL, Major, NULL, DEVICE_NAME)) == NULL) {
     printk(KERN_ALERT "Device creation failed\n");
     class_destroy(cl);
     unregister_chrdev_region(Major, 1);
@@ -94,7 +94,7 @@ void cleanup_chardev(void)
   device_destroy( cl, Major );
   class_destroy( cl );
   unregister_chrdev_region( Major, 1 );
- 
+  cDispenser.dev = NULL;
   printk(KERN_ALERT "Device unregistered\n");
 
   return;
@@ -182,7 +182,7 @@ static int device_mmap(struct file *pFile, struct vm_area_struct *vma)
   vma->vm_flags |= VM_DONTEXPAND | VM_SHARED;
   vma->vm_flags &= ~(VM_WRITE | VM_EXEC);
 
-  if (remap_pfn_range(vma, vma->vm_start, vmalloc_to_pfn(pDispenser),
+  if (remap_pfn_range(vma, vma->vm_start, vmalloc_to_pfn(pDispenser_mmap),
 		       PAGE_SIZE, vma->vm_page_prot))
     return -EAGAIN;
 
