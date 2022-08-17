@@ -78,7 +78,7 @@ static int dt_probe(struct platform_device *pdev)
         return FAIL;
     }
     /*
-    if (!device_property_present(dev, "local")) {
+    if (!device_property_present(dev, "unit")) {
         printk("Dispenser - probe error! Local not found\n");
         return FAIL;
     }
@@ -123,6 +123,10 @@ static int dt_probe(struct platform_device *pdev)
         dt_remove(pdev);
         return FAIL;
     }
+
+    /* Init local unit */
+    init_unit();
+
 
     printk("Dispenser: Loaded device tree for: %s\n", label);
 

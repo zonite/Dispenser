@@ -13,7 +13,8 @@ lupdate_only {
         src/platform.c \
         src/dispenser.c \
         src/gpio_device.c \
-        src/event.c
+        src/event.c \
+        src/unit.c
 
     HEADERS += \
         src/dt-bindings/dispenser.h \

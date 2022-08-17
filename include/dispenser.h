@@ -21,5 +21,6 @@ struct dispenser_mmap {
 #define WR_VALUE _IOW('a', 'a', int32_t *)
 #define RD_VALUE _IOR('a', 'b', int32_t *)
 #define GREETER  _IOW('a', 'c', struct dispenser_ioc *)
+#define DISPENSERIOCTL _IO(0xB4, 0x20)
 
 #endif // DISPENSER_H

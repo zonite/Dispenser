@@ -107,6 +107,9 @@ enum eventtype {
 
 int post_event(enum eventtype type, const char *name, void *data);
 
+/* Unit */
+void init_unit(void);
+
 
 /*
 static void gpio_init(struct io *io);
