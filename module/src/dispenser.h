@@ -25,7 +25,7 @@
 #define BUF_LEN 100
 #define DEBOUNCE 300
 #define DEVICE_UNIT "dispense_unit"
-#define DEVICE_PATH "/dispenser/dispence_unit"
+#define DEVICE_PATH "/dispenser/dispense_unit"
 
 MODULE_LICENSE("GPL");
 MODULE_AUTHOR(DRIVER_AUTHOR);
