@@ -59,4 +59,5 @@ static struct gpio_device *p_sCharge = NULL;
 #include "interrupt.c"
 #include "param.c"
 #include "platform.c"
+#include "event.c"
 
