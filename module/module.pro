@@ -32,6 +32,7 @@ INCLUDEPATH += \
     /lib/modules/$${KERNEL_RELEASE}/source/include/linux \
     /lib/modules/$${KERNEL_RELEASE}/source/arch/x86/include \
     /lib/modules/$${KERNEL_RELEASE}/source/arm64/x86/include \
+    /lib/modules/$${KERNEL_RELEASE}/source \
     ../include
 
 DEFINES += \

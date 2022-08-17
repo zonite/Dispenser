@@ -10,12 +10,20 @@ static int p_Door = -1;
 static int p_LED = -1;
 */
 
-static int p_Timeout = TIMEOUT;
+static int p_FailTimeout = FAIL_TIMEOUT;
+static int p_DoorTimeout = DOOR_TIMEOUT;
+static int p_LightTimeout = LIGHT_TIMEOUT;
 
 
 /* Module param */
-module_param(p_Timeout, int, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP);
-MODULE_PARM_DESC(p_Timeout, "Fault timeout");
+module_param(p_FailTimeout, int, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP);
+MODULE_PARM_DESC(p_FailTimeout, "Fault timeout");
+
+module_param(p_DoorTimeout, int, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP);
+MODULE_PARM_DESC(p_DoorTimeout, "Door timeout");
+
+module_param(p_LightTimeout, int, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP);
+MODULE_PARM_DESC(p_LightTimeout, "Light timeout");
 /*
 module_param(p_Charge, int, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP);
 MODULE_PARM_DESC(p_Charge, "Charge detection input");

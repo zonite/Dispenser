@@ -3,7 +3,7 @@ obj-m := dispenser.o
 targets += $(dtb-y)
 #dispenser-objs := chardev.o interface.o param.o interrupt.o
 #list-multi := dispenser.o
-EXTRA_CFLAGS=-I$(PWD)/../../include
+EXTRA_CFLAGS=-I$(PWD)/../../include -I/lib/modules/$(shell uname -r)/source/
 #INSTALL_MOD_PATH = /lib/modules/$(shell uname -r)/
 
 all: dt module

@@ -4,7 +4,6 @@
 
 #include "dispenser.h"
 
-
 /*
 static struct of_device_id dispenser_driver_ids[] = {
     {
@@ -97,28 +96,28 @@ static int dt_probe(struct platform_device *pdev)
         return FAIL;
     }
 
-    cDispenser.p_sLed = gpio_device_open(dev, "led", GPIOD_OUT_LOW);
+    cDispenser.p_sLed = gpio_device_open(dev, "led", GPIOD_OUT_LOW, (irq_handler_t )NULL);
     if (!cDispenser.p_sLed) {
         printk("Dispenser: Led failed\n");
         dt_remove(pdev);
         return FAIL;
     }
 
-    cDispenser.p_sButton = gpio_device_open(dev, "button", GPIOD_IN);
+    cDispenser.p_sButton = gpio_device_open(dev, "button", GPIOD_IN, button_irq_handler);
     if (!cDispenser.p_sButton) {
         printk("Dispenser: Button failed\n");
         dt_remove(pdev);
         return FAIL;
     }
 
-    cDispenser.p_sCharge = gpio_device_open(dev, "charge", GPIOD_IN);
+    cDispenser.p_sCharge = gpio_device_open(dev, "charge", GPIOD_IN, charge_irq_handler);
     if (!cDispenser.p_sCharge) {
         printk("Dispenser: Charge failed\n");
         dt_remove(pdev);
         return FAIL;
     }
 
-    cDispenser.p_sDoor = gpio_device_open(dev, "door", GPIOD_IN);
+    cDispenser.p_sDoor = gpio_device_open(dev, "door", GPIOD_IN, door_irq_handler);
     if (!cDispenser.p_sDoor) {
         printk("Dispenser: Door failed\n");
         dt_remove(pdev);

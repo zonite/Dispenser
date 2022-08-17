@@ -21,7 +21,9 @@
 #define SUCCESS 0
 #define FAIL -1
 #define DEVICE_NAME "dispenser"
+#define DEVICE_CLASS "agriculture"
 #define BUF_LEN 100
+#define DEBOUNCE 300
 
 MODULE_LICENSE("GPL");
 MODULE_AUTHOR(DRIVER_AUTHOR);
@@ -39,18 +41,20 @@ struct dispenser_private {
     int led;
     */
     struct platform_driver dispenser_driver;
-    struct gpio_device *p_sLed;
-    struct gpio_device *p_sButton;
-    struct gpio_device *p_sDoor;
-    struct gpio_device *p_sCharge;
+    struct gpio_switch *p_sLed;
+    struct gpio_switch *p_sButton;
+    struct gpio_switch *p_sDoor;
+    struct gpio_switch *p_sCharge;
 };
 
+/*
 struct io {
     bool init;
     char io_num;
     char value;
     int (*callback)(int irq, void * ident);
 };
+*/
 
 /* Global static variables */
 
@@ -68,16 +72,26 @@ static int dt_remove(struct platform_device *pdev);
 //static struct platform_driver dispenser_driver;
 
 /* GPIO */
-struct gpio_device {
+struct gpio_switch {
     struct gpio_desc *gpio;
     unsigned int timeout; //millisec
     struct timer_list timer;
+    int irq_num;
+    irq_handler_t irq_handler;
 };
 
-static struct gpio_device* gpio_device_open(struct device *dev, const char *name, enum gpiod_flags flags);
-static void gpio_device_close(struct gpio_device *pgpio);
-static void gpio_device_set(struct gpio_device *pgpio, char value);
+static struct gpio_switch* gpio_device_open(struct device *dev, const char *name, enum gpiod_flags flags, irq_handler_t irq_handler);
+static void gpio_device_close(struct gpio_switch *pgpio);
+static void gpio_device_set(struct gpio_switch *pgpio, char value);
 static void gpio_timer_callback(struct timer_list *timer);
+
+/* Interupt */
+static irqreturn_t door_irq_handler(int irq, void *dev_id);
+static irqreturn_t button_irq_handler(int irq, void *dev_id);
+static irqreturn_t charge_irq_handler(int irq, void *dev_id);
+//static irq_handler_t door_irq_handler(unsigned int irq, void *dev_id);
+//static irq_handler_t door_irq_handler(unsigned int irq, void *dev_id, struct pt_regs *regs);
+
 
 /*
 static void gpio_init(struct io *io);

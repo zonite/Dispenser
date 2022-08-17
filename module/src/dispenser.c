@@ -24,6 +24,9 @@ static struct dispenser_private cDispenser = {
         },
     0 },
 };
+
+static struct dispenser_mmap *pDispenser_mmap = NULL;
+
 /*
 static struct dispenser_private cDispenser = {
     .dispenser_driver = {
@@ -41,7 +44,6 @@ static struct dispenser_private cDispenser = {
 };
 */
 
-static struct dispenser_mmap *pDispenser_mmap = NULL;
 /*
 static struct gpio_device *p_sLed = NULL;
 static struct gpio_device *p_sDoor = NULL;

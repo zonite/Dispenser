@@ -22,10 +22,37 @@
 
                 unit {
                     col0 {
-                        slot0{
-                            up-gpio = <&gpio  GPIO_ACTIVE_HIGH>;
-                            down-gpio = <&gpio  GPIO_ACTIVE_HIGH>;
-                            release-gpio = <&gpio  GPIO_ACTIVE_HIGH>;
+                        slot0 {
+                            up-gpio = <&gpio 22 GPIO_ACTIVE_HIGH>;
+                            down-gpio = <&gpio 25 GPIO_ACTIVE_HIGH>;
+                            release-gpio = <&gpio 5 GPIO_ACTIVE_HIGH>;
+                        };
+                        slot1 {
+                            up-gpio = <&gpio 23 GPIO_ACTIVE_HIGH>;
+                            down-gpio = <&gpio 26 GPIO_ACTIVE_HIGH>;
+                            release-gpio = <&gpio 6 GPIO_ACTIVE_HIGH>;
+                        };
+                        slot2 {
+                            up-gpio = <&gpio 24 GPIO_ACTIVE_HIGH>;
+                            down-gpio = <&gpio 27 GPIO_ACTIVE_HIGH>;
+                            release-gpio = <&gpio 7 GPIO_ACTIVE_HIGH>;
+                        };
+                    };
+                    col1 {
+                        slot0 {
+                            up-gpio = <&gpio 18 GPIO_ACTIVE_HIGH>;
+                            down-gpio = <&gpio 21 GPIO_ACTIVE_HIGH>;
+                            release-gpio = <&gpio 4 GPIO_ACTIVE_HIGH>;
+                        };
+                        slot1 {
+                            up-gpio = <&gpio 17 GPIO_ACTIVE_HIGH>;
+                            down-gpio = <&gpio 20 GPIO_ACTIVE_HIGH>;
+                            release-gpio = <&gpio 1 GPIO_ACTIVE_HIGH>;
+                        };
+                        slot2 {
+                            up-gpio = <&gpio 16 GPIO_ACTIVE_HIGH>;
+                            down-gpio = <&gpio 19 GPIO_ACTIVE_HIGH>;
+                            release-gpio = <&gpio 0 GPIO_ACTIVE_HIGH>;
                         };
                     };
                 };

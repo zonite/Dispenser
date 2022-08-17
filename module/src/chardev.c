@@ -58,7 +58,7 @@ int init_chardev(void)
     return result;
   }
   //Create chardev;
-  if ( (cl = class_create(THIS_MODULE, "chardev") ) == NULL) {
+  if ( (cl = class_create(THIS_MODULE, DEVICE_CLASS) ) == NULL) {
     printk(KERN_ALERT "Class creation failed\n");
     unregister_chrdev_region(Major, 1);
     
@@ -191,10 +191,35 @@ static int device_mmap(struct file *pFile, struct vm_area_struct *vma)
 
   return 0;
 }
-  
+
+int32_t answer = 10;
+
 static long device_ioctl(struct file *filp, unsigned int ioctl_num, unsigned long ioctl_param)
 {
-  printk(KERN_INFO "Dispenser ioctl %i\n", ioctl_num);
-  //printk(KERN_INFO "Dispenser ioctl %ui, param %l\n", ioctl_num, ioctl_param);
-  return 0;
+    struct dispenser_ioctl ioctl_cmd;
+    printk(KERN_INFO "Dispenser ioctl %i\n", ioctl_num);
+    //printk(KERN_INFO "Dispenser ioctl %ui, param %l\n", ioctl_num, ioctl_param);
+    switch(ioctl_num) {
+    case WR_VALUE:
+        if (copy_from_user(&answer, (int32_t *) ioctl_param, sizeof(answer)))
+            printk("ioctl error\n");
+        else
+            printk("ioctl successful\n");
+        break;
+    case RD_VALUE:
+        if (copy_to_user(&answer, (int32_t *) ioctl_param, sizeof(answer)))
+            printk("ioctl error\n");
+        else
+            printk("ioctl successful\n");
+        break;
+    case GREETER:
+        if (copy_from_user(&ioctl_cmd, (struct dispenser_ioctl *) ioctl_param, sizeof(ioctl_cmd)))
+            printk("ioctl error\n");
+        else
+            printk("ioctl successful: %d, %s\n", ioctl_cmd.cmd, ioctl_cmd.name);
+        break;
+
+    }
+
+    return 0;
 }
