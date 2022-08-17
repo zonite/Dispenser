@@ -44,10 +44,14 @@ static struct gpio_switch* gpio_device_open(struct device *dev, const char *name
 
 static void gpio_device_close(struct gpio_switch *pgpio)
 {
+    printk("Close GPIO 0x%p\n", pgpio);
     if (timer_pending(&pgpio->timer))
             del_timer(&pgpio->timer);
-    if (pgpio->irq_handler)
+    if (pgpio->irq_handler) {
+        printk("Free irq %d, device %s\n", pgpio->irq_num, pgpio->gpio->name);
         free_irq(pgpio->irq_num, pgpio);
+        pgpio->irq_handler = NULL;
+    }
     gpiod_put(pgpio->gpio);
     kfree(pgpio);
 }
