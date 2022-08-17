@@ -12,7 +12,10 @@ struct dispenser_ioctl {
 };
 
 struct dispenser_mmap {
-
+    char charging;
+    char button;
+    char light;
+    char door;
 };
 
 #define WR_VALUE _IOW('a', 'a', int32_t *)

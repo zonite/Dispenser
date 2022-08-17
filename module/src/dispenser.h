@@ -40,6 +40,7 @@ struct dispenser_private {
     int door;
     int led;
     */
+    unsigned int iFailTimeout;
     struct platform_driver dispenser_driver;
     struct gpio_switch *p_sLed;
     struct gpio_switch *p_sButton;
@@ -74,15 +75,18 @@ static int dt_remove(struct platform_device *pdev);
 /* GPIO */
 struct gpio_switch {
     struct gpio_desc *gpio;
+    char *value;
     unsigned int timeout; //millisec
     struct timer_list timer;
     int irq_num;
     irq_handler_t irq_handler;
 };
 
-static struct gpio_switch* gpio_device_open(struct device *dev, const char *name, enum gpiod_flags flags, irq_handler_t irq_handler);
+static struct gpio_switch* gpio_device_open(struct device *dev, const char *name, enum gpiod_flags flags, irq_handler_t irq_handler, char *value);
 static void gpio_device_close(struct gpio_switch *pgpio);
+static char gpio_device_get(struct gpio_switch *pgpio);
 static void gpio_device_set(struct gpio_switch *pgpio, char value);
+static void gpio_device_set_tmout(struct gpio_switch *pgpio, char value, unsigned int tmout);
 static void gpio_timer_callback(struct timer_list *timer);
 
 /* Interupt */
@@ -91,6 +95,17 @@ static irqreturn_t button_irq_handler(int irq, void *dev_id);
 static irqreturn_t charge_irq_handler(int irq, void *dev_id);
 //static irq_handler_t door_irq_handler(unsigned int irq, void *dev_id);
 //static irq_handler_t door_irq_handler(unsigned int irq, void *dev_id, struct pt_regs *regs);
+
+/* Events */
+enum eventtype {
+    CHARGE,
+    BUTTON,
+    DOOR,
+    LED,
+    DISPENSER
+};
+
+int post_event(enum eventtype type, const char *name, void *data);
 
 
 /*

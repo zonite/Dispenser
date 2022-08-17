@@ -41,33 +41,34 @@ static void free_mem(void *mem)
 
 static int __init dispenser_init(void)
 {
-  printk(KERN_INFO "Dispenser starting\n");
-  if (!pDispenser_mmap)
-    pDispenser_mmap = alloc_mem();
-  if (pDispenser_mmap < 0)
-    return FAIL;
+    printk(KERN_INFO "Dispenser starting\n");
+    if (!pDispenser_mmap)
+        pDispenser_mmap = alloc_mem();
+    if (pDispenser_mmap < 0)
+        return FAIL;
 
-  //if (dt_register()) {
-  if (platform_driver_register(&cDispenser.dispenser_driver)) {
-      printk("Probe failed. Device tree not found!\n");
+    //if (dt_register()) {
+    if (platform_driver_register(&cDispenser.dispenser_driver)) {
+        printk("Probe failed. Device tree not found!\n");
 
-      if (pDispenser_mmap)
-        free_mem(pDispenser_mmap);
+        if (pDispenser_mmap)
+            free_mem(pDispenser_mmap);
 
-      pDispenser_mmap = NULL;
+        pDispenser_mmap = NULL;
 
-      return FAIL;
-  }
+        return FAIL;
+    }
 
   
-  if (init_chardev() < 0) {
-    printk(KERN_ALERT "Init_chardev failed\n");
-    return FAIL;
-  }
+    if (init_chardev() < 0) {
+        printk(KERN_ALERT "Init_chardev failed\n");
+        return FAIL;
+    }
   
-  init_param();
+    //Read params:
+    init_param();
   
-  return SUCCESS;
+    return SUCCESS;
 }
 
 static void __exit dispenser_exit(void)

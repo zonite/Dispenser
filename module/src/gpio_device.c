@@ -6,7 +6,7 @@
 
 #include "dispenser.h"
 
-static struct gpio_switch* gpio_device_open(struct device *dev, const char *name, enum gpiod_flags flags, irq_handler_t irq_handler)
+static struct gpio_switch* gpio_device_open(struct device *dev, const char *name, enum gpiod_flags flags, irq_handler_t irq_handler, char *value)
 {
     struct gpio_desc *p = gpiod_get(dev, name, flags);
     struct gpio_switch *out = NULL;
@@ -20,6 +20,8 @@ static struct gpio_switch* gpio_device_open(struct device *dev, const char *name
     memset((void*)out, 0, sizeof(struct gpio_switch));
 
     out->gpio = p;
+    out->value = value;
+    gpio_device_get(out);
 
     if (flags == GPIOD_IN)
         gpiod_set_debounce(out->gpio, DEBOUNCE);
@@ -63,15 +65,31 @@ static void gpio_device_close(struct gpio_switch *pgpio)
 static void gpio_device_set(struct gpio_switch *pgpio, char value)
 {
     //return gpio_device_set(pgpio, value, pgpio->timeout);
+    gpio_device_set_tmout(pgpio, value, pgpio->timeout);
+}
 
+static void gpio_device_set_tmout(struct gpio_switch *pgpio, char value, unsigned int tmout)
+{
     gpiod_set_value(pgpio->gpio, value);
 
-    if (value && pgpio->timeout) {
+    if (value && tmout) {
         //callback;
         timer_setup(&pgpio->timer, gpio_timer_callback, 0);
-        mod_timer(&pgpio->timer, jiffies + msecs_to_jiffies(pgpio->timeout));
+        mod_timer(&pgpio->timer, jiffies + msecs_to_jiffies(tmout));
     } else if (timer_pending(&pgpio->timer))
         del_timer(&pgpio->timer);
+}
+
+static char gpio_device_get(struct gpio_switch *pgpio)
+{
+    char new_val = gpiod_get_value(pgpio->gpio);
+
+    if (new_val != *pgpio->value) {
+
+        *pgpio->value = new_val;
+    }
+
+    return *pgpio->value;
 }
 
 static void gpio_timer_callback(struct timer_list *timer)
