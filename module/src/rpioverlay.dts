@@ -20,7 +20,7 @@
                 led-gpio = <&gpio 10 GPIO_ACTIVE_HIGH>;
                 door-gpio = <&gpio 11 GPIO_ACTIVE_LOW>;
 
-                unit {
+                dispense_unit {
                     col0 {
                         slot0 {
                             up-gpio = <&gpio 22 GPIO_ACTIVE_LOW>;

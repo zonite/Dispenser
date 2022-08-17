@@ -24,6 +24,7 @@
 #define DEVICE_CLASS "agriculture"
 #define BUF_LEN 100
 #define DEBOUNCE 300
+#define DEVICE_UNIT "dispense_unit"
 
 MODULE_LICENSE("GPL");
 MODULE_AUTHOR(DRIVER_AUTHOR);
@@ -108,7 +109,7 @@ enum eventtype {
 int post_event(enum eventtype type, const char *name, void *data);
 
 /* Unit */
-void init_unit(void);
+void init_unit(struct device *dev);
 
 
 /*
