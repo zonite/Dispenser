@@ -9,13 +9,13 @@
 /* Global static variables */
 static struct of_device_id dispenser_driver_ids[] = {
     {
-        .compatible = "hortensis,dispenser",
+        .compatible = COMPAT,
     },
     {
-        .compatible = "hortensis,dispenser",
+        .compatible = COMPAT_COL,
     },
     {
-        .compatible = "hortensis,dispenser",
+        .compatible = COMPAT_SLOT,
     }, { /* NULL termination */ }
 };
 
