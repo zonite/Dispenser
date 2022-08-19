@@ -22,7 +22,7 @@
 
                 dispense_unit {
                     col0 {
-                        num = <0>;
+                        num = <68>;
                         slot0 {
                             num = <0>;
                             up-gpio = <&gpio 22 GPIO_ACTIVE_LOW>;
@@ -43,7 +43,7 @@
                         };
                     };
                     col1 {
-                        num = <1>;
+                        num = <69>;
                         slot0 {
                             num = <0>;
                             up-gpio = <&gpio 18 GPIO_ACTIVE_LOW>;

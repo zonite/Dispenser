@@ -58,7 +58,8 @@ void init_unit(struct device *dev) {
                 }
                 gpio = gpiod_get_from_of_node(slot, "up", 0, GPIOD_IN, "");
                 if (IS_ERR(gpio)) {
-                    printk("GPIO allocation failed!\n");
+                    printk("GPIO allocation failed! gpio == %li.\n", (long)gpio);
+                    printk("Dispenser found %d slot in column %d\n", slotnum ? *slotnum : -1, colnum ? *colnum : -1);
                 } else {
                     printk("Dispenser found %d slot in column %d, up = %p, hw_num = %d\n", slotnum ? *slotnum : -1, colnum ? *colnum : -1, gpio, desc_to_gpio(gpio));
                     gpiod_put(gpio);
