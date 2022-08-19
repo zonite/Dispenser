@@ -4,6 +4,8 @@
 #include "dispenser.h"
 
 void init_unit(struct device *dev) {
+    int i = 0;
+
     struct device_node *unit = of_get_child_by_name(dev->of_node, DEVICE_UNIT);
     if (unit) {
         int cols = of_get_child_count(unit);
@@ -16,6 +18,11 @@ void init_unit(struct device *dev) {
 
             if (!col) {
                 printk("Error, NULL col child pointer\n");
+                break;
+            }
+
+            if (++i > 100) {
+                printk("Iteration limit reached! i == %i, col = 0x%p\n", i, col);
                 break;
             }
 
@@ -33,6 +40,11 @@ void init_unit(struct device *dev) {
 
                 if (!slot) {
                     printk("Error, NULL slot child pointer\n");
+                    break;
+                }
+
+                if (++i > 100) {
+                    printk("Iteration limit reached! i == %i, col = 0x%p, slot == 0x%p\n", i, col, slot);
                     break;
                 }
 
