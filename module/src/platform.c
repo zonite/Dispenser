@@ -62,6 +62,8 @@ static int dt_probe(struct platform_device *pdev)
 
     printk("Dispenser probing device tree.\n");
 
+    return 0;
+
     /* Check correct label */
     if (!device_property_present(dev, "label")) {
         printk("Dispenser - probe error! Label not found\n");
