@@ -186,7 +186,7 @@ static int device_mmap(struct file *pFile, struct vm_area_struct *vma)
 
     if (remap_pfn_range(vma, vma->vm_start, vmalloc_to_pfn(pDispenser_mmap),
                         PAGE_SIZE, vma->vm_page_prot))
-    return -EAGAIN;
+        return -EAGAIN;
 
     vma->vm_ops = &remap_vm_ops;
     vma_open(vma);

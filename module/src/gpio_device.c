@@ -18,16 +18,25 @@ static struct gpio_switch* gpio_device_open(struct device *dev, const char *name
 
     out = (struct gpio_switch *)kmalloc(sizeof(struct gpio_switch), GFP_KERNEL);
     memset((void*)out, 0, sizeof(struct gpio_switch));
+    if (!out) {
+        printk("Mem allocation failed: %s\n", name);
+        gpiod_put(p);
+        return out;
+    }
 
     out->gpio = p;
     out->value = value;
     gpio_device_get(out);
 
+    /*
     if (flags == GPIOD_IN)
         gpiod_set_debounce(out->gpio, DEBOUNCE);
+    */
 
     if (irq_handler) {
         int irq = gpiod_to_irq(out->gpio);
+        printk("Setting irq_handler %i, %s, 0x%p\n", irq, name, out);
+        //return out;
 
         if (request_irq(irq, irq_handler, IRQF_TRIGGER_RISING | IRQF_TRIGGER_FALLING, name, out) == 0 ){
             printk("Dispenser: Mapped IRQ nr. %d to gpiod %ld, %s\n", irq, p->flags, p->name);

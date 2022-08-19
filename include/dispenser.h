@@ -1,6 +1,8 @@
 #ifndef DISPENSER_H
 #define DISPENSER_H
 
+#include <linux/types.h>
+
 #define SEC_TO_MSEC(A) ((A) * 1000)
 #define LIGHT_TIMEOUT SEC_TO_MSEC(5 * 60)
 #define FAIL_TIMEOUT SEC_TO_MSEC(15)
@@ -16,6 +18,20 @@ struct dispenser_mmap {
     char button;
     char light;
     char door;
+    char cols;
+    __u16 cols_offset;
+};
+
+struct dispenser_column {
+    char slots;
+    __u16 slots_offset;
+};
+
+struct dispenser_slot {
+    char state;
+    char up;
+    char down;
+    char release;
 };
 
 #define WR_VALUE _IOW('a', 'a', int32_t *)
