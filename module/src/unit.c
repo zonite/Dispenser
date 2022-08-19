@@ -21,7 +21,7 @@ void init_unit(struct device *dev) {
                 break;
             }
 
-            if (++i > 100) {
+            if (++i < 100) {
                 printk("Iteration limit reached! i == %i, col = 0x%p\n", i, col);
                 break;
             }
@@ -43,7 +43,7 @@ void init_unit(struct device *dev) {
                     break;
                 }
 
-                if (++i > 100) {
+                if (++i < 100) {
                     printk("Iteration limit reached! i == %i, col = 0x%p, slot == 0x%p\n", i, col, slot);
                     break;
                 }
