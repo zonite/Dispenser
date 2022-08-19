@@ -13,7 +13,8 @@ void init_unit(struct device *dev) {
 
         printk("Dispenser found %d columns\n", cols);
         while((col = of_get_next_child(unit, col))) {
-            int slots, *colnum;
+            int slots;
+            const int *colnum;
             struct device_node *slot = NULL;
 
             printk("Processing child 0x%p in unit 0x%p\n", col, unit);
@@ -29,7 +30,7 @@ void init_unit(struct device *dev) {
             }
 
             slots = of_get_child_count(col);
-            colnum = (int*)of_get_property(col, "num", NULL);
+            colnum = of_get_property(col, "num", NULL);
 
             if (!colnum) {
                 printk("No colnum! Fail!\n");
@@ -37,7 +38,7 @@ void init_unit(struct device *dev) {
 
             printk("Dispenser found %d slots in column %d\n", slots, colnum ? *colnum : -1);
             while((slot = of_get_next_child(col, slot))) {
-                int *slotnum;
+                const int *slotnum;
                 struct gpio_desc *gpio;
 
                 printk("Processing slot 0x%p in col 0x%p\n", slot, col);
@@ -52,7 +53,7 @@ void init_unit(struct device *dev) {
                     break;
                 }
 
-                slotnum = (int*)of_get_property(col, "num", NULL);
+                slotnum = of_get_property(col, "num", NULL);
                 if (!slotnum) {
                     printk("No slotnum! Fail!\n");
                 }
