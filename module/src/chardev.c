@@ -49,55 +49,57 @@ static struct file_operations fops = {
 
 int init_chardev(void)
 {
-  //Major = register_chrdev(0, DEVICE_NAME, &fops);
-  int result = alloc_chrdev_region(&Major, 0, 1, DEVICE_NAME);
+    int result;
+    //Major = register_chrdev(0, DEVICE_NAME, &fops);
+    printk("Init chardev.\n");
+    result = alloc_chrdev_region(&Major, 0, 1, DEVICE_NAME);
   
-  //if (Major < 0 ) {
-  if (result < 0 ) {
-    printk(KERN_ALERT "Registering char device failed with %d\n", Major);
-    return result;
-  }
-  //Create chardev;
-  if ( (cl = class_create(THIS_MODULE, DEVICE_CLASS) ) == NULL) {
-    printk(KERN_ALERT "Class creation failed\n");
-    unregister_chrdev_region(Major, 1);
+    //if (Major < 0 ) {
+    if (result < 0 ) {
+        printk(KERN_ALERT "Registering char device failed with %d\n", Major);
+        return result;
+    }
+    //Create chardev;
+    if ( (cl = class_create(THIS_MODULE, DEVICE_CLASS) ) == NULL) {
+        printk(KERN_ALERT "Class creation failed\n");
+        unregister_chrdev_region(Major, 1);
     
-    return FAILURE;
-  }
+        return FAILURE;
+    }
   
-  if ((cDispenser.dev = device_create(cl, NULL, Major, NULL, DEVICE_NAME)) == NULL) {
-    printk(KERN_ALERT "Device creation failed\n");
-    class_destroy(cl);
-    unregister_chrdev_region(Major, 1);
+    if ((cDispenser.dev = device_create(cl, NULL, Major, NULL, DEVICE_NAME)) == NULL) {
+        printk(KERN_ALERT "Device creation failed\n");
+        class_destroy(cl);
+        unregister_chrdev_region(Major, 1);
     
-    return FAILURE;
-  }
+        return FAILURE;
+    }
   
-  cdev_init(&c_dev, &fops);
+    cdev_init(&c_dev, &fops);
   
-  if (cdev_add(&c_dev, Major, 1) == -1) {
-    printk(KERN_ALERT "Device addition failed\n");
-    device_destroy(cl, Major);
-    class_destroy(cl);
-    unregister_chrdev_region(Major, 1);
+    if (cdev_add(&c_dev, Major, 1) == -1) {
+        printk(KERN_ALERT "Device addition failed\n");
+        device_destroy(cl, Major);
+        class_destroy(cl);
+        unregister_chrdev_region(Major, 1);
     
-    return FAILURE;    
-  }
+        return FAILURE;
+    }
   
-  return SUCCESS;
+    return SUCCESS;
 }
 
 void cleanup_chardev(void)
 {
-  //unregister_chrdev(Major, DEVICE_NAME);
-  cdev_del( &c_dev );
-  device_destroy( cl, Major );
-  class_destroy( cl );
-  unregister_chrdev_region( Major, 1 );
-  cDispenser.dev = NULL;
-  printk(KERN_ALERT "Device unregistered\n");
+    //unregister_chrdev(Major, DEVICE_NAME);
+    cdev_del( &c_dev );
+    device_destroy( cl, Major );
+    class_destroy( cl );
+    unregister_chrdev_region( Major, 1 );
+    cDispenser.dev = NULL;
+    printk(KERN_ALERT "Device unregistered\n");
 
-  return;
+    return;
   /*
   if (ret < 0)
     printk(KERN_ALERT "Error in unregister_chrdev: %d\n", ret);
@@ -108,65 +110,65 @@ void cleanup_chardev(void)
 
 static int device_open(struct inode *inode, struct file *file)
 {
-  //static int counter = 0;
+    //static int counter = 0;
   
-  ++Device_Open;
+    ++Device_Open;
   
-  try_module_get(THIS_MODULE);
-  printk(KERN_INFO "Dispenser open\n");
+    try_module_get(THIS_MODULE);
+    printk(KERN_INFO "Dispenser open\n");
   
-  //p_cMsg = a_cMsg;
-  inode->i_size = PAGE_SIZE;
+    //p_cMsg = a_cMsg;
+    inode->i_size = PAGE_SIZE;
   
-  return SUCCESS;
+    return SUCCESS;
 }
 
 static int device_release(struct inode *inode, struct file *file)
 {
-  --Device_Open;
+    --Device_Open;
   
-  module_put(THIS_MODULE);
+    module_put(THIS_MODULE);
   
-  return 0;
+    return 0;
 }
 
 static ssize_t device_read(struct file *filp, char *buffer, size_t length, loff_t *offset)
 {
-  int bytes_read = 0;
-  char *p_cMsg = 0;
+    int bytes_read = 0;
+    char *p_cMsg = 0;
   
-  if (*offset >= BUF_LEN || *offset < 0)
-    return 0;
+    if (*offset >= BUF_LEN || *offset < 0)
+        return 0;
 
-  p_cMsg = a_cMsg + *offset;
+    p_cMsg = a_cMsg + *offset;
   
-  while (length && *p_cMsg) {
-    put_user(*(p_cMsg++), buffer++);
+    while (length && *p_cMsg) {
+        put_user(*(p_cMsg++), buffer++);
     
-    --length;
-    ++bytes_read;
-  }
+        --length;
+        ++bytes_read;
+    }
 
-  *offset += bytes_read;
+    *offset += bytes_read;
   
-  return bytes_read;
+    return bytes_read;
 }
 
 static ssize_t device_write(struct file *filp, const char *buff, size_t len, loff_t * off)
 {
-  printk(KERN_ALERT "Dispenser: Sorry, this operation isn't supported.\n");
-  return -EINVAL;
+    printk(KERN_ALERT "Dispenser: Sorry, this operation isn't supported.\n");
+    return -EINVAL;
 }
 
 static int device_mmap(struct file *pFile, struct vm_area_struct *vma)
 {
-  unsigned long offset = vma->vm_pgoff << PAGE_SHIFT;
-  //unsigned long offset = VMA_OFFSET(vma);
+    unsigned long offset = vma->vm_pgoff << PAGE_SHIFT;
+    //unsigned long offset = VMA_OFFSET(vma);
 
-  if (offset != 0 || vma->vm_end - vma->vm_start != PAGE_SIZE)
-    return -EAGAIN;
+    if (offset != 0 || vma->vm_end - vma->vm_start != PAGE_SIZE)
+        return -EAGAIN;
 
-  //offset = page_to_pfn(virt_to_page(pDispenser));
+    //offset = page_to_pfn(virt_to_page(pDispenser));
 
   //Not used
   /*
@@ -179,17 +181,17 @@ static int device_mmap(struct file *pFile, struct vm_area_struct *vma)
   //		       vma->vm_end-vma->vm_start, vma->vm_page_prot))
   //  return -EAGAIN;
 
-  vma->vm_flags |= VM_DONTEXPAND | VM_SHARED;
-  vma->vm_flags &= ~(VM_WRITE | VM_EXEC);
+    vma->vm_flags |= VM_DONTEXPAND | VM_SHARED;
+    vma->vm_flags &= ~(VM_WRITE | VM_EXEC);
 
-  if (remap_pfn_range(vma, vma->vm_start, vmalloc_to_pfn(pDispenser_mmap),
-		       PAGE_SIZE, vma->vm_page_prot))
+    if (remap_pfn_range(vma, vma->vm_start, vmalloc_to_pfn(pDispenser_mmap),
+                        PAGE_SIZE, vma->vm_page_prot))
     return -EAGAIN;
 
-  vma->vm_ops = &remap_vm_ops;
-  vma_open(vma);
+    vma->vm_ops = &remap_vm_ops;
+    vma_open(vma);
 
-  return 0;
+    return 0;
 }
 
 int32_t answer = 10;

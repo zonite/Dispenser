@@ -40,6 +40,7 @@ MODULE_PARM_DESC(p_LED, "LED output");
 
 void init_param(void)
 {
+    printk("Parameter initalization.\n");
     cDispenser.p_sDoor->timeout = p_DoorTimeout;
     cDispenser.p_sLed->timeout = p_LightTimeout;
     cDispenser.iFailTimeout = p_FailTimeout;

@@ -66,7 +66,9 @@ static int __init dispenser_init(void)
     }
   
     //Read params:
-    init_param();
+    //init_param();
+    if (false)
+        init_param();
   
     return SUCCESS;
 }
