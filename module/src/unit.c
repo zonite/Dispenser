@@ -4,7 +4,7 @@
 #include "dispenser.h"
 
 void init_unit(struct device *dev) {
-    int i = 0;
+    int i = 0, k = -1;
 
     struct device_node *unit = of_get_child_by_name(dev->of_node, DEVICE_UNIT);
     if (unit) {
@@ -61,12 +61,19 @@ void init_unit(struct device *dev) {
                 if (!slotnum) {
                     printk("No slotnum! Fail!\n");
                 }
-                gpio = gpiod_get_from_of_node(slot, "up", 0, GPIOD_IN, "up");
+                gpio = gpiod_get_from_of_node(slot, "up", 0, GPIOD_IN, "up-gpio");
                 if (IS_ERR(gpio)) {
                     printk("GPIO allocation failed! gpio == %li.\n", (long)gpio);
                     printk("Dispenser found %d slot in column %d\n", slotnum ? *slotnum : -1, colnum ? *colnum : -1);
                 } else {
                     printk("Dispenser found %d slot in column %d, up = %p, hw_num = %d\n", slotnum ? *slotnum : -1, colnum ? *colnum : -1, gpio, desc_to_gpio(gpio));
+                    gpiod_put(gpio);
+                }
+                gpio = gpiod_get_index(dev, "up", ++k, GPIOD_IN);
+                if (IS_ERR(gpio)) {
+                    printk("Error gettin gpio %li, k = %i", (long)gpio, k);
+                } else {
+                    printk("Got gpio at index k = %i, 0x%p, hw = %i", k, gpio, desc_to_gpio(gpio));
                     gpiod_put(gpio);
                 }
             }
