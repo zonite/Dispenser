@@ -15,6 +15,11 @@ static struct of_device_id dispenser_driver_ids[] = {
 MODULE_DEVICE_TABLE(of, dispenser_driver_ids);
 //MODULE_DEVICE_TABLE(of, ((struct of_device_id[])cDispenser.dispenser_driver.driver.of_match_table));
 
+static struct of_device_id match = {
+    .compatible = COMPAT_COL,
+    .name = "col0",
+};
+
 /*
 static cDispenser.dispenser_driver = {
     .probe = dt_probe,
@@ -162,7 +167,9 @@ static int dt_probe_dispenser(struct platform_device *pdev)
     /* Init local unit */
     init_unit(dev);
 
-    if (of_platform_populate(dev->of_node, NULL, NULL, dev)) {
+    //device_fin
+
+    if (of_platform_populate(dev->of_node, &match, NULL, dev)) {
         printk("Device tree population failed! +n");
     }
 
