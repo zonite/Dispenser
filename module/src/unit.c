@@ -53,11 +53,15 @@ void init_unit(struct device *dev) {
                     break;
                 }
 
-                slotnum = of_get_property(col, "num", NULL);
+                slotnum = of_get_property(slot, "down-gpio", NULL);
+                if (!slotnum) {
+                    printk("No down-gpio! Fail!\n");
+                }
+                slotnum = of_get_property(slot, "num", NULL);
                 if (!slotnum) {
                     printk("No slotnum! Fail!\n");
                 }
-                gpio = gpiod_get_from_of_node(slot, "up", 0, GPIOD_IN, "");
+                gpio = gpiod_get_from_of_node(slot, "up", 0, GPIOD_IN, "up");
                 if (IS_ERR(gpio)) {
                     printk("GPIO allocation failed! gpio == %li.\n", (long)gpio);
                     printk("Dispenser found %d slot in column %d\n", slotnum ? *slotnum : -1, colnum ? *colnum : -1);
