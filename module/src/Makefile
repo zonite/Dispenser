@@ -18,6 +18,7 @@ dt: rpioverlay.dts
 
 clean:
 	make -C /lib/modules/$(shell uname -r)/build M=$(PWD) clean
+	rm rpioverlay.dts.preprocessed
 
 install:
 	cp *.ko /lib/modules/$(shell uname -r)/
