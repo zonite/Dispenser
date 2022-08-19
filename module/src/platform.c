@@ -162,6 +162,9 @@ static int dt_probe_dispenser(struct platform_device *pdev)
     /* Init local unit */
     init_unit(dev);
 
+    if (of_platform_populate(dev->of_node, NULL, NULL, dev)) {
+        printk("Device tree population failed! +n");
+    }
 
     printk("Dispenser: Loaded device tree for: %s\n", label);
 
@@ -206,6 +209,8 @@ static int dt_remove(struct platform_device *pdev)
         cDispenser.p_sDoor = NULL;
         cDispenser.p_sCharge = NULL;
         cDispenser.p_sButton = NULL;
+
+        of_platform_depopulate(dev);
     }
 
     return 0;

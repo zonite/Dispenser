@@ -59,6 +59,10 @@ static int __init dispenser_init(void)
         return FAIL;
     }
 
+    //if (platform_driver_register()) {
+
+    //}
+
   
     if (init_chardev() < 0) {
         printk(KERN_ALERT "Init_chardev failed\n");
