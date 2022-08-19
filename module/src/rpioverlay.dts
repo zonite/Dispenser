@@ -22,34 +22,42 @@
 
                 dispense_unit {
                     col0 {
+                        num = <0>;
                         slot0 {
+                            num = <0>;
                             up-gpio = <&gpio 22 GPIO_ACTIVE_LOW>;
                             down-gpio = <&gpio 25 GPIO_ACTIVE_LOW>;
                             release-gpio = <&gpio 5 GPIO_ACTIVE_HIGH>;
                         };
                         slot1 {
+                            num = <1>;
                             up-gpio = <&gpio 23 GPIO_ACTIVE_LOW>;
                             down-gpio = <&gpio 26 GPIO_ACTIVE_LOW>;
                             release-gpio = <&gpio 6 GPIO_ACTIVE_HIGH>;
                         };
                         slot2 {
+                            num = <2>;
                             up-gpio = <&gpio 24 GPIO_ACTIVE_LOW>;
                             down-gpio = <&gpio 27 GPIO_ACTIVE_LOW>;
                             release-gpio = <&gpio 7 GPIO_ACTIVE_HIGH>;
                         };
                     };
                     col1 {
+                        num = <1>;
                         slot0 {
+                            num = <0>;
                             up-gpio = <&gpio 18 GPIO_ACTIVE_LOW>;
                             down-gpio = <&gpio 21 GPIO_ACTIVE_LOW>;
                             release-gpio = <&gpio 4 GPIO_ACTIVE_HIGH>;
                         };
                         slot1 {
+                            num = <1>;
                             up-gpio = <&gpio 17 GPIO_ACTIVE_LOW>;
                             down-gpio = <&gpio 20 GPIO_ACTIVE_LOW>;
                             release-gpio = <&gpio 1 GPIO_ACTIVE_HIGH>;
                         };
                         slot2 {
+                            num = <2>;
                             up-gpio = <&gpio 16 GPIO_ACTIVE_LOW>;
                             down-gpio = <&gpio 19 GPIO_ACTIVE_LOW>;
                             release-gpio = <&gpio 0 GPIO_ACTIVE_HIGH>;
@@ -66,6 +74,7 @@
         };
     };
 
+    /*
     fragment@1 {
         target = <&leds>;
         __overlay__ {
@@ -73,6 +82,7 @@
             pinctrl-0 = <&push_buttons>;
         };
     };
+    */
 
     fragment@2 {
         target = <&gpio>;
