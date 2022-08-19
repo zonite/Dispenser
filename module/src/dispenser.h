@@ -16,6 +16,8 @@
 
 #include <dispenser.h>
 
+#include "dt-bindings/dispenser.h"
+
 #define DRIVER_AUTHOR "Matti Nykyri <matti@nykyri.eu>"
 #define DRIVER_DESC "Pet food dispenser"
 #define SUCCESS 0
@@ -71,6 +73,9 @@ static void init_param(void);
 
 /* Platform */
 static int dt_probe(struct platform_device *pdev);
+static int dt_probe_dispenser(struct platform_device *pdev);
+static int dt_probe_column(struct platform_device *pdev);
+static int dt_probe_slot(struct platform_device *pdev);
 static int dt_remove(struct platform_device *pdev);
 //static struct platform_driver dispenser_driver;
 

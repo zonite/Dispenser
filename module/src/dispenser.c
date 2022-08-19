@@ -10,6 +10,12 @@
 static struct of_device_id dispenser_driver_ids[] = {
     {
         .compatible = "hortensis,dispenser",
+    },
+    {
+        .compatible = "hortensis,dispenser",
+    },
+    {
+        .compatible = "hortensis,dispenser",
     }, { /* NULL termination */ }
 };
 

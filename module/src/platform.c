@@ -55,12 +55,47 @@ static int dt_register(void)
 
 static int dt_probe(struct platform_device *pdev)
 {
+    int ret;
+    const char *compatible = NULL;
+    struct device *dev = &pdev->dev;
+
+    if (!device_property_present(dev, "compatible")) {
+        printk("Dispenser - probe error! Compatible not found\n");
+        return FAIL;
+    }
+
+    ret = device_property_read_string(dev, "compatible", &compatible);
+    if (ret) {
+        printk("Dispenser: Could not read 'compatible'\n");
+        return FAIL;
+    }
+
+    if (!strcasecmp(compatible, COMPAT)) {
+        printk("Process %s\n", compatible);
+        return dt_probe_dispenser(pdev);
+    } else if (!strcasecmp(compatible, COMPAT_COL)) {
+        printk("Process %s\n", compatible);
+        return dt_probe_column(pdev);
+    } else if (!strcasecmp(compatible, COMPAT_SLOT)) {
+        printk("Process %s\n", compatible);
+        return dt_probe_slot(pdev);
+    }
+    return FAIL;
+}
+
+static int dt_probe_dispenser(struct platform_device *pdev)
+{
     struct device *dev = &pdev->dev;
     const char *label;
     int ret;
     unsigned int value;
 
     printk("Dispenser probing device tree.\n");
+
+    if (!device_property_present(dev, "label")) {
+        printk("Dispenser - probe error! Label not found\n");
+        return FAIL;
+    }
 
     /* Check correct label */
     if (!device_property_present(dev, "label")) {
@@ -133,22 +168,45 @@ static int dt_probe(struct platform_device *pdev)
     return 0;
 }
 
+static int dt_probe_column(struct platform_device *pdev)
+{
+    return FAIL;
+}
+
+static int dt_probe_slot(struct platform_device *pdev)
+{
+    return FAIL;
+}
+
 static int dt_remove(struct platform_device *pdev)
 {
+    int ret;
+    const char *compatible = NULL;
+    struct device *dev = &pdev->dev;
+
     printk("Dispenser: Removing device tree\n");
 
-    if (cDispenser.p_sLed)
-        gpio_device_close(cDispenser.p_sLed);
-    if (cDispenser.p_sDoor)
-        gpio_device_close(cDispenser.p_sDoor);
-    if (cDispenser.p_sCharge)
-        gpio_device_close(cDispenser.p_sCharge);
-    if (cDispenser.p_sButton)
-        gpio_device_close(cDispenser.p_sButton);
-    cDispenser.p_sLed = NULL;
-    cDispenser.p_sDoor = NULL;
-    cDispenser.p_sCharge = NULL;
-    cDispenser.p_sButton = NULL;
+    ret = device_property_read_string(dev, "compatible", &compatible);
+    if (ret) {
+        printk("Dispenser: Could not read 'compatible'\n");
+        return FAIL;
+    }
+
+    if (!strcasecmp(compatible, COMPAT)) {
+        printk("Process %s\n", compatible);
+        if (cDispenser.p_sLed)
+            gpio_device_close(cDispenser.p_sLed);
+        if (cDispenser.p_sDoor)
+            gpio_device_close(cDispenser.p_sDoor);
+        if (cDispenser.p_sCharge)
+            gpio_device_close(cDispenser.p_sCharge);
+        if (cDispenser.p_sButton)
+            gpio_device_close(cDispenser.p_sButton);
+        cDispenser.p_sLed = NULL;
+        cDispenser.p_sDoor = NULL;
+        cDispenser.p_sCharge = NULL;
+        cDispenser.p_sButton = NULL;
+    }
 
     return 0;
 }
