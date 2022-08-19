@@ -16,6 +16,8 @@ void init_unit(struct device *dev) {
             int slots, *colnum;
             struct device_node *slot = NULL;
 
+            printk("Processing child 0x%p in unit 0x%p\n", col, unit);
+
             if (!col) {
                 printk("Error, NULL col child pointer\n");
                 break;
@@ -34,9 +36,11 @@ void init_unit(struct device *dev) {
             }
 
             printk("Dispenser found %d slots in column %d\n", slots, colnum ? *colnum : -1);
-            while((slot = of_get_next_child(unit, slot))) {
+            while((slot = of_get_next_child(col, slot))) {
                 int *slotnum;
                 struct gpio_desc *gpio;
+
+                printk("Processing slot 0x%p in col 0x%p\n", slot, col);
 
                 if (!slot) {
                     printk("Error, NULL slot child pointer\n");
