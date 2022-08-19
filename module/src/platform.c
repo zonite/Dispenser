@@ -125,7 +125,7 @@ static int dt_probe(struct platform_device *pdev)
     }
 
     /* Init local unit */
-    init_unit(dev);
+    //init_unit(dev);
 
 
     printk("Dispenser: Loaded device tree for: %s\n", label);
