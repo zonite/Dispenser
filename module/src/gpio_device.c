@@ -74,12 +74,18 @@ static void gpio_device_close(struct gpio_switch *pgpio)
 static void gpio_device_set(struct gpio_switch *pgpio, char value)
 {
     //return gpio_device_set(pgpio, value, pgpio->timeout);
-    gpio_device_set_tmout(pgpio, value, pgpio->timeout);
+    if (pgpio)
+        gpio_device_set_tmout(pgpio, value, pgpio->timeout);
 }
 
 static void gpio_device_set_tmout(struct gpio_switch *pgpio, char value, unsigned int tmout)
 {
+    if (!pgpio || !pgpio->gpio || !pgpio->value) {
+        printk("GPIO set failed: GPIO NULL 0x%p\n", pgpio);
+        return;
+    }
     gpiod_set_value(pgpio->gpio, value);
+    *pgpio->value = value;
 
     if (value && tmout) {
         //callback;
@@ -91,7 +97,14 @@ static void gpio_device_set_tmout(struct gpio_switch *pgpio, char value, unsigne
 
 static char gpio_device_get(struct gpio_switch *pgpio)
 {
-    char new_val = gpiod_get_value(pgpio->gpio);
+    char new_val;
+
+    if (!pgpio || !pgpio->gpio || !pgpio->value) {
+        printk("GPIO set failed: GPIO NULL 0x%p\n", pgpio);
+        return -1;
+    }
+
+    new_val = gpiod_get_value(pgpio->gpio);
 
     if (new_val != *pgpio->value) {
 
