@@ -1,7 +1,11 @@
 #include <linux/of_device.h>
 #include <linux/gpio/consumer.h>
+//#include <linux/gpio/machine.h>
+#include <drivers/gpio/gpiolib-of.h>
 
 #include "dispenser.h"
+
+#define GPIO_LOOKUP_FLAGS_DEFAULT  ((0 << 0)| (0 << 3))
 
 void init_unit(struct device *dev) {
     int i = 0, k = -1;
@@ -40,6 +44,7 @@ void init_unit(struct device *dev) {
             while((slot = of_get_next_child(col, slot))) {
                 const int *slotnum;
                 struct gpio_desc *gpio;
+                unsigned long lookupflags = GPIO_LOOKUP_FLAGS_DEFAULT;
 
                 printk("Processing slot 0x%p in col 0x%p\n", slot, col);
 
@@ -69,7 +74,21 @@ void init_unit(struct device *dev) {
                     printk("Dispenser found %d slot in column %d, up = %p, hw_num = %d\n", slotnum ? *slotnum : -1, colnum ? *colnum : -1, gpio, desc_to_gpio(gpio));
                     gpiod_put(gpio);
                 }
-                gpio = gpiod_get_index(dev, "up", ++k, GPIOD_IN);
+                gpio = gpiod_get_index(dev, "up", k, GPIOD_IN);
+                if (IS_ERR(gpio)) {
+                    printk("Error gettin gpio %li, k = %i", (long)gpio, k);
+                } else {
+                    printk("Got gpio at index k = %i, 0x%p, hw = %i", k, gpio, desc_to_gpio(gpio));
+                    gpiod_put(gpio);
+                }
+                gpio = gpiod_get_index(NULL, "up", k, GPIOD_IN);
+                if (IS_ERR(gpio)) {
+                    printk("Error gettin gpio %li, k = %i", (long)gpio, k);
+                } else {
+                    printk("Got gpio at index k = %i, 0x%p, hw = %i", k, gpio, desc_to_gpio(gpio));
+                    gpiod_put(gpio);
+                }
+                gpio = of_find_gpio(dev, "up", ++k, &lookupflags);
                 if (IS_ERR(gpio)) {
                     printk("Error gettin gpio %li, k = %i", (long)gpio, k);
                 } else {
