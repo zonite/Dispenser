@@ -62,16 +62,16 @@ void init_unit(struct device *dev) {
                 if (!slotnum) {
                     printk("No down-gpio! Fail!\n");
                 }
-                slotnum = of_get_property(slot, "num", NULL);
+                slotnum = of_get_property(slot, "num", NULL);//big_endian!
                 if (!slotnum) {
                     printk("No slotnum! Fail!\n");
                 }
                 gpio = gpiod_get_from_of_node(slot, "up", 0, GPIOD_IN, "up-gpio");
                 if (IS_ERR(gpio)) {
                     printk("GPIO allocation failed! gpio == %li.\n", (long)gpio);
-                    printk("Dispenser found %d slot in column %d\n", slotnum ? *slotnum : -1, colnum ? *colnum : -1);
+                    printk("Dispenser found %d slot in column %d\n", slotnum ? be32_to_cpu(*slotnum) : -1, colnum ? be32_to_cpu(*colnum) : -1);
                 } else {
-                    printk("Dispenser found %d slot in column %d, up = %p, hw_num = %d\n", slotnum ? *slotnum : -1, colnum ? *colnum : -1, gpio, desc_to_gpio(gpio));
+                    printk("Dispenser found %d slot in column %d, up = %p, hw_num = %d\n", slotnum ? be32_to_cpu(*slotnum) : -1, colnum ? be32_to_cpu(*colnum) : -1, gpio, desc_to_gpio(gpio));
                     gpiod_put(gpio);
                 }
                 gpio = gpiod_get_index(dev, "up", k, GPIOD_IN);

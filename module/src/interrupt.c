@@ -9,6 +9,12 @@
 static irqreturn_t door_irq_handler(int irq, void *dev_id) {
     if (pDispenser_mmap && cDispenser.p_sDoor && cDispenser.p_sLed) {
         printk("Door interrupt: %i -> %i\n", pDispenser_mmap->door, gpio_device_get(cDispenser.p_sDoor));
+        //if (*cDispenser.p_sDoor->value) {
+            //Closed
+
+        //} else {
+            //Open
+        //}
         gpio_device_set_tmout(cDispenser.p_sLed, !pDispenser_mmap->door, cDispenser.p_sDoor->timeout);
     } else {
         printk("Interrupt door, driver not ready\n");
