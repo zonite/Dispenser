@@ -54,8 +54,10 @@ static struct gpio_switch* gpio_device_open(struct device *dev, const char *name
 static void gpio_device_close(struct gpio_switch *pgpio)
 {
     printk("Close GPIO 0x%p\n", pgpio);
-    if (timer_pending(&pgpio->timer))
-            del_timer(&pgpio->timer);
+    if (timer_pending(&pgpio->timer)) {
+        printk("Deleting pending timer!\n");
+        del_timer(&pgpio->timer);
+    }
     if (pgpio->irq_handler) {
         printk("Free irq %d, device %s\n", pgpio->irq_num, pgpio->gpio->name);
         free_irq(pgpio->irq_num, pgpio);
@@ -87,10 +89,15 @@ static void gpio_device_set_tmout(struct gpio_switch *pgpio, char value, unsigne
 
     if (value && tmout) {
         //callback;
+        printk("Setup timeout %d to 0x%p.\n", tmout, pgpio);
+
         timer_setup(&pgpio->timer, gpio_timer_callback, 0);
         mod_timer(&pgpio->timer, jiffies + msecs_to_jiffies(tmout));
-    } else if (timer_pending(&pgpio->timer))
+
+    } else if (timer_pending(&pgpio->timer)) {
+        printk("Delete timer 0x%p.\n", pgpio);
         del_timer(&pgpio->timer);
+    }
 }
 
 static char gpio_device_get(struct gpio_switch *pgpio)
@@ -115,6 +122,7 @@ static char gpio_device_get(struct gpio_switch *pgpio)
 static void gpio_timer_callback(struct timer_list *timer)
 {
     struct gpio_switch *pgpio = from_timer(pgpio, timer, timer);
+    printk("Timer callback on 0x%p.\n", pgpio);
 
     gpiod_set_value(pgpio->gpio, 0);
 }
