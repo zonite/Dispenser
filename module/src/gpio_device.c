@@ -33,6 +33,8 @@ static struct gpio_switch* gpio_device_open(struct device *dev, const char *name
     if (flags == GPIOD_IN)
         gpiod_set_debounce(out->gpio, DEBOUNCE);
 
+    timer_setup(&out->timer, gpio_timer_callback, 0);
+
     if (irq_handler) {
         int irq = gpiod_to_irq(out->gpio);
         printk("Setting irq_handler %i, %s, 0x%p\n", irq, name, out);
@@ -86,7 +88,7 @@ static void gpio_device_set_tmout(struct gpio_switch *pgpio, char value, unsigne
         printk("GPIO set failed: GPIO NULL 0x%p\n", pgpio);
         return;
     }
-    printk("gpio_device_set_tmout 0x%p, %hhi, %i", pgpio, value, tmout);
+    printk("gpio_device_set_tmout 0x%p, %hhi, %i\n", pgpio, value, tmout);
 
     gpiod_set_value(pgpio->gpio, value);
     *pgpio->value = value;
@@ -95,7 +97,6 @@ static void gpio_device_set_tmout(struct gpio_switch *pgpio, char value, unsigne
         //callback;
         printk("Setup timeout %d to 0x%p.\n", tmout, pgpio);
 
-        timer_setup(&pgpio->timer, gpio_timer_callback, 0);
         mod_timer(&pgpio->timer, jiffies + msecs_to_jiffies(tmout));
 
     } else if (timer_pending(&pgpio->timer)) {
