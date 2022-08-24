@@ -130,6 +130,6 @@ static void gpio_timer_callback(struct timer_list *timer)
     struct gpio_switch *pgpio = from_timer(pgpio, timer, timer);
     printk("Timer callback on 0x%p.\n", pgpio);
 
-    gpiod_set_value(pgpio->gpio, 0);
+    gpio_device_set(pgpio, 0);
 }
 
