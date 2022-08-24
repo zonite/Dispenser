@@ -15,6 +15,9 @@ void init_unit(struct device *dev) {
         int cols = of_get_child_count(unit);
         struct device_node *col = NULL;
 
+        //ret = device_property_count_u8(dev, "cols"); // count array elements
+
+
         printk("Dispenser found %d columns\n", cols);
         while((col = of_get_next_child(unit, col))) {
             int slots;
@@ -40,7 +43,7 @@ void init_unit(struct device *dev) {
                 printk("No colnum! Fail!\n");
             }
 
-            printk("Dispenser found %d slots in column %d\n", slots, colnum ? *colnum : -1);
+            printk("Dispenser found %d slots in column %d\n", slots, colnum ? be32_to_cpu(*colnum) : -1);
             while((slot = of_get_next_child(col, slot))) {
                 const int *slotnum;
                 struct gpio_desc *gpio;

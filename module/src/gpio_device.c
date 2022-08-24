@@ -28,10 +28,8 @@ static struct gpio_switch* gpio_device_open(struct device *dev, const char *name
     out->value = value;
     gpio_device_get(out);
 
-    /*
     if (flags == GPIOD_IN)
         gpiod_set_debounce(out->gpio, DEBOUNCE);
-    */
 
     if (irq_handler) {
         int irq = gpiod_to_irq(out->gpio);
