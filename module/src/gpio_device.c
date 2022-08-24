@@ -86,7 +86,7 @@ static void gpio_device_set_tmout(struct gpio_switch *pgpio, char value, unsigne
         printk("GPIO set failed: GPIO NULL 0x%p\n", pgpio);
         return;
     }
-    printk("gpio_device_set_tmout 0x%p, %ci, %i", pgpio, value, tmout);
+    printk("gpio_device_set_tmout 0x%p, %hhi, %i", pgpio, value, tmout);
 
     gpiod_set_value(pgpio->gpio, value);
     *pgpio->value = value;
@@ -115,9 +115,11 @@ static char gpio_device_get(struct gpio_switch *pgpio)
 
     new_val = gpiod_get_value(pgpio->gpio);
 
-    if (new_val != *pgpio->value) {
+    printk("GPIO: Get and update value %hhi -> %hhi.\n", *pgpio->value, new_val);
 
+    if (new_val != *pgpio->value) {
         *pgpio->value = new_val;
+        printk("Updated!\n");
     }
 
     return *pgpio->value;

@@ -37,6 +37,9 @@ static irqreturn_t charge_irq_handler(int irq, void *dev_id) {
 
 static irqreturn_t button_irq_handler(int irq, void *dev_id) {
     char old_val, new_val;
+
+    printk("Button interrupt: Begins.\n");
+
     if (pDispenser_mmap && cDispenser.p_sButton && cDispenser.p_sLed) {
         old_val = pDispenser_mmap->button;
         new_val = gpio_device_get(cDispenser.p_sButton);
