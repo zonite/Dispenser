@@ -9,16 +9,19 @@
 //static irq_handler_t door_irq_handler(unsigned int irq, void *dev_id) {
 static irqreturn_t door_irq_handler(int irq, void *dev_id) {
     static unsigned long last = 0;
-
-    if (last + msecs_to_jiffies(INT_DEBOUNCE) > jiffies) {
-        printk("Door: GPIO debounce too early\n");
-
-        return (irqreturn_t) IRQ_HANDLED;
-    }
-    last = jiffies;
+    char old_door, new_door;
 
     if (pDispenser_mmap && cDispenser.p_sDoor && cDispenser.p_sLed) {
-        char old_door = *cDispenser.p_sDoor->value, new_door = gpio_device_get(cDispenser.p_sDoor);
+        if (last + msecs_to_jiffies(INT_DEBOUNCE) > jiffies) {
+            printk("Door: GPIO debounce too early\n");
+            gpio_device_get(cDispenser.p_sDoor);
+
+            return (irqreturn_t) IRQ_HANDLED;
+        }
+        last = jiffies;
+
+        old_door = *cDispenser.p_sDoor->value;
+        new_door = gpio_device_get(cDispenser.p_sDoor);
 
         if (old_door != new_door) {
             //Door value changed
@@ -49,14 +52,15 @@ static irqreturn_t door_irq_handler(int irq, void *dev_id) {
 static irqreturn_t charge_irq_handler(int irq, void *dev_id) {
     static unsigned long last = 0;
 
-    if (last + msecs_to_jiffies(INT_DEBOUNCE) > jiffies) {
-        printk("Charging: GPIO debounce too early\n");
-
-        return (irqreturn_t) IRQ_HANDLED;
-    }
-    last = jiffies;
-
     if (pDispenser_mmap && cDispenser.p_sCharge) {
+        if (last + msecs_to_jiffies(INT_DEBOUNCE) > jiffies) {
+            printk("Charging: GPIO debounce too early\n");
+            gpio_device_get(cDispenser.p_sCharge);
+
+            return (irqreturn_t) IRQ_HANDLED;
+        }
+        last = jiffies;
+
         printk("Charging event charge=%i -> %i\n", pDispenser_mmap->charging, gpio_device_get(cDispenser.p_sCharge));
 
         post_event(CHARGE, "Charging event", &pDispenser_mmap->charging);
@@ -71,16 +75,18 @@ static irqreturn_t button_irq_handler(int irq, void *dev_id) {
     char old_val, new_val;
     static unsigned long last = 0;
 
-    if (last + msecs_to_jiffies(INT_DEBOUNCE) > jiffies) {
-        printk("Button: GPIO debounce too early\n");
-
-        return (irqreturn_t) IRQ_HANDLED;
-    }
-    last = jiffies;
-
-    printk("Button interrupt: Begins.\n");
 
     if (pDispenser_mmap && cDispenser.p_sButton && cDispenser.p_sLed) {
+        if (last + msecs_to_jiffies(INT_DEBOUNCE) > jiffies) {
+            printk("Button: GPIO debounce too early\n");
+            gpio_device_get(cDispenser.p_sButton);
+
+            return (irqreturn_t) IRQ_HANDLED;
+        }
+        last = jiffies;
+
+        printk("Button interrupt: Begins.\n");
+
         old_val = pDispenser_mmap->button;
         new_val = gpio_device_get(cDispenser.p_sButton);
 
