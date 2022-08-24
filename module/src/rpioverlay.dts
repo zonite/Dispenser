@@ -15,10 +15,10 @@
                 //pinctrl-0 = <&push_buttons>;
                 label = "Food Dispenser";
                 value = <12>;
-                charge-gpios = <&gpio 8 GPIO_ACTIVE_LOW>;
-                button-gpios = <&gpio 9 GPIO_ACTIVE_LOW>;
-                led-gpios = <&gpio 10 GPIO_ACTIVE_HIGH>;
-                door-gpios = <&gpio 11 GPIO_ACTIVE_LOW>;
+                charge-gpio = <&gpio 8 GPIO_ACTIVE_LOW>;
+                button-gpio = <&gpio 9 GPIO_ACTIVE_LOW>;
+                led-gpio = <&gpio 10 GPIO_ACTIVE_HIGH>;
+                door-gpio = <&gpio 11 GPIO_ACTIVE_LOW>;
 
                 cols =  /bits/ 8 <0 0 0 1 1 1>;
                 slots = /bits/ 8 <0 1 2 0 1 2>;
