@@ -15,6 +15,7 @@ static irqreturn_t door_irq_handler(int irq, void *dev_id) {
 
         return (irqreturn_t) IRQ_HANDLED;
     }
+    last = jiffies;
 
     if (pDispenser_mmap && cDispenser.p_sDoor && cDispenser.p_sLed) {
         char old_door = *cDispenser.p_sDoor->value, new_door = gpio_device_get(cDispenser.p_sDoor);
@@ -30,7 +31,6 @@ static irqreturn_t door_irq_handler(int irq, void *dev_id) {
                 printk("Door interrupt: Opened %i -> %i\n", old_door, new_door);
                 gpio_device_set_tmout(cDispenser.p_sLed, 1, cDispenser.p_sDoor->timeout);
             }
-            last = jiffies;
         }
         //if (*cDispenser.p_sDoor->value) {
             //Closed
@@ -54,12 +54,12 @@ static irqreturn_t charge_irq_handler(int irq, void *dev_id) {
 
         return (irqreturn_t) IRQ_HANDLED;
     }
+    last = jiffies;
 
     if (pDispenser_mmap && cDispenser.p_sCharge) {
         printk("Charging event charge=%i -> %i\n", pDispenser_mmap->charging, gpio_device_get(cDispenser.p_sCharge));
 
         post_event(CHARGE, "Charging event", &pDispenser_mmap->charging);
-        last = jiffies;
     } else {
         printk("Interrupt charge, driver not ready\n");
     }
@@ -76,6 +76,7 @@ static irqreturn_t button_irq_handler(int irq, void *dev_id) {
 
         return (irqreturn_t) IRQ_HANDLED;
     }
+    last = jiffies;
 
     printk("Button interrupt: Begins.\n");
 
@@ -95,7 +96,6 @@ static irqreturn_t button_irq_handler(int irq, void *dev_id) {
                 //Button depressed
                 printk("Button: Depress event.\n");
             }
-            last = jiffies;
         }
     } else {
         printk("Interrupt charge, driver not ready\n");
