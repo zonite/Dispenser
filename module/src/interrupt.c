@@ -44,8 +44,10 @@ static irqreturn_t button_irq_handler(int irq, void *dev_id) {
         printk("Button interrupt: %s.\n", new_val ? "pressed" : "depressed");
 
         if (old_val != new_val) {
-            if (new_val)
+            if (new_val) {
+                printk("Set new value %i -> %i", old_val, new_val);
                 gpio_device_set(cDispenser.p_sLed, !pDispenser_mmap->light);
+            }
         }
     } else {
         printk("Interrupt charge, driver not ready\n");

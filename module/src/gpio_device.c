@@ -3,6 +3,8 @@
 #include <linux/slab.h>
 #include <linux/gpio/consumer.h>
 #include <drivers/gpio/gpiolib.h>
+#include <linux/jiffies.h>
+#include <linux/timer.h>
 
 #include "dispenser.h"
 
@@ -84,6 +86,8 @@ static void gpio_device_set_tmout(struct gpio_switch *pgpio, char value, unsigne
         printk("GPIO set failed: GPIO NULL 0x%p\n", pgpio);
         return;
     }
+    printk("gpio_device_set_tmout 0x%p, %ci, %i", pgpio, value, tmout);
+
     gpiod_set_value(pgpio->gpio, value);
     *pgpio->value = value;
 
