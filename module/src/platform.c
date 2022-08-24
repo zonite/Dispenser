@@ -167,6 +167,10 @@ static int dt_probe_dispenser(struct platform_device *pdev)
     /* Init local unit */
     init_unit(dev);
 
+    //Init TMOUT:
+    cDispenser.p_sDoor->timeout = DOOR_TIMEOUT;
+    cDispenser.p_sLed->timeout = LIGHT_TIMEOUT;
+
     //device_fin
 
     if (of_platform_populate(dev->of_node, &match, NULL, dev)) {
