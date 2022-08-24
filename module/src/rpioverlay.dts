@@ -23,21 +23,21 @@
                 cols =  /bits/ 8 <0 0 0 1 1 1>;
                 slots = /bits/ 8 <0 1 2 0 1 2>;
 
-                up-gpios = <&gpio 22 GPIO_ACTIVE_LOW>,
+                up-gpio = <&gpio 22 GPIO_ACTIVE_LOW>,
                         <&gpio 23 GPIO_ACTIVE_LOW>,
                         <&gpio 24 GPIO_ACTIVE_LOW>,
                         <&gpio 18 GPIO_ACTIVE_LOW>,
                         <&gpio 17 GPIO_ACTIVE_LOW>,
                         <&gpio 16 GPIO_ACTIVE_LOW>;
 
-                down-gpios = <&gpio 25 GPIO_ACTIVE_LOW>,
+                down-gpio = <&gpio 25 GPIO_ACTIVE_LOW>,
                         <&gpio 26 GPIO_ACTIVE_LOW>,
                         <&gpio 27 GPIO_ACTIVE_LOW>,
                         <&gpio 21 GPIO_ACTIVE_LOW>,
                         <&gpio 20 GPIO_ACTIVE_LOW>,
                         <&gpio 19 GPIO_ACTIVE_LOW>;
 
-                release-gpios = <&gpio 5 GPIO_ACTIVE_LOW>,
+                release-gpio = <&gpio 5 GPIO_ACTIVE_LOW>,
                         <&gpio 6 GPIO_ACTIVE_HIGH>,
                         <&gpio 7 GPIO_ACTIVE_HIGH>,
                         <&gpio 4 GPIO_ACTIVE_HIGH>,
