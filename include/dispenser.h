@@ -4,12 +4,12 @@
 #include <linux/types.h>
 
 #define SEC_TO_MSEC(A) ((A) * 1000)
-//#define LIGHT_TIMEOUT SEC_TO_MSEC(5 * 60)
-//#define FAIL_TIMEOUT SEC_TO_MSEC(15)
-//#define DOOR_TIMEOUT SEC_TO_MSEC(45 * 60)
-#define LIGHT_TIMEOUT SEC_TO_MSEC(3)
-#define FAIL_TIMEOUT SEC_TO_MSEC(12)
-#define DOOR_TIMEOUT SEC_TO_MSEC(6)
+#define LIGHT_TIMEOUT SEC_TO_MSEC(5 * 60)
+#define FAIL_TIMEOUT SEC_TO_MSEC(15)
+#define DOOR_TIMEOUT SEC_TO_MSEC(45 * 60)
+//#define LIGHT_TIMEOUT SEC_TO_MSEC(3)
+//#define FAIL_TIMEOUT SEC_TO_MSEC(12)
+//#define DOOR_TIMEOUT SEC_TO_MSEC(6)
 #define INT_DEBOUNCE 300
 
 struct dispenser_ioctl {
