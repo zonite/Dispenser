@@ -5,36 +5,52 @@
 
 #include "dispenser.h"
 
+#define ALPHA 0.25
+
+/*
+struct ema {
+
+}
+*/
+
+//double ema (double last, double now) {
+//    return last + ALPHA * (now - last);
+//}
+
 //static irq_handler_t door_irq_handler(unsigned int irq, void *dev_id, struct pt_regs *regs) {
 //static irq_handler_t door_irq_handler(unsigned int irq, void *dev_id) {
 static irqreturn_t door_irq_handler(int irq, void *dev_id) {
     static unsigned long last = 0;
+    unsigned long flags;
     char old_door, new_door;
 
-    if (pDispenser_mmap && cDispenser.p_sDoor && cDispenser.p_sLed) {
+    if (cDispenser.p_sLed) {
+        //Disable interrupts
+        local_irq_save(flags);
+
         if (last + msecs_to_jiffies(INT_DEBOUNCE) > jiffies) {
             printk("Door: GPIO debounce too early\n");
-            gpio_device_get(cDispenser.p_sDoor);
+            gpio_device_get_debounce(cDispenser.p_sDoor);
+            last = jiffies;
+
+            //Enable interrupts
+            local_irq_restore(flags);
 
             return (irqreturn_t) IRQ_HANDLED;
         }
         last = jiffies;
 
-        old_door = *cDispenser.p_sDoor->value;
-        new_door = gpio_device_get(cDispenser.p_sDoor);
+        //irq_wake_thread(irq, dev_id);
 
-        if (old_door != new_door) {
-            //Door value changed
-            if (new_door) {
-                //Door closed!
-                printk("Door interrupt: Closed %i -> %i\n", old_door, new_door);
-                gpio_device_set_tmout(cDispenser.p_sLed, 0, 0);
-            } else {
-                //Door opened!
-                printk("Door interrupt: Opened %i -> %i\n", old_door, new_door);
-                gpio_device_set_tmout(cDispenser.p_sLed, 1, cDispenser.p_sDoor->timeout);
-            }
-        }
+        old_door = *cDispenser.p_sDoor->value;
+        new_door = !old_door;
+        //new_door = gpio_device_get(cDispenser.p_sDoor);
+
+        door_event(new_door);
+
+        //Enable interrupts
+        local_irq_restore(flags);
+
         //if (*cDispenser.p_sDoor->value) {
             //Closed
 
@@ -49,10 +65,12 @@ static irqreturn_t door_irq_handler(int irq, void *dev_id) {
     return (irqreturn_t) IRQ_HANDLED;
 }
 
+
+
 static irqreturn_t charge_irq_handler(int irq, void *dev_id) {
     static unsigned long last = 0;
 
-    if (pDispenser_mmap && cDispenser.p_sCharge) {
+    //if (pDispenser_mmap && cDispenser.p_sCharge) {
         if (last + msecs_to_jiffies(INT_DEBOUNCE) > jiffies) {
             printk("Charging: GPIO debounce too early\n");
             gpio_device_get(cDispenser.p_sCharge);
@@ -64,9 +82,9 @@ static irqreturn_t charge_irq_handler(int irq, void *dev_id) {
         printk("Charging event charge=%i -> %i\n", pDispenser_mmap->charging, gpio_device_get(cDispenser.p_sCharge));
 
         post_event(CHARGE, "Charging event", &pDispenser_mmap->charging);
-    } else {
-        printk("Interrupt charge, driver not ready\n");
-    }
+    //} else {
+    //    printk("Interrupt charge, driver not ready\n");
+    //}
 
     return (irqreturn_t) IRQ_HANDLED;
 }
@@ -76,7 +94,7 @@ static irqreturn_t button_irq_handler(int irq, void *dev_id) {
     static unsigned long last = 0;
 
 
-    if (pDispenser_mmap && cDispenser.p_sButton && cDispenser.p_sLed) {
+    if (cDispenser.p_sLed) {
         if (last + msecs_to_jiffies(INT_DEBOUNCE) > jiffies) {
             printk("Button: GPIO debounce too early\n");
             gpio_device_get(cDispenser.p_sButton);
@@ -104,7 +122,7 @@ static irqreturn_t button_irq_handler(int irq, void *dev_id) {
             }
         }
     } else {
-        printk("Interrupt charge, driver not ready\n");
+        printk("Interrupt button, driver not ready\n");
     }
 
     return (irqreturn_t) IRQ_HANDLED;

@@ -8,7 +8,7 @@
 
 #include "dispenser.h"
 
-static struct gpio_switch* gpio_device_open(struct device *dev, const char *name, enum gpiod_flags flags, irq_handler_t irq_handler, char *value)
+static struct gpio_switch* gpio_device_open(struct device *dev, const char *name, enum gpiod_flags flags, irq_handler_t irq_handler, char *value, void (*timer_callback)(struct timer_list *))
 {
     struct gpio_desc *p = gpiod_get(dev, name, flags);
     struct gpio_switch *out = NULL;
@@ -33,14 +33,16 @@ static struct gpio_switch* gpio_device_open(struct device *dev, const char *name
     if (flags == GPIOD_IN)
         gpiod_set_debounce(out->gpio, DEBOUNCE);
 
-    timer_setup(&out->timer, gpio_timer_callback, 0);
+    out->timer_callback = gpio_timer_callback;
+    timer_setup(&out->timer, out->timer_callback, 0);
 
     if (irq_handler) {
         int irq = gpiod_to_irq(out->gpio);
         printk("Setting irq_handler %i, %s, 0x%p\n", irq, name, out);
         //return out;
 
-        if (request_irq(irq, irq_handler, IRQF_TRIGGER_RISING | IRQF_TRIGGER_FALLING, name, out) == 0 ){
+        //if (request_irq(irq, irq_handler, IRQF_TRIGGER_RISING | IRQF_TRIGGER_FALLING, name, out) == 0 ){
+        if (request_irq(irq, irq_handler, IRQF_TRIGGER_HIGH | IRQF_TRIGGER_LOW, name, out) == 0 ){
             printk("Dispenser: Mapped IRQ nr. %d to gpiod %ld, %s\n", irq, p->flags, p->name);
             out->irq_handler = irq_handler;
             out->irq_num = irq;
@@ -126,11 +128,36 @@ static char gpio_device_get(struct gpio_switch *pgpio)
     return *pgpio->value;
 }
 
+static char gpio_device_get_debounce(struct gpio_switch *pgpio)
+{
+    if (!pgpio || !pgpio->gpio) {
+        printk("GPIO set failed: GPIO NULL 0x%p\n", pgpio);
+        return -1;
+    }
+    mod_timer(&pgpio->timer, jiffies + msecs_to_jiffies(INT_DEBOUNCE));
+
+    return gpiod_get_value(pgpio->gpio);
+}
+
 static void gpio_timer_callback(struct timer_list *timer)
 {
     struct gpio_switch *pgpio = from_timer(pgpio, timer, timer);
     printk("Timer callback on 0x%p.\n", pgpio);
 
     gpio_device_set(pgpio, 0);
+}
+
+static void gpio_timer_door(struct timer_list *timer)
+{
+    char old_door, new_door;
+    struct gpio_switch *pgpio = from_timer(pgpio, timer, timer);
+
+    printk("Door timer callback on 0x%p.\n", pgpio);
+
+    old_door = *pgpio->value;
+    new_door = gpio_device_get(pgpio);
+
+    if (old_door != new_door)
+        door_event(new_door);
 }
 

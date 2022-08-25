@@ -10,7 +10,7 @@
 //#define LIGHT_TIMEOUT SEC_TO_MSEC(3)
 //#define FAIL_TIMEOUT SEC_TO_MSEC(12)
 //#define DOOR_TIMEOUT SEC_TO_MSEC(6)
-#define INT_DEBOUNCE 50
+#define INT_DEBOUNCE 40
 
 struct dispenser_ioctl {
     int cmd;
