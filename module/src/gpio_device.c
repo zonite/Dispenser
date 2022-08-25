@@ -41,8 +41,8 @@ static struct gpio_switch* gpio_device_open(struct device *dev, const char *name
         printk("Setting irq_handler %i, %s, 0x%p\n", irq, name, out);
         //return out;
 
-        //if (request_irq(irq, irq_handler, IRQF_TRIGGER_RISING | IRQF_TRIGGER_FALLING, name, out) == 0 ){
-        if (request_irq(irq, irq_handler, IRQF_TRIGGER_HIGH | IRQF_TRIGGER_LOW, name, out) == 0 ){
+        if (request_irq(irq, irq_handler, IRQF_TRIGGER_RISING | IRQF_TRIGGER_FALLING, name, out) == 0 ){
+        //if (request_irq(irq, irq_handler, IRQF_TRIGGER_HIGH | IRQF_TRIGGER_LOW, name, out) == 0 ){
             printk("Dispenser: Mapped IRQ nr. %d to gpiod %ld, %s\n", irq, p->flags, p->name);
             out->irq_handler = irq_handler;
             out->irq_num = irq;
