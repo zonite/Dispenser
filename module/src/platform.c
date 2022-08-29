@@ -136,28 +136,28 @@ static int dt_probe_dispenser(struct platform_device *pdev)
         return FAIL;
     }
 
-    cDispenser.p_sLed = gpio_device_open(dev, "led", GPIOD_OUT_LOW, (irq_handler_t )NULL, &pDispenser_mmap->light, NULL);
+    cDispenser.p_sLed = dispenser_gpiod_open(dev, "led", GPIOD_OUT_LOW, (irq_handler_t )NULL, &pDispenser_mmap->light, NULL);
     if (!cDispenser.p_sLed) {
         printk("Dispenser: Led failed\n");
         dt_remove(pdev);
         return FAIL;
     }
 
-    cDispenser.p_sButton = gpio_device_open(dev, "button", GPIOD_IN, button_irq_handler, &pDispenser_mmap->button, NULL);
+    cDispenser.p_sButton = dispenser_gpiod_open(dev, "button", GPIOD_IN, button_irq_handler, &pDispenser_mmap->button, NULL);
     if (!cDispenser.p_sButton) {
         printk("Dispenser: Button failed\n");
         dt_remove(pdev);
         return FAIL;
     }
 
-    cDispenser.p_sCharge = gpio_device_open(dev, "charge", GPIOD_IN, charge_irq_handler, &pDispenser_mmap->charging, NULL);
+    cDispenser.p_sCharge = dispenser_gpiod_open(dev, "charge", GPIOD_IN, charge_irq_handler, &pDispenser_mmap->charging, NULL);
     if (!cDispenser.p_sCharge) {
         printk("Dispenser: Charge failed\n");
         dt_remove(pdev);
         return FAIL;
     }
 
-    cDispenser.p_sDoor = gpio_device_open(dev, "door", GPIOD_IN, door_irq_handler, &pDispenser_mmap->door, gpio_timer_door);
+    cDispenser.p_sDoor = dispenser_gpiod_open(dev, "door", GPIOD_IN, door_irq_handler, &pDispenser_mmap->door, gpio_timer_door);
     if (!cDispenser.p_sDoor) {
         printk("Dispenser: Door failed\n");
         dt_remove(pdev);
@@ -209,13 +209,13 @@ static int dt_remove(struct platform_device *pdev)
     if (!strcasecmp(compatible, COMPAT)) {
         printk("Process %s\n", compatible);
         if (cDispenser.p_sLed)
-            gpio_device_close(cDispenser.p_sLed);
+            dispenser_gpiod_close(cDispenser.p_sLed);
         if (cDispenser.p_sDoor)
-            gpio_device_close(cDispenser.p_sDoor);
+            dispenser_gpiod_close(cDispenser.p_sDoor);
         if (cDispenser.p_sCharge)
-            gpio_device_close(cDispenser.p_sCharge);
+            dispenser_gpiod_close(cDispenser.p_sCharge);
         if (cDispenser.p_sButton)
-            gpio_device_close(cDispenser.p_sButton);
+            dispenser_gpiod_close(cDispenser.p_sButton);
         cDispenser.p_sLed = NULL;
         cDispenser.p_sDoor = NULL;
         cDispenser.p_sCharge = NULL;

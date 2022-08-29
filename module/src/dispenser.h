@@ -11,6 +11,7 @@
 #include <linux/platform_device.h>
 
 #include <linux/gpio/consumer.h>
+#include <drivers/gpio/gpiolib.h>
 #include <linux/timer.h>
 #include <linux/jiffies.h>
 
@@ -46,10 +47,10 @@ struct dispenser_private {
     */
     unsigned int iFailTimeout;
     struct platform_driver dispenser_driver;
-    struct gpio_switch *p_sLed;
-    struct gpio_switch *p_sButton;
-    struct gpio_switch *p_sDoor;
-    struct gpio_switch *p_sCharge;
+    struct dispenser_gpiod *p_sLed;
+    struct dispenser_gpiod *p_sButton;
+    struct dispenser_gpiod *p_sDoor;
+    struct dispenser_gpiod *p_sCharge;
 };
 
 /*
@@ -80,26 +81,35 @@ static int dt_remove(struct platform_device *pdev);
 //static struct platform_driver dispenser_driver;
 
 /* GPIO */
-struct gpio_switch {
-    struct gpio_desc *gpio;
-    char *value;
+struct dispenser_gpiod {
+    struct gpio_desc *gpiod;
+    volatile char *value; //Pointer to the cached value of the descriptor
+    char value_priv; //Default place for the value
+    volatile unsigned long last; //jiffies of the last interrupt
     unsigned int timeout; //millisec
     struct timer_list timer;
-    void (*timer_callback)(struct timer_list *timer);
+//    void (*timer_callback)(struct timer_list *timer);
     int irq_num;
-    irq_handler_t irq_handler;
+//    irq_handler_t irq_handler;
+    void (*event_handler)(struct dispenser_gpiod *pgpiod, char value);
 };
 
-static struct gpio_switch* gpio_device_open(struct device *dev, const char *name, enum gpiod_flags flags, irq_handler_t irq_handler, char *value, void (*timer_callback)(struct timer_list *));
-static void gpio_device_close(struct gpio_switch *pgpio);
-static char gpio_device_get(struct gpio_switch *pgpio);
-static char gpio_device_get_debounce(struct gpio_switch *pgpio);
-static void gpio_device_set(struct gpio_switch *pgpio, char value);
-static void gpio_device_set_tmout(struct gpio_switch *pgpio, char value, unsigned int tmout);
-static void gpio_timer_callback(struct timer_list *timer);
-static void gpio_timer_door(struct timer_list *timer);
+static inline void dispenser_gpiod_set_value_ptr(struct dispenser_gpiod *pgpiod, char *value)
+{ pgpiod->value = value; }
+
+//static struct dispenser_gpiod* dispenser_gpiod_open(struct device *dev, const char *name, enum gpiod_flags flags, irq_handler_t irq_handler, char *value, void (*timer_callback)(struct timer_list *));
+static struct dispenser_gpiod* dispenser_gpiod_open(struct device *dev, const char *name, enum gpiod_flags flags);
+static void dispenser_gpiod_close(struct dispenser_gpiod *pgpiod);
+static char dispenser_gpiod_get(struct dispenser_gpiod *pgpiod);
+static char dispenser_gpiod_get_debounce(struct dispenser_gpiod *pgpiod);
+static void dispenser_gpiod_set(struct dispenser_gpiod *pgpiod, char value);
+static void dispenser_gpiod_reset_timer(struct dispenser_gpiod *pgpiod, unsigned int tmout);
+static void dispenser_gpiod_set_tmout(struct dispenser_gpiod *pgpiod, char value, unsigned int tmout);
+static void dispenser_gpiod_tmr_callback(struct timer_list *timer);
+//static void dispenser_gpiod_timer_door(struct timer_list *timer);
 
 /* Interupt */
+static irqreturn_t dispenser_gpiod_irq_handler(int irq, void *dev_id);
 static irqreturn_t door_irq_handler(int irq, void *dev_id);
 static irqreturn_t button_irq_handler(int irq, void *dev_id);
 static irqreturn_t charge_irq_handler(int irq, void *dev_id);
@@ -115,8 +125,12 @@ enum eventtype {
     DISPENSER
 };
 
-int post_event(enum eventtype type, const char *name, void *data);
-void door_event(char closed);
+static inline void dispenser_null_event(struct dispenser_gpiod* dev, char new_val)
+{ return; }
+
+static int dispenser_post_event(enum eventtype type, const char *name, void *data);
+static void door_event(char closed);
+static void dispenser_gpiod_event(struct dispenser_gpiod* dev, char new_val);
 
 /* Unit */
 void init_unit(struct device *dev);
