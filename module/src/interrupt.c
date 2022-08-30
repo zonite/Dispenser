@@ -42,6 +42,7 @@ static irqreturn_t dispenser_gpiod_irq_handler(int irq, void *dev_id)
     return (irqreturn_t) IRQ_HANDLED;
 }
 
+/*
 static irqreturn_t door_irq_handler(int irq, void *dev_id) {
     static unsigned long last = 0;
     unsigned long flags;
@@ -153,5 +154,5 @@ static irqreturn_t button_irq_handler(int irq, void *dev_id) {
     return (irqreturn_t) IRQ_HANDLED;
 }
 
-#include "dispenser.h"
+*/
 

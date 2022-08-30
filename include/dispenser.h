@@ -18,10 +18,10 @@ struct dispenser_ioctl {
 };
 
 struct dispenser_mmap {
-    char charging;
-    char button;
-    char light;
-    char door;
+    volatile char charging;
+    volatile char button;
+    volatile char light;
+    volatile char door;
     char cols;
     __u16 cols_offset;
 };

@@ -136,33 +136,43 @@ static int dt_probe_dispenser(struct platform_device *pdev)
         return FAIL;
     }
 
-    cDispenser.p_sLed = dispenser_gpiod_open(dev, "led", GPIOD_OUT_LOW, (irq_handler_t )NULL, &pDispenser_mmap->light, NULL);
+    cDispenser.p_sLed = dispenser_gpiod_open(dev, "led", GPIOD_OUT_LOW);
     if (!cDispenser.p_sLed) {
         printk("Dispenser: Led failed\n");
         dt_remove(pdev);
         return FAIL;
     }
+    cDispenser.p_sLed->value = &pDispenser_mmap->light;
+    cDispenser.p_sLed->timeout = LIGHT_TIMEOUT;
+    cDispenser.p_sLed->event_handler = dispenser_light_event;
 
-    cDispenser.p_sButton = dispenser_gpiod_open(dev, "button", GPIOD_IN, button_irq_handler, &pDispenser_mmap->button, NULL);
+    cDispenser.p_sButton = dispenser_gpiod_open(dev, "button", GPIOD_IN);
     if (!cDispenser.p_sButton) {
         printk("Dispenser: Button failed\n");
         dt_remove(pdev);
         return FAIL;
     }
+    cDispenser.p_sButton->value = &pDispenser_mmap->button;
+    cDispenser.p_sButton->event_handler = dispenser_button_event;
 
-    cDispenser.p_sCharge = dispenser_gpiod_open(dev, "charge", GPIOD_IN, charge_irq_handler, &pDispenser_mmap->charging, NULL);
+    cDispenser.p_sCharge = dispenser_gpiod_open(dev, "charge", GPIOD_IN);
     if (!cDispenser.p_sCharge) {
         printk("Dispenser: Charge failed\n");
         dt_remove(pdev);
         return FAIL;
     }
+    cDispenser.p_sCharge->value = &pDispenser_mmap->charging;
+    cDispenser.p_sCharge->event_handler = dispenser_charge_event;
 
-    cDispenser.p_sDoor = dispenser_gpiod_open(dev, "door", GPIOD_IN, door_irq_handler, &pDispenser_mmap->door, gpio_timer_door);
+    cDispenser.p_sDoor = dispenser_gpiod_open(dev, "door", GPIOD_IN);
     if (!cDispenser.p_sDoor) {
         printk("Dispenser: Door failed\n");
         dt_remove(pdev);
         return FAIL;
     }
+    cDispenser.p_sDoor->value = &pDispenser_mmap->door;
+    cDispenser.p_sDoor->timeout = DOOR_TIMEOUT;
+    cDispenser.p_sDoor->event_handler = dispenser_door_event;
 
     /* Init local unit */
     init_unit(dev);

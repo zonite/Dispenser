@@ -42,6 +42,7 @@ static struct dispenser_gpiod *dispenser_gpiod_open(struct device *dev, const ch
     //timer_setup(&out->timer, out->timer_callback, 0);
     timer_setup(&out->timer, dispenser_gpiod_tmr_callback, 0);
 
+    //if (flags == GPIOD_IN)
     //if (irq_handler) {
     irq = gpiod_to_irq(out->gpiod);
     printk("Setting irq_handler %i, %s, 0x%p\n", irq, name, out);
@@ -146,6 +147,7 @@ static char dispenser_gpiod_get(struct dispenser_gpiod *pgpiod)
     return *pgpiod->value;
 }
 
+/*
 static char dispenser_gpiod_get_debounce(struct dispenser_gpiod *pgpiod)
 {
     if (!pgpiod || !pgpiod->gpiod) {
@@ -156,6 +158,7 @@ static char dispenser_gpiod_get_debounce(struct dispenser_gpiod *pgpiod)
 
     return gpiod_get_value(pgpiod->gpiod);
 }
+*/
 
 static void dispenser_gpiod_tmr_callback(struct timer_list *timer)
 {
@@ -178,6 +181,7 @@ static void dispenser_gpiod_tmr_callback(struct timer_list *timer)
     dispenser_gpiod_set(pgpiod, 0);
 }
 
+/*
 static void gpio_timer_door(struct timer_list *timer)
 {
     char old_door, new_door;
@@ -189,6 +193,7 @@ static void gpio_timer_door(struct timer_list *timer)
     new_door = dispenser_gpiod_get(pgpiod);
 
     if (old_door != new_door)
-        door_event(new_door);
+        dispenser_door_event(new_door);
 }
+*/
 

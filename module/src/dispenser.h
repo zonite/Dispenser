@@ -91,7 +91,7 @@ struct dispenser_gpiod {
 //    void (*timer_callback)(struct timer_list *timer);
     int irq_num;
 //    irq_handler_t irq_handler;
-    void (*event_handler)(struct dispenser_gpiod *pgpiod, char value);
+    void (*event_handler)(char value);
 };
 
 static inline void dispenser_gpiod_set_value_ptr(struct dispenser_gpiod *pgpiod, char *value)
@@ -101,7 +101,7 @@ static inline void dispenser_gpiod_set_value_ptr(struct dispenser_gpiod *pgpiod,
 static struct dispenser_gpiod* dispenser_gpiod_open(struct device *dev, const char *name, enum gpiod_flags flags);
 static void dispenser_gpiod_close(struct dispenser_gpiod *pgpiod);
 static char dispenser_gpiod_get(struct dispenser_gpiod *pgpiod);
-static char dispenser_gpiod_get_debounce(struct dispenser_gpiod *pgpiod);
+//static char dispenser_gpiod_get_debounce(struct dispenser_gpiod *pgpiod);
 static void dispenser_gpiod_set(struct dispenser_gpiod *pgpiod, char value);
 static void dispenser_gpiod_reset_timer(struct dispenser_gpiod *pgpiod, unsigned int tmout);
 static void dispenser_gpiod_set_tmout(struct dispenser_gpiod *pgpiod, char value, unsigned int tmout);
@@ -110,9 +110,9 @@ static void dispenser_gpiod_tmr_callback(struct timer_list *timer);
 
 /* Interupt */
 static irqreturn_t dispenser_gpiod_irq_handler(int irq, void *dev_id);
-static irqreturn_t door_irq_handler(int irq, void *dev_id);
-static irqreturn_t button_irq_handler(int irq, void *dev_id);
-static irqreturn_t charge_irq_handler(int irq, void *dev_id);
+//static irqreturn_t door_irq_handler(int irq, void *dev_id);
+//static irqreturn_t button_irq_handler(int irq, void *dev_id);
+//static irqreturn_t charge_irq_handler(int irq, void *dev_id);
 //static irq_handler_t door_irq_handler(unsigned int irq, void *dev_id);
 //static irq_handler_t door_irq_handler(unsigned int irq, void *dev_id, struct pt_regs *regs);
 
@@ -125,11 +125,14 @@ enum eventtype {
     DISPENSER
 };
 
-static inline void dispenser_null_event(struct dispenser_gpiod* dev, char new_val)
+static inline void dispenser_null_event(char new_val)
 { return; }
 
-static int dispenser_post_event(enum eventtype type, const char *name, void *data);
-static void door_event(char closed);
+static int dispenser_post_event(enum eventtype type, const char *name, volatile void *data);
+static void dispenser_door_event(char closed);
+static void dispenser_button_event(char pressed);
+static void dispenser_charge_event(char charging);
+static void dispenser_light_event(char on);
 static void dispenser_gpiod_event(struct dispenser_gpiod* dev, char new_val);
 
 /* Unit */
