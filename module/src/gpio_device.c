@@ -9,9 +9,9 @@
 #include "dispenser.h"
 
 //static struct dispenser_gpiod* dispenser_gpiod_open(struct device *dev, const char *name, enum gpiod_flags flags, irq_handler_t irq_handler, char *value, void (*timer_callback)(struct timer_list *))
-static struct dispenser_gpiod *dispenser_gpiod_open(struct device *dev, const char *name, enum gpiod_flags flags)
+static struct dispenser_gpiod *dispenser_gpiod_open_index(struct device *dev, const char *name, unsigned int i, enum gpiod_flags flags)
 {
-    struct gpio_desc *p = gpiod_get(dev, name, flags);
+    struct gpio_desc *p = gpiod_get_index(dev, name, i, flags);
     struct dispenser_gpiod *out = NULL;
     int irq;
 
@@ -32,32 +32,65 @@ static struct dispenser_gpiod *dispenser_gpiod_open(struct device *dev, const ch
     out->event_handler = dispenser_null_event;
     out->gpiod = p;
     out->value = &out->value_priv;
+
+    if (flags & GPIOD_FLAGS_BIT_DIR_OUT) {
+        //Output
+        printk("Dispenser GPIOD output %d\n", flags);
+
+        *out->value = ((flags & GPIOD_FLAGS_BIT_DIR_VAL) != 0);
+        if (gpiod_direction_output(p, *out->value)) {
+            //GPIOD error
+            printk("GPIOD error.\n");
+            kfree(out);
+            gpiod_put(p);
+            return NULL;
+        }
+
+        timer_setup(&out->timer, dispenser_gpiod_out_tmr_callback, 0);
+
+        out->irq_num = -1;
+    } else {
+        //Input
+        printk("Dispenser GPIOD input %d\n", flags);
+
+        if (gpiod_direction_input(p)) {
+            //GPIOD error
+            printk("GPIOD error.\n");
+            kfree(out);
+            gpiod_put(p);
+            return NULL;
+        }
+        *out->value = gpiod_get_value(p);
+        //dispenser_gpiod_get(out);
+
+        timer_setup(&out->timer, dispenser_gpiod_tmr_callback, 0);
+
+        irq = gpiod_to_irq(out->gpiod);
+        printk("Setting irq_handler %i, %s, 0x%p\n", irq, name, out);
+        if (request_irq(irq, dispenser_gpiod_irq_handler, IRQF_TRIGGER_RISING | IRQF_TRIGGER_FALLING, name, out) == 0 ){
+            //if (request_irq(irq, irq_handler, IRQF_TRIGGER_HIGH | IRQF_TRIGGER_LOW, name, out) == 0 ){
+            printk("Dispenser: Mapped IRQ nr. %d to gpiod %ld, %s\n", irq, p->flags, p->name);
+            //out->irq_handler = irq_handler;
+            out->irq_num = irq;
+        } else {
+            printk("Dispenser: Error requesting IRQ nr.: %d\n", irq);
+            //out->irq_handler = NULL;
+        }
+    }
+
+
     //out->value = value;
-    dispenser_gpiod_get(out);
 
     //if (flags == GPIOD_IN)
     //    gpiod_set_debounce(out->gpiod, DEBOUNCE);
 
     //out->timer_callback = dispenser_gpiod_tmr_callback;
     //timer_setup(&out->timer, out->timer_callback, 0);
-    timer_setup(&out->timer, dispenser_gpiod_tmr_callback, 0);
 
     //if (flags == GPIOD_IN)
     //if (irq_handler) {
-    irq = gpiod_to_irq(out->gpiod);
-    printk("Setting irq_handler %i, %s, 0x%p\n", irq, name, out);
         //return out;
 
-    if (request_irq(irq, dispenser_gpiod_irq_handler, IRQF_TRIGGER_RISING | IRQF_TRIGGER_FALLING, name, out) == 0 ){
-        //if (request_irq(irq, irq_handler, IRQF_TRIGGER_HIGH | IRQF_TRIGGER_LOW, name, out) == 0 ){
-        printk("Dispenser: Mapped IRQ nr. %d to gpiod %ld, %s\n", irq, p->flags, p->name);
-        //out->irq_handler = irq_handler;
-        out->irq_num = irq;
-    } else {
-        printk("Dispenser: Error requesting IRQ nr.: %d\n", irq);
-        //out->irq_handler = NULL;
-        out->irq_num = -1;
-    }
     //}
 
     return out;
@@ -126,6 +159,7 @@ static void dispenser_gpiod_reset_timer(struct dispenser_gpiod *pgpiod, unsigned
     }
 }
 
+/*
 static char dispenser_gpiod_get(struct dispenser_gpiod *pgpiod)
 {
     char new_val;
@@ -146,7 +180,7 @@ static char dispenser_gpiod_get(struct dispenser_gpiod *pgpiod)
 
     return *pgpiod->value;
 }
-
+*/
 /*
 static char dispenser_gpiod_get_debounce(struct dispenser_gpiod *pgpiod)
 {
@@ -159,6 +193,17 @@ static char dispenser_gpiod_get_debounce(struct dispenser_gpiod *pgpiod)
     return gpiod_get_value(pgpiod->gpiod);
 }
 */
+
+static void dispenser_gpiod_out_tmr_callback(struct timer_list *timer)
+{
+    struct dispenser_gpiod *pgpiod = from_timer(pgpiod, timer, timer);
+    printk("Timer callback on 0x%p.\n", pgpiod);
+
+    if (pgpiod->value) {
+        dispenser_gpiod_event(pgpiod, 0);
+    }
+}
+
 
 static void dispenser_gpiod_tmr_callback(struct timer_list *timer)
 {
@@ -175,10 +220,11 @@ static void dispenser_gpiod_tmr_callback(struct timer_list *timer)
         if (new_val != *pgpiod->value) {
             dispenser_gpiod_event(pgpiod, new_val);
         }
+        dispenser_gpiod_reset_timer(pgpiod, POLL_INTERVAL);
     }
     pgpiod->last = jiffies;
 
-    dispenser_gpiod_set(pgpiod, 0);
+    //dispenser_gpiod_set(pgpiod, 0);
 }
 
 /*

@@ -15,7 +15,7 @@
                 //pinctrl-0 = <&push_buttons>;
                 label = "Food Dispenser";
                 value = <12>;
-                charge-gpio = <&gpio 8 GPIO_ACTIVE_LOW>;
+                charge-gpios = <&gpio 8 GPIO_ACTIVE_LOW>;
                 button-gpio = <&gpio 9 GPIO_ACTIVE_LOW>;
                 led-gpio = <&gpio 10 GPIO_ACTIVE_HIGH>;
                 door-gpio = <&gpio 11 GPIO_ACTIVE_LOW>;
@@ -38,11 +38,11 @@
                         <&gpio 19 GPIO_ACTIVE_LOW>;
 
                 release-gpio = <&gpio 5 GPIO_ACTIVE_LOW>,
-                        <&gpio 6 GPIO_ACTIVE_HIGH>,
-                        <&gpio 7 GPIO_ACTIVE_HIGH>,
-                        <&gpio 4 GPIO_ACTIVE_HIGH>,
-                        <&gpio 1 GPIO_ACTIVE_HIGH>,
-                        <&gpio 0 GPIO_ACTIVE_HIGH>;
+                        <&gpio 6 GPIO_ACTIVE_LOW>,
+                        <&gpio 7 GPIO_ACTIVE_LOW>,
+                        <&gpio 4 GPIO_ACTIVE_LOW>,
+                        <&gpio 1 GPIO_ACTIVE_LOW>,
+                        <&gpio 0 GPIO_ACTIVE_LOW>;
 
                 dispense_unit {
                     col0 {

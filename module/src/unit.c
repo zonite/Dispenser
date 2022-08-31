@@ -7,10 +7,80 @@
 
 //#define GPIO_LOOKUP_FLAGS_DEFAULT  ((0 << 0)| (0 << 3))
 
-void init_unit(struct device *dev) {
+int init_unit(struct device *dev) {
     int i = 0, k = -1;
-
     struct device_node *unit = of_get_child_by_name(dev->of_node, DEVICE_UNIT);
+    struct dispenser_slot_list *slot_list = NULL;
+    unsigned char *slots = NULL, *cols = NULL;
+    //struct gpio_descs *up = NULL, *down = NULL, *release = NULL;
+
+    i = device_property_count_u8(dev, "cols");
+    if (device_property_count_u8(dev, "slots") != i) {
+        printk("Dispenser: Incorrect count slots\n");
+        return FAIL;
+    }
+
+    if (device_property_count_u32(dev, "up-gpio") != i) {
+        printk("Dispenser: Incorrect count up-gpio\n");
+        return FAIL;
+    }
+
+    if (device_property_count_u32(dev, "down-gpio") != i) {
+        printk("Dispenser: Incorrect count down-gpio\n");
+        return FAIL;
+    }
+
+    if (device_property_count_u32(dev, "release-gpio") != i) {
+        printk("Dispenser: Incorrect count release-gpio\n");
+        return FAIL;
+    }
+
+    slot_list = (struct dispenser_slot_list *)kzalloc(sizeof(struct dispenser_slot_list) * i, GFP_KERNEL);
+    if (!slot_list) {
+        printk("Mem allocation failed: slot_list.\n");
+        return FAIL;
+    }
+
+    slots = (unsigned char *)kmalloc(sizeof(unsigned char) * i, GFP_KERNEL);
+    if (!slots) {
+        printk("Mem allocation failed: slots.\n");
+        return FAIL;
+    }
+
+    cols = (unsigned char *)kmalloc(sizeof(unsigned char) * i, GFP_KERNEL);
+    if (!slots) {
+        printk("Mem allocation failed: slots.\n");
+        return FAIL;
+    }
+
+    if (device_property_read_u8_array(dev, "slots", slots, i)) {
+        printk("Array read failed: slots.\n");
+        return FAIL;
+    }
+
+    if (device_property_read_u8_array(dev, "cols", cols, i)) {
+        printk("Array read failed: cols.\n");
+        return FAIL;
+    }
+
+    for (int n = 0; n < i; ++n ) {
+        //slots[n].up = gpiod_get_index(dev, "up", n, GPIOD_IN);
+        slot_list[n].col = cols[n];
+        slot_list[n].slot = slots[n];
+        slot_list[n].up = dispenser_gpiod_open_index(dev, "up", n, GPIOD_IN);
+        slot_list[n].down = dispenser_gpiod_open_index(dev, "down", n, GPIOD_IN);
+        slot_list[n].release = dispenser_gpiod_open_index(dev, "release", n, GPIOD_OUT_LOW);
+
+        if (cols[n] == cols[(n + 1) % n]) {
+            slot_list[n].next = &slot_list[n + 1];
+            slot_list[n + 1].prev = &slot_list[n];
+        }
+        //slot_list[n].
+    }
+
+    slot_list[0].prev = NULL;
+    slot_list[i - 1].next = NULL;
+
     if (unit) {
         int cols = of_get_child_count(unit);
         struct device_node *col = NULL;

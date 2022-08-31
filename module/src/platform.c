@@ -15,11 +15,12 @@ static struct of_device_id dispenser_driver_ids[] = {
 MODULE_DEVICE_TABLE(of, dispenser_driver_ids);
 //MODULE_DEVICE_TABLE(of, ((struct of_device_id[])cDispenser.dispenser_driver.driver.of_match_table));
 
+/*
 static struct of_device_id match = {
     .compatible = COMPAT_COL,
     .name = "col0",
 };
-
+*/
 /*
 static cDispenser.dispenser_driver = {
     .probe = dt_probe,
@@ -97,32 +98,65 @@ static int dt_probe_dispenser(struct platform_device *pdev)
 
     printk("Dispenser probing device tree.\n");
 
-    if (!device_property_present(dev, "label")) {
-        printk("Dispenser - probe error! Label not found\n");
-        return FAIL;
-    }
-
     /* Check correct label */
     if (!device_property_present(dev, "label")) {
         printk("Dispenser - probe error! Label not found\n");
         return FAIL;
     }
+
     /* Check Button */
     if (!device_property_present(dev, "button-gpio")) {
         printk("Dispenser - probe error! Button not found\n");
         return FAIL;
     }
+
     /* Check LED */
     if (!device_property_present(dev, "led-gpio")) {
         printk("Dispenser - probe error! Led not found\n");
         return FAIL;
     }
-    /*
-    if (!device_property_present(dev, "unit")) {
-        printk("Dispenser - probe error! Local not found\n");
+
+    /* Check Charge */
+    if (!device_property_present(dev, "charge-gpios")) {
+        printk("Dispenser - probe error! Charge not found\n");
         return FAIL;
     }
-    */
+
+    /* Check Door */
+    if (!device_property_present(dev, "door-gpio")) {
+        printk("Dispenser - probe error! Door not found\n");
+        return FAIL;
+    }
+
+    /* Check cols */
+    if (!device_property_present(dev, "cols")) {
+        printk("Dispenser - probe error! Cols not found\n");
+        return FAIL;
+    }
+
+    /* Check slots */
+    if (!device_property_present(dev, "slots")) {
+        printk("Dispenser - probe error! Slots not found\n");
+        return FAIL;
+    }
+
+    /* Check up-gpios */
+    if (!device_property_present(dev, "up-gpio")) {
+        printk("Dispenser - probe error! up-gpios not found\n");
+        return FAIL;
+    }
+
+    /* Check down-gpios */
+    if (!device_property_present(dev, "down-gpio")) {
+        printk("Dispenser - probe error! down-gpios not found\n");
+        return FAIL;
+    }
+
+    /* Check release-gpios */
+    if (!device_property_present(dev, "release-gpio")) {
+        printk("Dispenser - probe error! release-gpios not found\n");
+        return FAIL;
+    }
 
     // Read properties
     ret = device_property_read_string(dev, "label", &label);
@@ -175,17 +209,19 @@ static int dt_probe_dispenser(struct platform_device *pdev)
     cDispenser.p_sDoor->event_handler = dispenser_door_event;
 
     /* Init local unit */
-    init_unit(dev);
+    if (init_unit(dev)) {
+        return FAIL;
+    }
 
     //Init TMOUT:
-    cDispenser.p_sDoor->timeout = DOOR_TIMEOUT;
-    cDispenser.p_sLed->timeout = LIGHT_TIMEOUT;
+    //cDispenser.p_sDoor->timeout = DOOR_TIMEOUT;
+    //cDispenser.p_sLed->timeout = LIGHT_TIMEOUT;
 
     //device_fin
 
-    if (of_platform_populate(dev->of_node, &match, NULL, dev)) {
-        printk("Device tree population failed! +n");
-    }
+    //if (of_platform_populate(dev->of_node, &match, NULL, dev)) {
+    //    printk("Device tree population failed! +n");
+    //}
 
     printk("Dispenser: Loaded device tree for: %s\n", label);
 

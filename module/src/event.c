@@ -62,10 +62,12 @@ static void dispenser_charge_event(char charging)
 static void dispenser_light_event(char on)
 {
     if (on) {
-        //Light switch on
-
+        //Light switch on... Should not happen.
+        dispenser_gpiod_set(cDispenser.p_sLed, 1);
+        dispenser_post_event(LED, "Light on.\n", &pDispenser_mmap->light);
     } else {
         //Light switch off
-
+        dispenser_gpiod_set_tmout(cDispenser.p_sLed, 0, 0);
+        dispenser_post_event(LED, "Light off.\n", &pDispenser_mmap->light);
     }
 }

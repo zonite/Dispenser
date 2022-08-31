@@ -26,7 +26,7 @@
 #define DEVICE_NAME "dispenser"
 #define DEVICE_CLASS "agriculture"
 #define BUF_LEN 100
-#define DEBOUNCE 300
+//#define DEBOUNCE 300
 #define DEVICE_UNIT "dispense_unit"
 #define DEVICE_PATH "/dispenser/dispense_unit"
 
@@ -51,6 +51,24 @@ struct dispenser_private {
     struct dispenser_gpiod *p_sButton;
     struct dispenser_gpiod *p_sDoor;
     struct dispenser_gpiod *p_sCharge;
+};
+
+struct dispenser_col_list {
+    int col;
+    struct dispenser_col_list *prev;
+    struct dispenser_col_list *next;
+};
+
+struct dispenser_slot_list {
+    int col;
+    int slot;
+    struct dispenser_slot_state *state;
+    struct dispenser_gpiod *up;
+    struct dispenser_gpiod *down;
+    struct dispenser_gpiod *release;
+    struct dispenser_slot_list *prev;
+    struct dispenser_slot_list *next;
+    struct dispenser_col_list *column;
 };
 
 /*
@@ -98,15 +116,19 @@ static inline void dispenser_gpiod_set_value_ptr(struct dispenser_gpiod *pgpiod,
 { pgpiod->value = value; }
 
 //static struct dispenser_gpiod* dispenser_gpiod_open(struct device *dev, const char *name, enum gpiod_flags flags, irq_handler_t irq_handler, char *value, void (*timer_callback)(struct timer_list *));
-static struct dispenser_gpiod* dispenser_gpiod_open(struct device *dev, const char *name, enum gpiod_flags flags);
+static struct dispenser_gpiod* dispenser_gpiod_open_index(struct device *dev, const char *name, unsigned int i, enum gpiod_flags flags);
 static void dispenser_gpiod_close(struct dispenser_gpiod *pgpiod);
-static char dispenser_gpiod_get(struct dispenser_gpiod *pgpiod);
+//static char dispenser_gpiod_get(struct dispenser_gpiod *pgpiod);
 //static char dispenser_gpiod_get_debounce(struct dispenser_gpiod *pgpiod);
 static void dispenser_gpiod_set(struct dispenser_gpiod *pgpiod, char value);
 static void dispenser_gpiod_reset_timer(struct dispenser_gpiod *pgpiod, unsigned int tmout);
 static void dispenser_gpiod_set_tmout(struct dispenser_gpiod *pgpiod, char value, unsigned int tmout);
 static void dispenser_gpiod_tmr_callback(struct timer_list *timer);
+static void dispenser_gpiod_out_tmr_callback(struct timer_list *timer);
 //static void dispenser_gpiod_timer_door(struct timer_list *timer);
+
+static inline struct dispenser_gpiod *dispenser_gpiod_open(struct device *dev, const char *name, enum gpiod_flags flags)
+{ return dispenser_gpiod_open_index(dev, name, 0, flags); }
 
 /* Interupt */
 static irqreturn_t dispenser_gpiod_irq_handler(int irq, void *dev_id);

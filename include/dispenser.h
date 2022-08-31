@@ -11,6 +11,7 @@
 //#define FAIL_TIMEOUT SEC_TO_MSEC(12)
 //#define DOOR_TIMEOUT SEC_TO_MSEC(6)
 #define INT_DEBOUNCE 40
+#define POLL_INTERVAL 60000
 
 struct dispenser_ioctl {
     int cmd;
@@ -31,7 +32,7 @@ struct dispenser_column {
     __u16 slots_offset;
 };
 
-struct dispenser_slot {
+struct dispenser_slot_state {
     char state;
     char up;
     char down;
