@@ -11,7 +11,7 @@
 //#define FAIL_TIMEOUT SEC_TO_MSEC(12)
 //#define DOOR_TIMEOUT SEC_TO_MSEC(6)
 #define INT_DEBOUNCE 40
-#define POLL_INTERVAL 60000
+#define POLL_INTERVAL SEC_TO_MSEC(60)
 
 struct dispenser_ioctl {
     int cmd;

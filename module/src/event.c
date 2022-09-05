@@ -10,13 +10,17 @@ static int dispenser_post_event(enum eventtype type, const char *name, volatile 
 static void dispenser_gpiod_event(struct dispenser_gpiod* dev, char new_val)
 {
     *dev->value = new_val;
-    dev->event_handler(new_val);
+    dev->event_handler(dev, new_val);
     //post_event
     //dispenser_post_event()
 }
 
-static void dispenser_door_event(char closed)
+static void dispenser_door_event(struct dispenser_gpiod* dev, char closed)
 {
+    if (dev != cDispenser.p_sDoor) {
+        printk("Dispenser: Door event, GPIOD != p_sDoor, 0x%p != 0x%p\n", dev, cDispenser.p_sDoor);
+    }
+
     if (closed) {
         //Door closed!
         printk("Door event: Closed %i -> %i\n", !closed, closed);
@@ -29,8 +33,12 @@ static void dispenser_door_event(char closed)
     dispenser_post_event(DOOR, "Door event", &pDispenser_mmap->door);
 }
 
-static void dispenser_button_event(char pressed)
+static void dispenser_button_event(struct dispenser_gpiod* dev, char pressed)
 {
+    if (dev != cDispenser.p_sButton) {
+        printk("Dispenser: Button event, GPIOD != p_sButton, 0x%p != 0x%p\n", dev, cDispenser.p_sButton);
+    }
+
     if (pressed) {
         //button pressed
         printk("Button event: Pressed = %i.\n", pressed);
@@ -44,8 +52,12 @@ static void dispenser_button_event(char pressed)
     }
 }
 
-static void dispenser_charge_event(char charging)
+static void dispenser_charge_event(struct dispenser_gpiod* dev, char charging)
 {
+    if (dev != cDispenser.p_sCharge) {
+        printk("Dispenser: Charge event, GPIOD != p_sCharge, 0x%p != 0x%p\n", dev, cDispenser.p_sCharge);
+    }
+
     if (charging) {
         //Charging
         cDispenser.p_sDoor->timeout = DOOR_TIMEOUT;
@@ -59,8 +71,12 @@ static void dispenser_charge_event(char charging)
     }
 }
 
-static void dispenser_light_event(char on)
+static void dispenser_light_event(struct dispenser_gpiod* dev, char on)
 {
+    if (dev != cDispenser.p_sLed) {
+        printk("Dispenser: Light event, GPIOD != p_sLed, 0x%p != 0x%p\n", dev, cDispenser.p_sLed);
+    }
+
     if (on) {
         //Light switch on... Should not happen.
         dispenser_gpiod_set(cDispenser.p_sLed, 1);

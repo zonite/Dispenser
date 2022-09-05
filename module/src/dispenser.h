@@ -37,6 +37,10 @@ MODULE_DESCRIPTION(DRIVER_DESC);
 
 /* Global Private structures */
 
+struct dispenser_slot_list;
+struct dispenser_col_list;
+struct dispenser_gpiod;
+
 struct dispenser_private {
     struct device *dev;
     /*
@@ -51,17 +55,21 @@ struct dispenser_private {
     struct dispenser_gpiod *p_sButton;
     struct dispenser_gpiod *p_sDoor;
     struct dispenser_gpiod *p_sCharge;
+    struct dispenser_col_list *cols;
 };
 
 struct dispenser_col_list {
-    int col;
+    unsigned char col_id;
+    unsigned char col_name;
+    struct dispenser_slot_list *first;
     struct dispenser_col_list *prev;
     struct dispenser_col_list *next;
 };
 
 struct dispenser_slot_list {
-    int col;
-    int slot;
+    unsigned char slot_id;
+    unsigned char col;
+    unsigned char slot_name;
     struct dispenser_slot_state *state;
     struct dispenser_gpiod *up;
     struct dispenser_gpiod *down;
@@ -109,7 +117,8 @@ struct dispenser_gpiod {
 //    void (*timer_callback)(struct timer_list *timer);
     int irq_num;
 //    irq_handler_t irq_handler;
-    void (*event_handler)(char value);
+    void (*event_handler)(struct dispenser_gpiod *gpiod, char value);
+    void *parent;
 };
 
 static inline void dispenser_gpiod_set_value_ptr(struct dispenser_gpiod *pgpiod, char *value)
@@ -147,14 +156,14 @@ enum eventtype {
     DISPENSER
 };
 
-static inline void dispenser_null_event(char new_val)
+static inline void dispenser_null_event(struct dispenser_gpiod* dev, char new_val)
 { return; }
 
 static int dispenser_post_event(enum eventtype type, const char *name, volatile void *data);
-static void dispenser_door_event(char closed);
-static void dispenser_button_event(char pressed);
-static void dispenser_charge_event(char charging);
-static void dispenser_light_event(char on);
+static void dispenser_door_event(struct dispenser_gpiod* dev, char closed);
+static void dispenser_button_event(struct dispenser_gpiod* dev, char pressed);
+static void dispenser_charge_event(struct dispenser_gpiod* dev, char charging);
+static void dispenser_light_event(struct dispenser_gpiod* dev, char on);
 static void dispenser_gpiod_event(struct dispenser_gpiod* dev, char new_val);
 
 /* Unit */
