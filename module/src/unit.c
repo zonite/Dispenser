@@ -7,10 +7,11 @@
 
 //#define GPIO_LOOKUP_FLAGS_DEFAULT  ((0 << 0)| (0 << 3))
 
-int init_unit(struct device *dev) {
-    int i = 0, k = -1;
-    unsigned char col = 0;
-    struct device_node *unit = of_get_child_by_name(dev->of_node, DEVICE_UNIT);
+static int dispenser_unit_init(struct device *dev) {
+    int i = 0;
+    //, k = -1;
+    //unsigned char col = 0;
+    //struct device_node *unit = of_get_child_by_name(dev->of_node, DEVICE_UNIT);
     struct dispenser_slot_list *slot_list = NULL;
     struct dispenser_col_list *col_list = NULL, *col_iterator;
     unsigned char *slots = NULL, *cols = NULL;
@@ -46,34 +47,50 @@ int init_unit(struct device *dev) {
     slots = (unsigned char *)kmalloc(sizeof(unsigned char) * i, GFP_KERNEL);
     if (!slots) {
         printk("Mem allocation failed: slots.\n");
+        kfree(slot_list);
         return FAIL;
     }
 
     col_list = (struct dispenser_col_list *)kzalloc(sizeof(struct dispenser_col_list), GFP_KERNEL);
-    if (!slot_list) {
+    if (!col_list) {
         printk("Mem allocation failed: slot_list.\n");
+        kfree(slot_list);
+        kfree(slots);
         return FAIL;
     }
 
     cols = (unsigned char *)kzalloc(sizeof(unsigned char) * i, GFP_KERNEL);
-    if (!slots) {
+    if (!cols) {
         printk("Mem allocation failed: slots.\n");
+        kfree(col_list);
+        kfree(slot_list);
+        kfree(slots);
         return FAIL;
     }
 
     if (device_property_read_u8_array(dev, "slots", slots, i)) {
         printk("Array read failed: slots.\n");
+        kfree(col_list);
+        kfree(slot_list);
+        kfree(slots);
+        kfree(cols);
         return FAIL;
     }
 
     if (device_property_read_u8_array(dev, "cols", cols, i)) {
         printk("Array read failed: cols.\n");
+        kfree(col_list);
+        kfree(slot_list);
+        kfree(slots);
+        kfree(cols);
         return FAIL;
     }
 
     col_list->col_name = cols[0];
     col_list->first = slot_list;
     col_iterator = col_list;
+    cDispenser.col_count = 1;
+    cDispenser.cols = col_list;
 
     for (int n = 0; n < i; ++n ) {
         //slots[n].up = gpiod_get_index(dev, "up", n, GPIOD_IN);
@@ -84,46 +101,59 @@ int init_unit(struct device *dev) {
                 if (!col_iterator->next) { //col_iterator == NULL : no column found! End of list!
                     col_iterator->next = (struct dispenser_col_list *)kzalloc(sizeof(struct dispenser_col_list), GFP_KERNEL);
                     col_iterator->next->prev = col_iterator; //Double linking
+
                     if (!col_iterator->next) {
                         printk("Mem allocation failed: slot_list.\n");
+                        dispenser_unit_close();
+                        kfree(slots);
+                        kfree(cols);
                         return FAIL;
                     }
+
                     col_iterator->next->col_name = cols[n];
-                    col_iterator->next->col_id = ++col_iterator->col_id;
+                    col_iterator->next->col_id = ++(col_iterator->col_id);
                     col_iterator->next->first = &slot_list[n];
+                    ++cDispenser.col_count;
                 }
                 col_iterator = col_iterator->next;
             } while (col_iterator->col_name != cols[n]);
         } else {
             //Same column:
             if (n)
-                slot_list[n].slot_id = ++slot_list[n - 1].slot_id;
+                slot_list[n].slot_id = ++(slot_list[n - 1].slot_id);
         }
 
-        slot_list[n].col = cols[n];
+        ++col_iterator->slot_count;
+
+        //slot_list[n].col = cols[n];
         slot_list[n].slot_name = slots[n];
+        slot_list[n].column = col_iterator;
+        slot_list[n].slot_num = n;
 
         slot_list[n].up = dispenser_gpiod_open_index(dev, "up", n, GPIOD_IN);
         slot_list[n].down = dispenser_gpiod_open_index(dev, "down", n, GPIOD_IN);
         slot_list[n].release = dispenser_gpiod_open_index(dev, "release", n, GPIOD_OUT_LOW);
+
         if (!slot_list[n].up || !slot_list[n].down || !slot_list[n].release) {
             printk("GPIOD allocation failed.\n");
+
+            dispenser_unit_close();
+            kfree(slots);
+            kfree(cols);
+
             return FAIL;
         }
 
         slot_list[n].up->timeout = cDispenser.iFailTimeout;
         slot_list[n].up->event_handler = dispenser_up_event;
-        slot_list[n].up->value = &pDispenser_mmap->slots[n].up;
         slot_list[n].up->parent = &slot_list[n];
 
         slot_list[n].down->timeout = cDispenser.iFailTimeout;
         slot_list[n].down->event_handler = dispenser_down_event;
-        slot_list[n].down->value = &pDispenser_mmap->slots[n].down;
         slot_list[n].down->parent = &slot_list[n];
 
         slot_list[n].release->timeout = cDispenser.iFailTimeout;
         slot_list[n].release->event_handler = dispenser_release_event;
-        slot_list[n].release->value = &pDispenser_mmap->slots[n].release;
         slot_list[n].release->parent = &slot_list[n];
 
         if (cols[n] == cols[(n + 1) % n]) {
@@ -136,11 +166,106 @@ int init_unit(struct device *dev) {
     slot_list[0].prev = NULL;
     slot_list[i - 1].next = NULL;
 
+    cDispenser.slot_count = i;
+
+    kfree(slots);
+    kfree(cols);
+
+    return SUCCESS;
+}
+
+static void dispenser_unit_mmap_set(void)
+{
+    struct dispenser_col_list *c = cDispenser.cols;
+
+    pDispenser_mmap->unit.cols = cDispenser.col_count;
+    pDispenser_mmap->unit.slots = cDispenser.slot_count;
+
+    cDispenser.p_sLed->value = &pDispenser_mmap->unit.light;
+    cDispenser.p_sDoor->value = &pDispenser_mmap->unit.door;
+    cDispenser.p_sCharge->value = &pDispenser_mmap->unit.charging;
+    cDispenser.p_sButton->value = &pDispenser_mmap->unit.button;
+
+    while (c) {
+        struct dispenser_slot_list *s = c->first;
+        struct dispenser_mmap_column *col_mmap = &pDispenser_mmap[MMAP_COL(c->col_id)].column;
+
+        col_mmap->col_id = c->col_id;
+        col_mmap->slot_count = c->slot_count;
+
+        while (s) {
+            s->state = &pDispenser_mmap[MMAP_SLOT(s->slot_num)].slot;
+            s->up->value = &s->state->up;
+            s->down->value = &s->state->down;
+            s->release->value = &s->state->release;
+
+            s = s->next;
+        }
+
+        c = c->next;
+    }
+}
+
+static void dispenser_unit_mmap_reset(void)
+{
+    static struct dispenser_mmap_slot state = { 0 };
+    static char n = 0;
+    struct dispenser_col_list *c = cDispenser.cols;
+
+    cDispenser.p_sLed->value = &n;
+    cDispenser.p_sDoor->value = &n;
+    cDispenser.p_sCharge->value = &n;
+    cDispenser.p_sButton->value = &n;
+
+    while (c) {
+        struct dispenser_slot_list *s = c->first;
+
+        while (s) {
+            s->state = &state;
+            s->up->value = &s->state->up;
+            s->down->value = &s->state->down;
+            s->release->value = &s->state->release;
+
+            s = s->next;
+        }
+
+        c = c->next;
+    }
+}
+
+static void dispenser_unit_close()
+{
+    struct dispenser_col_list *c = cDispenser.cols, *t;
+    struct dispenser_slot_list *slots = c->first;
+
+    while (c) {
+        struct dispenser_slot_list *s = c->first;
+
+        while (s) {
+            dispenser_gpiod_close(s->up);
+            dispenser_gpiod_close(s->down);
+            dispenser_gpiod_close(s->release);
+
+            s = s->next;
+        }
+
+        t = c->next;
+        kfree(c);
+        c = t;
+    }
+
+    kfree(slots);
+}
+
+static void dispenser_unit_release_slot(struct dispenser_slot_list *slot)
+{
+    //dispenser_gpiod_set(slot->release, 1);
+    dispenser_release_event(slot->release, 1);
+}
 
 
-
-
-
+/*
+{
 
 
     if (unit) {
@@ -223,7 +348,7 @@ int init_unit(struct device *dev) {
                     printk("Got gpio at index k = %i, 0x%p, hw = %i", k, gpio, desc_to_gpio(gpio));
                     gpiod_put(gpio);
                 }
-/*
+
                 gpio = of_find_gpio(dev, "up", ++k, &lookupflags);
                 if (IS_ERR(gpio)) {
                     printk("Error gettin gpio %li, k = %i", (long)gpio, k);
@@ -231,7 +356,7 @@ int init_unit(struct device *dev) {
                     printk("Got gpio at index k = %i, 0x%p, hw = %i", k, gpio, desc_to_gpio(gpio));
                     gpiod_put(gpio);
                 }
-*/
+
             }
 
             if (slot) {
@@ -253,7 +378,7 @@ int init_unit(struct device *dev) {
     }
     return;
 }
-
+*/
 
 /*
     struct device_node *unit = of_find_node_by_name(NULL, DEVICE_UNIT);

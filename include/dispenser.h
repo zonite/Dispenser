@@ -13,30 +13,46 @@
 #define INT_DEBOUNCE 40
 #define POLL_INTERVAL SEC_TO_MSEC(60)
 
+enum slot_state {
+    FAILED,
+    CLOSED,
+    RELEASE,
+    OPENING,
+    OPEN,
+    CLOSING
+} __attribute__ ((__packed__));
+static_assert( sizeof(enum slot_state) == 1 );
+
 struct dispenser_ioctl {
     int cmd;
     char *name;
 };
 
-struct dispenser_mmap {
+struct dispenser_mmap_unit {
     volatile char charging;
     volatile char button;
     volatile char light;
     volatile char door;
     char cols;
-    __u16 cols_offset;
-};
-
-struct dispenser_column {
     char slots;
-    __u16 slots_offset;
 };
 
-struct dispenser_slot_state {
-    char state;
-    char up;
-    char down;
-    char release;
+struct dispenser_mmap_column {
+    char col_id;
+    char slot_count;
+};
+
+struct dispenser_mmap_slot {
+    volatile enum slot_state state;
+    volatile char up;
+    volatile char down;
+    volatile char release;
+};
+
+union dispenser_mmap {
+    struct dispenser_mmap_unit unit;
+    struct dispenser_mmap_column column;
+    struct dispenser_mmap_slot slot;
 };
 
 #define WR_VALUE _IOW('a', 'a', int32_t *)

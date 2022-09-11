@@ -18,7 +18,9 @@ static void *alloc_mem(void)
   //int i;
   //struct page *mem = alloc_pages(GFP_WAIT, 1);
   //void *mem = page_address(mem) //alloc_pages
-  void *mem = vmalloc(PAGE_SIZE);
+  //void *mem = vmalloc(PAGE_SIZE);
+  unsigned long size = sizeof(pDispenser_mmap) * (1 + cDispenser.col_count + cDispenser.slot_count);
+  void *mem = vmalloc(size);
 
   if (!mem)
     return mem;
@@ -26,7 +28,8 @@ static void *alloc_mem(void)
   //SetPageReserved(virt_to_page(mem)); //kmalloc
   //SetPageReserved(mem); //alloc_pages
   SetPageReserved(vmalloc_to_page(mem));
-  memset(mem, 0, PAGE_SIZE);
+  //memset(mem, 0, PAGE_SIZE);
+  memset(mem, 0, size);
 
   return mem;
 }
@@ -42,22 +45,26 @@ static void free_mem(void *mem)
 static int __init dispenser_init(void)
 {
     printk(KERN_INFO "Dispenser starting\n");
-    if (!pDispenser_mmap)
-        pDispenser_mmap = alloc_mem();
-    if (pDispenser_mmap < 0)
-        return FAIL;
 
     //if (dt_register()) {
+    /*
     if (platform_driver_register(&cDispenser.dispenser_driver)) {
         printk("Probe failed. Device tree not found!\n");
 
-        if (pDispenser_mmap)
-            free_mem(pDispenser_mmap);
+        return FAIL;
+    }
+    */
 
-        pDispenser_mmap = NULL;
+    if (!pDispenser_mmap)
+        pDispenser_mmap = alloc_mem();
+
+    if (pDispenser_mmap < 0) {
+        platform_driver_unregister(&cDispenser.dispenser_driver);
 
         return FAIL;
     }
+
+    dispenser_unit_mmap_set();
 
     //if (platform_driver_register()) {
 
@@ -66,6 +73,11 @@ static int __init dispenser_init(void)
   
     if (init_chardev() < 0) {
         printk(KERN_ALERT "Init_chardev failed\n");
+        dispenser_unit_mmap_reset();
+        platform_driver_unregister(&cDispenser.dispenser_driver);
+        if (pDispenser_mmap)
+          free_mem(pDispenser_mmap);
+
         return FAIL;
     }
   
@@ -82,6 +94,7 @@ static void __exit dispenser_exit(void)
   printk(KERN_INFO "Dispenser unload\n");
 
   cleanup_chardev();
+  dispenser_unit_mmap_reset();
 
   if (pDispenser_mmap)
     free_mem(pDispenser_mmap);

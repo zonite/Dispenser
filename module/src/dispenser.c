@@ -31,7 +31,7 @@ static struct dispenser_private cDispenser = {
     0 },
 };
 
-static struct dispenser_mmap *pDispenser_mmap = NULL;
+static union dispenser_mmap *pDispenser_mmap = NULL;
 
 /*
 static struct dispenser_private cDispenser = {

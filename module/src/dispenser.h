@@ -29,6 +29,8 @@
 //#define DEBOUNCE 300
 #define DEVICE_UNIT "dispense_unit"
 #define DEVICE_PATH "/dispenser/dispense_unit"
+#define MMAP_SLOT(A) (cDispenser.col_count + 1 + A)
+#define MMAP_COL(A) (1 + A)
 
 MODULE_LICENSE("GPL");
 MODULE_AUTHOR(DRIVER_AUTHOR);
@@ -56,11 +58,14 @@ struct dispenser_private {
     struct dispenser_gpiod *p_sDoor;
     struct dispenser_gpiod *p_sCharge;
     struct dispenser_col_list *cols;
+    unsigned char col_count;
+    unsigned char slot_count;
 };
 
 struct dispenser_col_list {
     unsigned char col_id;
     unsigned char col_name;
+    unsigned char slot_count;
     struct dispenser_slot_list *first;
     struct dispenser_col_list *prev;
     struct dispenser_col_list *next;
@@ -68,9 +73,10 @@ struct dispenser_col_list {
 
 struct dispenser_slot_list {
     unsigned char slot_id;
-    unsigned char col;
     unsigned char slot_name;
-    struct dispenser_slot_state *state;
+    unsigned char slot_num;
+    //unsigned char col;
+    struct dispenser_mmap_slot *state;
     struct dispenser_gpiod *up;
     struct dispenser_gpiod *down;
     struct dispenser_gpiod *release;
@@ -90,7 +96,7 @@ struct io {
 
 /* Global static variables */
 
-static struct dispenser_mmap *pDispenser_mmap;
+static union dispenser_mmap *pDispenser_mmap;
 static struct dispenser_private cDispenser;
 
 /* Global Functions */
@@ -105,6 +111,14 @@ static int dt_probe_column(struct platform_device *pdev);
 static int dt_probe_slot(struct platform_device *pdev);
 static int dt_remove(struct platform_device *pdev);
 //static struct platform_driver dispenser_driver;
+
+/* Unit */
+static int dispenser_unit_init(struct device *dev);
+static void dispenser_unit_close(void);
+static void dispenser_unit_release_slot(struct dispenser_slot_list *slot);
+static void dispenser_unit_mmap_set(void);
+static void dispenser_unit_mmap_reset(void);
+
 
 /* GPIO */
 struct dispenser_gpiod {
@@ -165,9 +179,10 @@ static void dispenser_button_event(struct dispenser_gpiod* dev, char pressed);
 static void dispenser_charge_event(struct dispenser_gpiod* dev, char charging);
 static void dispenser_light_event(struct dispenser_gpiod* dev, char on);
 static void dispenser_gpiod_event(struct dispenser_gpiod* dev, char new_val);
+static void dispenser_up_event(struct dispenser_gpiod* dev, char new_val);
+static void dispenser_down_event(struct dispenser_gpiod* dev, char new_val);
+static void dispenser_release_event(struct dispenser_gpiod* dev, char new_val);
 
-/* Unit */
-void init_unit(struct device *dev);
 
 
 /*

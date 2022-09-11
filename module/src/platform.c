@@ -176,7 +176,7 @@ static int dt_probe_dispenser(struct platform_device *pdev)
         dt_remove(pdev);
         return FAIL;
     }
-    cDispenser.p_sLed->value = &pDispenser_mmap->light;
+    //cDispenser.p_sLed->value = &pDispenser_mmap->light;
     cDispenser.p_sLed->timeout = LIGHT_TIMEOUT;
     cDispenser.p_sLed->event_handler = dispenser_light_event;
 
@@ -186,7 +186,7 @@ static int dt_probe_dispenser(struct platform_device *pdev)
         dt_remove(pdev);
         return FAIL;
     }
-    cDispenser.p_sButton->value = &pDispenser_mmap->button;
+    //cDispenser.p_sButton->value = &pDispenser_mmap->button;
     cDispenser.p_sButton->event_handler = dispenser_button_event;
 
     cDispenser.p_sCharge = dispenser_gpiod_open(dev, "charge", GPIOD_IN);
@@ -195,7 +195,7 @@ static int dt_probe_dispenser(struct platform_device *pdev)
         dt_remove(pdev);
         return FAIL;
     }
-    cDispenser.p_sCharge->value = &pDispenser_mmap->charging;
+    //cDispenser.p_sCharge->value = &pDispenser_mmap->charging;
     cDispenser.p_sCharge->event_handler = dispenser_charge_event;
 
     cDispenser.p_sDoor = dispenser_gpiod_open(dev, "door", GPIOD_IN);
@@ -204,12 +204,12 @@ static int dt_probe_dispenser(struct platform_device *pdev)
         dt_remove(pdev);
         return FAIL;
     }
-    cDispenser.p_sDoor->value = &pDispenser_mmap->door;
+    //cDispenser.p_sDoor->value = &pDispenser_mmap->door;
     cDispenser.p_sDoor->timeout = DOOR_TIMEOUT;
     cDispenser.p_sDoor->event_handler = dispenser_door_event;
 
     /* Init local unit */
-    if (init_unit(dev)) {
+    if (dispenser_unit_init(dev)) {
         return FAIL;
     }
 
@@ -254,6 +254,9 @@ static int dt_remove(struct platform_device *pdev)
 
     if (!strcasecmp(compatible, COMPAT)) {
         printk("Process %s\n", compatible);
+
+        dispenser_unit_close();
+
         if (cDispenser.p_sLed)
             dispenser_gpiod_close(cDispenser.p_sLed);
         if (cDispenser.p_sDoor)
@@ -267,7 +270,7 @@ static int dt_remove(struct platform_device *pdev)
         cDispenser.p_sCharge = NULL;
         cDispenser.p_sButton = NULL;
 
-        of_platform_depopulate(dev);
+        //of_platform_depopulate(dev);
     }
 
     return 0;
