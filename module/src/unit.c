@@ -23,19 +23,19 @@ static int dispenser_unit_init(struct device *dev) {
         return FAIL;
     }
 
-    i = i * 3; //gpios have 3 per property
+    //i = i * 3; //gpios have 3 per property
 
-    if (device_property_count_u32(dev, "up-gpio") != i) {
+    if (device_property_count_u32(dev, "up-gpio") != i * 3) {
         printk("Dispenser: Incorrect count up-gpio %i != %i\n", device_property_count_u32(dev, "up-gpio"), i);
         return FAIL;
     }
 
-    if (device_property_count_u32(dev, "down-gpio") != i) {
+    if (device_property_count_u32(dev, "down-gpio") != i * 3) {
         printk("Dispenser: Incorrect count down-gpio\n");
         return FAIL;
     }
 
-    if (device_property_count_u32(dev, "release-gpio") != i) {
+    if (device_property_count_u32(dev, "release-gpio") != i * 3) {
         printk("Dispenser: Incorrect count release-gpio\n");
         return FAIL;
     }
