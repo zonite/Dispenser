@@ -213,6 +213,8 @@ static int dt_probe(struct platform_device *pdev)
 
     /* Init local unit */
     if (dispenser_unit_init(dev)) {
+        printk("Dispenser: Unit failed\n");
+        dt_remove(pdev);
         return FAIL;
     }
 
