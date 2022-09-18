@@ -24,7 +24,7 @@ static int dispenser_unit_init(struct device *dev) {
     }
 
     if (device_property_count_u32(dev, "up-gpio") != i) {
-        printk("Dispenser: Incorrect count up-gpio\n");
+        printk("Dispenser: Incorrect count up-gpio %i != %i\n", device_property_count_u32(dev, "up-gpio"), i);
         return FAIL;
     }
 
