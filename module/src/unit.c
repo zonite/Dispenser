@@ -23,6 +23,8 @@ static int dispenser_unit_init(struct device *dev) {
         return FAIL;
     }
 
+    i = i * 3; //gpios have 3 per property
+
     if (device_property_count_u32(dev, "up-gpio") != i) {
         printk("Dispenser: Incorrect count up-gpio %i != %i\n", device_property_count_u32(dev, "up-gpio"), i);
         return FAIL;
@@ -246,6 +248,8 @@ static void dispenser_unit_close()
     struct dispenser_col_list *c = cDispenser.cols, *t;
     struct dispenser_slot_list *slots = NULL;
 
+    cDispenser.slot_count = 0;
+    cDispenser.col_count = 0;
     cDispenser.cols = NULL;
 
     if (c)
@@ -269,7 +273,6 @@ static void dispenser_unit_close()
 
     if (slots)
         kfree(slots);
-
 }
 
 static void dispenser_unit_release_slot(struct dispenser_slot_list *slot)
