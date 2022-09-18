@@ -8,7 +8,7 @@
 //#define GPIO_LOOKUP_FLAGS_DEFAULT  ((0 << 0)| (0 << 3))
 
 static int dispenser_unit_init(struct device *dev) {
-    int i = 0;
+    int i = 0, n = 0;
     //, k = -1;
     //unsigned char col = 0;
     //struct device_node *unit = of_get_child_by_name(dev->of_node, DEVICE_UNIT);
@@ -92,7 +92,7 @@ static int dispenser_unit_init(struct device *dev) {
     cDispenser.col_count = 1;
     cDispenser.cols = col_list;
 
-    for (int n = 0; n < i; ++n ) {
+    for (n = 0; n < i; ++n ) {
         //slots[n].up = gpiod_get_index(dev, "up", n, GPIOD_IN);
         if (col_iterator->col_name != cols[n]) {
             //Different column:
@@ -181,10 +181,14 @@ static void dispenser_unit_mmap_set(void)
     pDispenser_mmap->unit.cols = cDispenser.col_count;
     pDispenser_mmap->unit.slots = cDispenser.slot_count;
 
-    cDispenser.p_sLed->value = &pDispenser_mmap->unit.light;
-    cDispenser.p_sDoor->value = &pDispenser_mmap->unit.door;
-    cDispenser.p_sCharge->value = &pDispenser_mmap->unit.charging;
-    cDispenser.p_sButton->value = &pDispenser_mmap->unit.button;
+    if (cDispenser.p_sLed)
+        cDispenser.p_sLed->value = &pDispenser_mmap->unit.light;
+    if (cDispenser.p_sDoor)
+        cDispenser.p_sDoor->value = &pDispenser_mmap->unit.door;
+    if (cDispenser.p_sCharge)
+        cDispenser.p_sCharge->value = &pDispenser_mmap->unit.charging;
+    if (cDispenser.p_sButton)
+        cDispenser.p_sButton->value = &pDispenser_mmap->unit.button;
 
     while (c) {
         struct dispenser_slot_list *s = c->first;
@@ -212,10 +216,14 @@ static void dispenser_unit_mmap_reset(void)
     static char n = 0;
     struct dispenser_col_list *c = cDispenser.cols;
 
-    cDispenser.p_sLed->value = &n;
-    cDispenser.p_sDoor->value = &n;
-    cDispenser.p_sCharge->value = &n;
-    cDispenser.p_sButton->value = &n;
+    if (cDispenser.p_sLed)
+        cDispenser.p_sLed->value = &n;
+    if (cDispenser.p_sDoor)
+        cDispenser.p_sDoor->value = &n;
+    if (cDispenser.p_sCharge)
+        cDispenser.p_sCharge->value = &n;
+    if (cDispenser.p_sButton)
+        cDispenser.p_sButton->value = &n;
 
     while (c) {
         struct dispenser_slot_list *s = c->first;

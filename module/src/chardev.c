@@ -3,6 +3,7 @@
 #include <linux/fs.h>
 #include <linux/mm.h>
 #include <asm/uaccess.h>
+#include <linux/uaccess.h>
 #include <linux/cdev.h>
 //#include <asm/page.h>
 
@@ -165,7 +166,8 @@ static int device_mmap(struct file *pFile, struct vm_area_struct *vma)
     unsigned long offset = vma->vm_pgoff << PAGE_SHIFT;
     //unsigned long offset = VMA_OFFSET(vma);
 
-    if (offset != 0 || vma->vm_end - vma->vm_start != PAGE_SIZE)
+    //if (offset != 0 || vma->vm_end - vma->vm_start != PAGE_SIZE)
+    if (offset != 0 || vma->vm_end - vma->vm_start > cDispenser.mmap_size || !pDispenser_mmap)
         return -EAGAIN;
 
     //offset = page_to_pfn(virt_to_page(pDispenser));

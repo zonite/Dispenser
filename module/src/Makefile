@@ -10,7 +10,8 @@ all: dt module
 	echo "Building Device tree and kernel module"
 
 module:
-	make -C /lib/modules/$(shell uname -r)/build M=$(PWD) modules
+	#make -C /lib/modules/$(shell uname -r)/build M=$(PWD) modules
+	make -C /usr/src/rpi/linux-raspberrypi-kernel_1.20200723-1/ ARCH=arm CROSS_COMPILE=/opt/gcc-linaro-11.3.1-2022.06-x86_64_arm-linux-gnueabihf/bin/arm-linux-gnueabihf- M=/usr/local/src/Dispenser/module/src modules
 
 dt: rpioverlay.dts
 	$(CPP) -nostdinc -I include -I arch -undef -x assembler-with-cpp -I /lib/modules/$(shell uname -r)/source/include rpioverlay.dts > rpioverlay.dts.preprocessed

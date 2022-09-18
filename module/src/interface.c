@@ -13,17 +13,29 @@
 //static void *pDispenser = NULL;
 //static struct dispenser_config cConfig = { 0 };
 
-static void *alloc_mem(void)
+static int dispenser_alloc_mmap(void)
 {
   //int i;
   //struct page *mem = alloc_pages(GFP_WAIT, 1);
   //void *mem = page_address(mem) //alloc_pages
   //void *mem = vmalloc(PAGE_SIZE);
-  unsigned long size = sizeof(pDispenser_mmap) * (1 + cDispenser.col_count + cDispenser.slot_count);
-  void *mem = vmalloc(size);
+  //unsigned long size = sizeof(union dispenser_mmap) * (1 + cDispenser.col_count + cDispenser.slot_count);
+  unsigned long size = (((sizeof(union dispenser_mmap) * (1 + cDispenser.col_count + cDispenser.slot_count)) / PAGE_SIZE) + 1) * PAGE_SIZE;
+  void *mem = NULL;
 
-  if (!mem)
-    return mem;
+  if (pDispenser_mmap) {
+      if (size == cDispenser.mmap_size)
+          return 0;
+      dispenser_free_mmap();
+  }
+
+  mem = vmalloc(size);
+
+  pDispenser_mmap = mem;
+
+  if (!pDispenser_mmap) {
+      return -ENOMEM;
+  }
 
   //SetPageReserved(virt_to_page(mem)); //kmalloc
   //SetPageReserved(mem); //alloc_pages
@@ -31,15 +43,23 @@ static void *alloc_mem(void)
   //memset(mem, 0, PAGE_SIZE);
   memset(mem, 0, size);
 
-  return mem;
+  cDispenser.mmap_size = size;
+
+  return 0;
 }
 
-static void free_mem(void *mem)
+static void dispenser_free_mmap(void)
 {
-  ClearPageReserved(vmalloc_to_page(mem));
+    cDispenser.mmap_size = 0;
+
+    if (pDispenser_mmap) {
+        ClearPageReserved(vmalloc_to_page(pDispenser_mmap));
   
-  vfree(mem);
-  //kfree(mem); //kmalloc
+        vfree(pDispenser_mmap);
+
+        pDispenser_mmap = NULL;
+    }
+    //kfree(mem); //kmalloc
 }
 
 static int __init dispenser_init(void)
@@ -47,14 +67,13 @@ static int __init dispenser_init(void)
     printk(KERN_INFO "Dispenser starting\n");
 
     //if (dt_register()) {
-    /*
     if (platform_driver_register(&cDispenser.dispenser_driver)) {
         printk("Probe failed. Device tree not found!\n");
 
         return FAIL;
     }
-    */
 
+    /*
     if (!pDispenser_mmap)
         pDispenser_mmap = alloc_mem();
 
@@ -63,8 +82,10 @@ static int __init dispenser_init(void)
 
         return FAIL;
     }
+    */
 
-    dispenser_unit_mmap_set();
+    //dispenser_unit_mmap_set();
+    //dispenser_unit_mmap_reset();
 
     //if (platform_driver_register()) {
 
@@ -75,8 +96,7 @@ static int __init dispenser_init(void)
         printk(KERN_ALERT "Init_chardev failed\n");
         dispenser_unit_mmap_reset();
         platform_driver_unregister(&cDispenser.dispenser_driver);
-        if (pDispenser_mmap)
-          free_mem(pDispenser_mmap);
+        dispenser_free_mmap();
 
         return FAIL;
     }
@@ -96,11 +116,8 @@ static void __exit dispenser_exit(void)
   cleanup_chardev();
   dispenser_unit_mmap_reset();
 
-  if (pDispenser_mmap)
-    free_mem(pDispenser_mmap);
+  dispenser_free_mmap();
     
-  pDispenser_mmap = NULL;
-
   platform_driver_unregister(&cDispenser.dispenser_driver);
 }
 

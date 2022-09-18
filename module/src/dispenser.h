@@ -58,6 +58,7 @@ struct dispenser_private {
     struct dispenser_gpiod *p_sDoor;
     struct dispenser_gpiod *p_sCharge;
     struct dispenser_col_list *cols;
+    unsigned long mmap_size;
     unsigned char col_count;
     unsigned char slot_count;
 };
@@ -104,11 +105,16 @@ static int init_chardev(void);
 static void cleanup_chardev(void);
 static void init_param(void);
 
+/* Interface */
+static int dispenser_alloc_mmap(void);
+static void dispenser_free_mmap(void);
+
+
 /* Platform */
 static int dt_probe(struct platform_device *pdev);
-static int dt_probe_dispenser(struct platform_device *pdev);
-static int dt_probe_column(struct platform_device *pdev);
-static int dt_probe_slot(struct platform_device *pdev);
+//static int dt_probe_dispenser(struct platform_device *pdev);
+//static int dt_probe_column(struct platform_device *pdev);
+//static int dt_probe_slot(struct platform_device *pdev);
 static int dt_remove(struct platform_device *pdev);
 //static struct platform_driver dispenser_driver;
 

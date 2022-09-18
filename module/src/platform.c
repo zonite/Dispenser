@@ -59,6 +59,7 @@ static int dt_register(void)
 }
 */
 
+/*
 static int dt_probe(struct platform_device *pdev)
 {
     int ret;
@@ -88,8 +89,10 @@ static int dt_probe(struct platform_device *pdev)
     }
     return FAIL;
 }
+*/
 
-static int dt_probe_dispenser(struct platform_device *pdev)
+//static int dt_probe_dispenser(struct platform_device *pdev)
+static int dt_probe(struct platform_device *pdev)
 {
     struct device *dev = &pdev->dev;
     const char *label;
@@ -223,11 +226,15 @@ static int dt_probe_dispenser(struct platform_device *pdev)
     //    printk("Device tree population failed! +n");
     //}
 
+    dispenser_alloc_mmap();
+    dispenser_unit_mmap_set();
+
     printk("Dispenser: Loaded device tree for: %s\n", label);
 
     return 0;
 }
 
+/*
 static int dt_probe_column(struct platform_device *pdev)
 {
     return FAIL;
@@ -237,15 +244,19 @@ static int dt_probe_slot(struct platform_device *pdev)
 {
     return FAIL;
 }
+*/
 
 static int dt_remove(struct platform_device *pdev)
 {
+    /*
     int ret;
     const char *compatible = NULL;
     struct device *dev = &pdev->dev;
+*/
 
     printk("Dispenser: Removing device tree\n");
 
+    /*
     ret = device_property_read_string(dev, "compatible", &compatible);
     if (ret) {
         printk("Dispenser: Could not read 'compatible'\n");
@@ -254,7 +265,7 @@ static int dt_remove(struct platform_device *pdev)
 
     if (!strcasecmp(compatible, COMPAT)) {
         printk("Process %s\n", compatible);
-
+*/
         dispenser_unit_close();
 
         if (cDispenser.p_sLed)
@@ -271,7 +282,9 @@ static int dt_remove(struct platform_device *pdev)
         cDispenser.p_sButton = NULL;
 
         //of_platform_depopulate(dev);
+        /*
     }
+    */
 
     return 0;
 }

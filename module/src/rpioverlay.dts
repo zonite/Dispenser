@@ -4,12 +4,14 @@
 #include "dt-bindings/dispenser.h"
 
 / {
-    compatible = "brcm,bcm2711";
+    compatible = "arm,versatile-pb";
+    //compatible = "brcm,bcm2711";
     fragment@0 {
         target-path = "/";
         __overlay__ {
             dispenser {
-                compatible = COMPAT;
+                //compatible = COMPAT;
+                compatible = "hortensis,dispenser";
                 status = "okay";
                 //pinctrl-names = "default";
                 //pinctrl-0 = <&push_buttons>;
@@ -44,6 +46,7 @@
                         <&gpio 1 GPIO_ACTIVE_LOW>,
                         <&gpio 0 GPIO_ACTIVE_LOW>;
 
+                /*
                 dispense_unit {
                     col0 {
                         compatible = COMPAT_COL;
@@ -104,6 +107,7 @@
                         };
                     };
                 };
+                */
 
                 //push_buttons: push_buttons {
                 //    brcm,pins = <22>;
@@ -124,15 +128,17 @@
     };
     */
 
+    /*
     fragment@2 {
         target = <&gpio>;
         __overlay__ {
             push_buttons: push_buttons {
                 brcm,pins = <22>;
-                brcm,function = <0>; /* in */
+                brcm,function = <0>; // in
                 brcm,pull = <0>;
             };
         };
     };
+    */
 
 };
