@@ -246,7 +246,7 @@ static void dispenser_unit_mmap_reset(void)
 static void dispenser_unit_close()
 {
     struct dispenser_col_list *c = cDispenser.cols, *t;
-    struct dispenser_slot_list *slots = NULL;
+    struct dispenser_slot_list *slots = NULL, *u = NULL;
 
     cDispenser.slot_count = 0;
     cDispenser.col_count = 0;
@@ -257,13 +257,16 @@ static void dispenser_unit_close()
 
     while (c) {
         struct dispenser_slot_list *s = c->first;
+        c->first = NULL;
 
         while (s) {
             dispenser_gpiod_close(s->up);
             dispenser_gpiod_close(s->down);
             dispenser_gpiod_close(s->release);
 
+            u = s;
             s = s->next;
+            u->next = NULL;
         }
 
         t = c->next;
