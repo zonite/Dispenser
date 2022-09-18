@@ -244,7 +244,12 @@ static void dispenser_unit_mmap_reset(void)
 static void dispenser_unit_close()
 {
     struct dispenser_col_list *c = cDispenser.cols, *t;
-    struct dispenser_slot_list *slots = c->first;
+    struct dispenser_slot_list *slots = NULL;
+
+    cDispenser.cols = NULL;
+
+    if (c)
+        slots = c->first;
 
     while (c) {
         struct dispenser_slot_list *s = c->first;
@@ -262,7 +267,9 @@ static void dispenser_unit_close()
         c = t;
     }
 
-    kfree(slots);
+    if (slots)
+        kfree(slots);
+
 }
 
 static void dispenser_unit_release_slot(struct dispenser_slot_list *slot)
