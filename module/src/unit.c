@@ -118,7 +118,6 @@ static int dispenser_unit_init(struct device *dev) {
 
                     col_iterator->next->col_name = cols[n];
                     col_iterator->next->col_id = col_iterator->col_id + 1;
-                    col_iterator->next->first = &slot_list[n];
                     ++cDispenser.col_count;
 
                     printk("Finished column name = %i, id = %i, slots = %i\n", col_iterator->col_name, col_iterator->col_id, col_iterator->slot_count);
@@ -126,10 +125,20 @@ static int dispenser_unit_init(struct device *dev) {
                 col_iterator = col_iterator->next;
                 printk("New column name = %i, id = %i, slots = %i\n", col_iterator->col_name, col_iterator->col_id, col_iterator->slot_count);
             } while (col_iterator->col_name != cols[n]);
+        }
+
+        //Slot list linking:
+        if (col_iterator->first) {
+            s = col_iterator->first;
+
+            while (s->next)
+                s = s->next;
+
+            //s points to last slot.
+            s->next = &slot_list[n];
+            slot_list[n].prev = s;
         } else {
-            //Same column:
-            if (n)
-                slot_list[n].slot_id = slot_list[n - 1].slot_id + 1;
+            col_iterator->first = &slot_list[n];
         }
 
         ++col_iterator->slot_count;
@@ -165,13 +174,13 @@ static int dispenser_unit_init(struct device *dev) {
         slot_list[n].release->event_handler = dispenser_release_event;
         slot_list[n].release->parent = &slot_list[n];
 
-        if (cols[n] == cols[(n + 1) % n]) {
-            slot_list[n].next = &slot_list[n + 1];
-            slot_list[n + 1].prev = &slot_list[n];
-        }
+        //if (cols[n] == cols[(n + 1) % n]) {
+        //    slot_list[n].next = &slot_list[n + 1];
+        //    slot_list[n + 1].prev = &slot_list[n];
+        //}
         //slot_list[n].
         s = &slot_list[n];
-        printk("New slot[%i] pos %i%i: name = %i, id = %i, slot_num = %i\n", n, s->column->col_id, s->slot_id, s->slot_name, s->slot_id, s->slot_num);
+        printk("New slot[%i] pos %i%i (0x%p): name = %i, id = %i, slot_num = %i, prev 0x%p, next 0x%p\n", n, s->column->col_id, s->slot_id, s, s->slot_name, s->slot_id, s->slot_num, s->prev, s->next);
     }
 
     slot_list[0].prev = NULL;
