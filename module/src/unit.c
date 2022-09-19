@@ -90,7 +90,7 @@ static int dispenser_unit_init(struct device *dev) {
     }
 
     col_list->col_name = cols[0];
-    col_list->first = slot_list;
+    //col_list->first = slot_list;
     col_iterator = col_list;
     cDispenser.col_count = 1;
     cDispenser.cols = col_list;
@@ -131,8 +131,13 @@ static int dispenser_unit_init(struct device *dev) {
         if (col_iterator->first) {
             s = col_iterator->first;
 
-            while (s->next)
+            while (s->next) {
                 s = s->next;
+                if (s == s->next) {
+                    printk("Error: ring linking! 0x%p\n", s);
+                    s->next = NULL;
+                }
+            }
 
             //s points to last slot.
             s->next = &slot_list[n];
