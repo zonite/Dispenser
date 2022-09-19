@@ -60,6 +60,7 @@ static int dispenser_unit_init(struct device *dev) {
         kfree(slots);
         return FAIL;
     }
+    printk("0 column 0x%p\n", col_list);
 
     cols = (unsigned char *)kzalloc(sizeof(unsigned char) * i, GFP_KERNEL);
     if (!cols) {
@@ -113,19 +114,22 @@ static int dispenser_unit_init(struct device *dev) {
                         return FAIL;
                     }
 
+                    printk("%i column 0x%p\n", col_iterator->col_id + 1, col_iterator->next);
+
                     col_iterator->next->col_name = cols[n];
-                    col_iterator->next->col_id = ++(col_iterator->col_id);
+                    col_iterator->next->col_id = col_iterator->col_id + 1;
                     col_iterator->next->first = &slot_list[n];
                     ++cDispenser.col_count;
 
-                    printk("New column name = %i, id = %i, slots = %i\n", col_iterator->col_name, col_iterator->col_id, col_iterator->slot_count);
+                    printk("Finished column name = %i, id = %i, slots = %i\n", col_iterator->col_name, col_iterator->col_id, col_iterator->slot_count);
                 }
                 col_iterator = col_iterator->next;
+                printk("New column name = %i, id = %i, slots = %i\n", col_iterator->col_name, col_iterator->col_id, col_iterator->slot_count);
             } while (col_iterator->col_name != cols[n]);
         } else {
             //Same column:
             if (n)
-                slot_list[n].slot_id = ++(slot_list[n - 1].slot_id);
+                slot_list[n].slot_id = slot_list[n - 1].slot_id + 1;
         }
 
         ++col_iterator->slot_count;
@@ -177,6 +181,8 @@ static int dispenser_unit_init(struct device *dev) {
 
     kfree(slots);
     kfree(cols);
+
+    printk("Unit Finished: col 0 = 0x%p, col 1 = 0x%p, prev = 0x%p, col_ite 0x%p (%i, %i), col_ite_prev 0x%p, col_ite_next 0x%p\n", cDispenser.cols, cDispenser.cols->next, cDispenser.cols->prev, col_iterator, col_iterator->col_id, col_iterator->col_name, col_iterator->prev, col_iterator->next);
 
     return SUCCESS;
 }
@@ -253,11 +259,11 @@ static void dispenser_unit_close()
     struct dispenser_col_list *c = cDispenser.cols, *t;
     struct dispenser_slot_list *slots = NULL, *u = NULL;
 
+    printk("Closing unit, cols = %i, slots = %i\n", cDispenser.col_count, cDispenser.slot_count);
+
     cDispenser.slot_count = 0;
     cDispenser.col_count = 0;
     cDispenser.cols = NULL;
-
-    printk("Closing unit, cols = %i, slots = %i\n", cDispenser.col_count, cDispenser.slot_count);
 
     if (c)
         slots = c->first;
