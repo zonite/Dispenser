@@ -12,7 +12,7 @@ static int dispenser_unit_init(struct device *dev) {
     //, k = -1;
     //unsigned char col = 0;
     //struct device_node *unit = of_get_child_by_name(dev->of_node, DEVICE_UNIT);
-    struct dispenser_slot_list *slot_list = NULL;
+    struct dispenser_slot_list *slot_list = NULL, *s = NULL;
     struct dispenser_col_list *col_list = NULL, *col_iterator;
     unsigned char *slots = NULL, *cols = NULL;
     //struct gpio_descs *up = NULL, *down = NULL, *release = NULL;
@@ -98,6 +98,7 @@ static int dispenser_unit_init(struct device *dev) {
         //slots[n].up = gpiod_get_index(dev, "up", n, GPIOD_IN);
         if (col_iterator->col_name != cols[n]) {
             //Different column:
+            printk("Different column, name = %i != cols[%i] = %i, id = %i, slots = %i\n", col_iterator->col_name, n, cols[n], col_iterator->col_id, col_iterator->slot_count);
             col_iterator = col_list; //Reset to first column
             do { //Iterate columns
                 if (!col_iterator->next) { //col_iterator == NULL : no column found! End of list!
@@ -116,6 +117,8 @@ static int dispenser_unit_init(struct device *dev) {
                     col_iterator->next->col_id = ++(col_iterator->col_id);
                     col_iterator->next->first = &slot_list[n];
                     ++cDispenser.col_count;
+
+                    printk("New column name = %i, id = %i, slots = %i\n", col_iterator->col_name, col_iterator->col_id, col_iterator->slot_count);
                 }
                 col_iterator = col_iterator->next;
             } while (col_iterator->col_name != cols[n]);
@@ -163,6 +166,8 @@ static int dispenser_unit_init(struct device *dev) {
             slot_list[n + 1].prev = &slot_list[n];
         }
         //slot_list[n].
+        s = &slot_list[n];
+        printk("New slot[%i] pos %i%i: name = %i, id = %i, slot_num = %i\n", n, s->column->col_id, s->slot_id, s->slot_name, s->slot_id, s->slot_num);
     }
 
     slot_list[0].prev = NULL;
@@ -252,6 +257,8 @@ static void dispenser_unit_close()
     cDispenser.col_count = 0;
     cDispenser.cols = NULL;
 
+    printk("Closing unit, cols = %i, slots = %i\n", cDispenser.col_count, cDispenser.slot_count);
+
     if (c)
         slots = c->first;
 
@@ -259,7 +266,11 @@ static void dispenser_unit_close()
         struct dispenser_slot_list *s = c->first;
         c->first = NULL;
 
+        printk("Close column name = %i, id = %i, slots = %i\n", c->col_name, c->col_id, c->slot_count);
+
         while (s) {
+            printk("Close slot pos %i%i: name = %i, id = %i, slot_num = %i\n", s->column->col_id, s->slot_id, s->slot_name, s->slot_id, s->slot_num);
+
             dispenser_gpiod_close(s->up);
             dispenser_gpiod_close(s->down);
             dispenser_gpiod_close(s->release);

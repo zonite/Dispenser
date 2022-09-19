@@ -99,7 +99,7 @@ static struct dispenser_gpiod *dispenser_gpiod_open_index(struct device *dev, co
 
 static void dispenser_gpiod_close(struct dispenser_gpiod *pgpiod)
 {
-    printk("Close GPIO 0x%p\n", pgpiod);
+    printk("Close %s GPIO 0x%p\n", pgpiod->gpiod->name, pgpiod);
     if (timer_pending(&pgpiod->timer)) {
         printk("Deleting pending timer!\n");
         del_timer(&pgpiod->timer);
