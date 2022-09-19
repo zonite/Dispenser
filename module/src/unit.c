@@ -142,6 +142,7 @@ static int dispenser_unit_init(struct device *dev) {
             //s points to last slot.
             s->next = &slot_list[n];
             slot_list[n].prev = s;
+            slot_list[n].slot_id = s->slot_id + 1;
         } else {
             col_iterator->first = &slot_list[n];
         }
