@@ -28,11 +28,11 @@ static irqreturn_t dispenser_gpiod_irq_handler(int irq, void *dev_id)
     local_irq_save(flags);
 
     if (dev->last + msecs_to_jiffies(INT_DEBOUNCE) > jiffies) {
-        printk("Door: GPIO debounce too early\n");
-        //dispenser_gpiod_get_debounce(cDispenser.p_sDoor);
-        dispenser_gpiod_reset_timer(dev, INT_DEBOUNCE);
+	printk("Door: GPIO debounce too early\n");
+	//dispenser_gpiod_get_debounce(cDispenser.p_sDoor);
+	dispenser_gpiod_reset_timer(dev, INT_DEBOUNCE);
     } else {
-        dispenser_gpiod_event(dev, !*dev->value);
+	dispenser_gpiod_event(dev, !*dev->value);
     }
     dev->last = jiffies;
 
@@ -49,43 +49,43 @@ static irqreturn_t door_irq_handler(int irq, void *dev_id) {
     char old_door, new_door;
 
     if (cDispenser.p_sLed) {
-        //Disable interrupts
-        local_irq_save(flags);
+	//Disable interrupts
+	local_irq_save(flags);
 
-        if (last + msecs_to_jiffies(INT_DEBOUNCE) > jiffies) {
-            printk("Door: GPIO debounce too early\n");
-            dispenser_gpiod_get_debounce(cDispenser.p_sDoor);
-            last = jiffies;
+	if (last + msecs_to_jiffies(INT_DEBOUNCE) > jiffies) {
+	    printk("Door: GPIO debounce too early\n");
+	    dispenser_gpiod_get_debounce(cDispenser.p_sDoor);
+	    last = jiffies;
 
-            //Enable interrupts
-            local_irq_restore(flags);
+	    //Enable interrupts
+	    local_irq_restore(flags);
 
-            return (irqreturn_t) IRQ_HANDLED;
-        }
-        last = jiffies;
+	    return (irqreturn_t) IRQ_HANDLED;
+	}
+	last = jiffies;
 
-        //kernel_fpu_begin();
+	//kernel_fpu_begin();
 
-        //irq_wake_thread(irq, dev_id);
+	//irq_wake_thread(irq, dev_id);
 
-        old_door = *cDispenser.p_sDoor->value;
-        new_door = !old_door;
-        //new_door = gpio_device_get(cDispenser.p_sDoor);
+	old_door = *cDispenser.p_sDoor->value;
+	new_door = !old_door;
+	//new_door = gpio_device_get(cDispenser.p_sDoor);
 
-        door_event(new_door);
+	door_event(new_door);
 
-        //Enable interrupts
-        local_irq_restore(flags);
+	//Enable interrupts
+	local_irq_restore(flags);
 
-        //if (*cDispenser.p_sDoor->value) {
-            //Closed
+	//if (*cDispenser.p_sDoor->value) {
+	    //Closed
 
-        //} else {
-            //Open
-        //}
-        //gpio_device_set_tmout(cDispenser.p_sLed, !pDispenser_mmap->door, cDispenser.p_sDoor->timeout);
+	//} else {
+	    //Open
+	//}
+	//gpio_device_set_tmout(cDispenser.p_sLed, !pDispenser_mmap->door, cDispenser.p_sDoor->timeout);
     } else {
-        printk("Interrupt door, driver not ready\n");
+	printk("Interrupt door, driver not ready\n");
     }
 
     return (irqreturn_t) IRQ_HANDLED;
@@ -97,17 +97,17 @@ static irqreturn_t charge_irq_handler(int irq, void *dev_id) {
     static unsigned long last = 0;
 
     //if (pDispenser_mmap && cDispenser.p_sCharge) {
-        if (last + msecs_to_jiffies(INT_DEBOUNCE) > jiffies) {
-            printk("Charging: GPIO debounce too early\n");
-            dispenser_gpiod_get(cDispenser.p_sCharge);
+	if (last + msecs_to_jiffies(INT_DEBOUNCE) > jiffies) {
+	    printk("Charging: GPIO debounce too early\n");
+	    dispenser_gpiod_get(cDispenser.p_sCharge);
 
-            return (irqreturn_t) IRQ_HANDLED;
-        }
-        last = jiffies;
+	    return (irqreturn_t) IRQ_HANDLED;
+	}
+	last = jiffies;
 
-        printk("Charging event charge=%i -> %i\n", pDispenser_mmap->charging, dispenser_gpiod_get(cDispenser.p_sCharge));
+	printk("Charging event charge=%i -> %i\n", pDispenser_mmap->charging, dispenser_gpiod_get(cDispenser.p_sCharge));
 
-        dispenser_post_event(CHARGE, "Charging event", &pDispenser_mmap->charging);
+	dispenser_post_event(CHARGE, "Charging event", &pDispenser_mmap->charging);
     //} else {
     //    printk("Interrupt charge, driver not ready\n");
     //}
@@ -121,34 +121,34 @@ static irqreturn_t button_irq_handler(int irq, void *dev_id) {
 
 
     if (cDispenser.p_sLed) {
-        if (last + msecs_to_jiffies(INT_DEBOUNCE) > jiffies) {
-            printk("Button: GPIO debounce too early\n");
-            dispenser_gpiod_get(cDispenser.p_sButton);
+	if (last + msecs_to_jiffies(INT_DEBOUNCE) > jiffies) {
+	    printk("Button: GPIO debounce too early\n");
+	    dispenser_gpiod_get(cDispenser.p_sButton);
 
-            return (irqreturn_t) IRQ_HANDLED;
-        }
-        last = jiffies;
+	    return (irqreturn_t) IRQ_HANDLED;
+	}
+	last = jiffies;
 
-        printk("Button interrupt: Begins.\n");
+	printk("Button interrupt: Begins.\n");
 
-        old_val = pDispenser_mmap->button;
-        new_val = dispenser_gpiod_get(cDispenser.p_sButton);
+	old_val = pDispenser_mmap->button;
+	new_val = dispenser_gpiod_get(cDispenser.p_sButton);
 
-        printk("Button interrupt: %s.\n", new_val ? "pressed" : "depressed");
+	printk("Button interrupt: %s.\n", new_val ? "pressed" : "depressed");
 
-        if (old_val != new_val) {
-            //Button state change
-            if (new_val) {
-                //Button pressed
-                printk("Button: Press event. Set new value %i -> %i\n", pDispenser_mmap->light, !pDispenser_mmap->light);
-                dispenser_gpiod_set(cDispenser.p_sLed, !pDispenser_mmap->light);
-            } else {
-                //Button depressed
-                printk("Button: Depress event.\n");
-            }
-        }
+	if (old_val != new_val) {
+	    //Button state change
+	    if (new_val) {
+		//Button pressed
+		printk("Button: Press event. Set new value %i -> %i\n", pDispenser_mmap->light, !pDispenser_mmap->light);
+		dispenser_gpiod_set(cDispenser.p_sLed, !pDispenser_mmap->light);
+	    } else {
+		//Button depressed
+		printk("Button: Depress event.\n");
+	    }
+	}
     } else {
-        printk("Interrupt button, driver not ready\n");
+	printk("Interrupt button, driver not ready\n");
     }
 
     return (irqreturn_t) IRQ_HANDLED;

@@ -76,6 +76,8 @@ struct dispenser_slot_list {
     unsigned char slot_id;
     unsigned char slot_name;
     unsigned char slot_num;
+    unsigned char release_delayed;
+    unsigned char full;
     //unsigned char col;
     struct dispenser_mmap_slot *state;
     struct dispenser_gpiod *up;
@@ -154,6 +156,7 @@ static void dispenser_gpiod_reset_timer(struct dispenser_gpiod *pgpiod, unsigned
 static void dispenser_gpiod_set_tmout(struct dispenser_gpiod *pgpiod, char value, unsigned int tmout);
 static void dispenser_gpiod_tmr_callback(struct timer_list *timer);
 static void dispenser_gpiod_out_tmr_callback(struct timer_list *timer);
+static void dispenser_gpiod_set_pointer(struct dispenser_gpiod *pgpiod, volatile char *p);
 //static void dispenser_gpiod_timer_door(struct timer_list *timer);
 
 static inline struct dispenser_gpiod *dispenser_gpiod_open(struct device *dev, const char *name, enum gpiod_flags flags)

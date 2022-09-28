@@ -47,6 +47,8 @@ struct dispenser_mmap_slot {
     volatile char up;
     volatile char down;
     volatile char release;
+    volatile int up_failed;
+    volatile int down_failed;
 };
 
 union dispenser_mmap {
