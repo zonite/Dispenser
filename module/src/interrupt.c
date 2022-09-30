@@ -28,7 +28,7 @@ static irqreturn_t dispenser_gpiod_irq_handler(int irq, void *dev_id)
     local_irq_save(flags);
 
     if (dev->last + msecs_to_jiffies(INT_DEBOUNCE) > jiffies) {
-	printk("Door: GPIO debounce too early\n");
+	printk("IRQ handler: GPIO debounce too early\n");
 	//dispenser_gpiod_get_debounce(cDispenser.p_sDoor);
 	dispenser_gpiod_reset_timer(dev, INT_DEBOUNCE);
     } else {

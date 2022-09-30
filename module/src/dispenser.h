@@ -44,48 +44,48 @@ struct dispenser_col_list;
 struct dispenser_gpiod;
 
 struct dispenser_private {
-    struct device *dev;
-    /*
+	struct device *dev;
+	/*
     int charge;
     int button;
     int door;
     int led;
     */
-    unsigned int iFailTimeout;
-    struct platform_driver dispenser_driver;
-    struct dispenser_gpiod *p_sLed;
-    struct dispenser_gpiod *p_sButton;
-    struct dispenser_gpiod *p_sDoor;
-    struct dispenser_gpiod *p_sCharge;
-    struct dispenser_col_list *cols;
-    unsigned long mmap_size;
-    unsigned char col_count;
-    unsigned char slot_count;
+	unsigned int iFailTimeout;
+	struct platform_driver dispenser_driver;
+	struct dispenser_gpiod *p_sLed;
+	struct dispenser_gpiod *p_sButton;
+	struct dispenser_gpiod *p_sDoor;
+	struct dispenser_gpiod *p_sCharge;
+	struct dispenser_col_list *cols;
+	unsigned long mmap_size;
+	unsigned char col_count;
+	unsigned char slot_count;
 };
 
 struct dispenser_col_list {
-    unsigned char col_id;
-    unsigned char col_name;
-    unsigned char slot_count;
-    struct dispenser_slot_list *first;
-    struct dispenser_col_list *prev;
-    struct dispenser_col_list *next;
+	unsigned char col_id;
+	unsigned char col_name;
+	unsigned char slot_count;
+	struct dispenser_slot_list *first;
+	struct dispenser_col_list *prev;
+	struct dispenser_col_list *next;
 };
 
 struct dispenser_slot_list {
-    unsigned char slot_id;
-    unsigned char slot_name;
-    unsigned char slot_num;
-    unsigned char release_delayed;
-    unsigned char full;
-    //unsigned char col;
-    struct dispenser_mmap_slot *state;
-    struct dispenser_gpiod *up;
-    struct dispenser_gpiod *down;
-    struct dispenser_gpiod *release;
-    struct dispenser_slot_list *prev;
-    struct dispenser_slot_list *next;
-    struct dispenser_col_list *column;
+	unsigned char slot_id;
+	unsigned char slot_name;
+	unsigned char slot_num;
+	unsigned char release_delayed; //if set, release when previous opened
+	unsigned char full;
+	//unsigned char col;
+	struct dispenser_mmap_slot *state;
+	struct dispenser_gpiod *up;
+	struct dispenser_gpiod *down;
+	struct dispenser_gpiod *release;
+	struct dispenser_slot_list *prev;
+	struct dispenser_slot_list *next;
+	struct dispenser_col_list *column;
 };
 
 /*
@@ -123,24 +123,35 @@ static int dt_remove(struct platform_device *pdev);
 /* Unit */
 static int dispenser_unit_init(struct device *dev);
 static void dispenser_unit_close(void);
-static void dispenser_unit_release_slot(struct dispenser_slot_list *slot);
+static void dispenser_unit_release(char column, char slot);
+static void dispenser_unit_release_all(char force);
+static void dispenser_unit_release_column(struct dispenser_col_list *col, char slots, char force);
+static void dispenser_unit_release_slot(struct dispenser_slot_list *slot, char count, char force);
+static struct dispenser_slot_list *dispenser_unit_get(char column, char slot);
+static struct dispenser_col_list *dispenser_unit_get_column(char column);
+static struct dispenser_slot_list *dispenser_unit_get_slot(struct dispenser_col_list *column, char slot);
+static void dispenser_unit_slot_failed(struct dispenser_slot_list *s);
 static void dispenser_unit_mmap_set(void);
 static void dispenser_unit_mmap_reset(void);
+static void dispenser_unit_filled(void);
+static char dispenser_unit_get_full(void);
+static char dispenser_unit_get_full_column(struct dispenser_col_list *c);
+static void dispenser_unit_release_count(char count, char force);
 
 
 /* GPIO */
 struct dispenser_gpiod {
-    struct gpio_desc *gpiod;
-    volatile char *value; //Pointer to the cached value of the descriptor
-    char value_priv; //Default place for the value
-    volatile unsigned long last; //jiffies of the last interrupt
-    unsigned int timeout; //millisec
-    struct timer_list timer;
-//    void (*timer_callback)(struct timer_list *timer);
-    int irq_num;
-//    irq_handler_t irq_handler;
-    void (*event_handler)(struct dispenser_gpiod *gpiod, char value);
-    void *parent;
+	struct gpio_desc *gpiod;
+	volatile char *value; //Pointer to the cached value of the descriptor
+	char value_priv; //Default place for the value
+	volatile unsigned long last; //jiffies of the last interrupt
+	unsigned int timeout; //millisec
+	struct timer_list timer;
+	//    void (*timer_callback)(struct timer_list *timer);
+	int irq_num;
+	//    irq_handler_t irq_handler;
+	void (*event_handler)(struct dispenser_gpiod *gpiod, char value);
+	void *parent;
 };
 
 static inline void dispenser_gpiod_set_value_ptr(struct dispenser_gpiod *pgpiod, char *value)
@@ -172,11 +183,11 @@ static irqreturn_t dispenser_gpiod_irq_handler(int irq, void *dev_id);
 
 /* Events */
 enum eventtype {
-    CHARGE,
-    BUTTON,
-    DOOR,
-    LED,
-    DISPENSER
+	CHARGE,
+	BUTTON,
+	DOOR,
+	LED,
+	DISPENSER
 };
 
 static inline void dispenser_null_event(struct dispenser_gpiod* dev, char new_val)

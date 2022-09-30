@@ -9,28 +9,33 @@ static int dispenser_post_event(enum eventtype type, const char *name, volatile 
 
 static void dispenser_gpiod_event(struct dispenser_gpiod* dev, char new_val)
 {
-    *dev->value = new_val;
-    dev->event_handler(dev, new_val);
-    //post_event
-    //dispenser_post_event()
+	*dev->value = new_val;
+	dev->event_handler(dev, new_val);
+	//post_event
+	//dispenser_post_event()
 }
 
 static void dispenser_door_event(struct dispenser_gpiod* dev, char closed)
 {
-    if (dev != cDispenser.p_sDoor) {
-	printk("Dispenser: Door event, GPIOD != p_sDoor, 0x%p != 0x%p\n", dev, cDispenser.p_sDoor);
-    }
+	static unsigned long opened = -1;
 
-    if (closed) {
-	//Door closed!
-	printk("Door event: Closed %i -> %i\n", !closed, closed);
-	dispenser_gpiod_set_tmout(cDispenser.p_sLed, 0, 0);
-    } else {
-	//Door opened!
-	printk("Door event: Opened %i -> %i\n", !closed, closed);
-	dispenser_gpiod_set_tmout(cDispenser.p_sLed, 1, cDispenser.p_sDoor->timeout);
-    }
-    dispenser_post_event(DOOR, "Door event", &pDispenser_mmap->unit.door);
+	if (dev != cDispenser.p_sDoor) {
+		printk("Dispenser: Door event, GPIOD != p_sDoor, 0x%p != 0x%p\n", dev, cDispenser.p_sDoor);
+	}
+
+	if (closed) {
+		//Door closed!
+		printk("Door event: Closed %i -> %i\n", !closed, closed);
+		dispenser_gpiod_set_tmout(cDispenser.p_sLed, 0, 0);
+		if (jiffies > msecs_to_jiffies(opened + FILL_TIMEOUT))
+			dispenser_unit_filled();
+	} else {
+		//Door opened!
+		printk("Door event: Opened %i -> %i\n", !closed, closed);
+		opened = jiffies;
+		dispenser_gpiod_set_tmout(cDispenser.p_sLed, 1, cDispenser.p_sDoor->timeout);
+	}
+	dispenser_post_event(DOOR, "Door event", &pDispenser_mmap->unit.door);
 }
 
 static void dispenser_button_event(struct dispenser_gpiod* dev, char pressed)
@@ -90,30 +95,34 @@ static void dispenser_light_event(struct dispenser_gpiod* dev, char on)
 
 static void dispenser_up_event(struct dispenser_gpiod* dev, char new_val)
 {
-    struct dispenser_slot_list *slot = (struct dispenser_slot_list *)dev->parent;
+	struct dispenser_slot_list *slot = (struct dispenser_slot_list *)dev->parent;
 
-    if (!slot) {
-	printk("Dispenser: Fail, parent == NULL!\n");
-	return;
-    }
+	if (!slot) {
+		printk("Dispenser: Fail, parent == NULL!\n");
+		return;
+	}
 
-    if (new_val) { //Locked up
-	if (slot->state->state == CLOSING ||
-	        (slot->state->state == FAILED && slot->state->down == 0 && slot->state->release == 0)) {
-		slot->state->state = CLOSED;
-	    slot->full = 1;
-	} else {
-		slot->state->state = FAILED;
+	if (new_val) { //Locked up
+		if (slot->state->state == CLOSING ||
+		   (slot->state->state == FAILED && slot->state->down == 0 && slot->state->release == 0)) {
+			slot->state->state = CLOSED;
+			slot->full = 1;
+			printk("Dispenser: %s closed.\n", dev->gpiod->name);
+		} else {
+			slot->state->state = FAILED;
+			printk("Dispenser: %s failed up: up = %i, down = %i, release = %i\n", dev->gpiod->name, slot->state->up, slot->state->down, slot->state->release);
+		}
+	} else { //Released
+		slot->full = 0;
+		if (slot->state->state == RELEASE ||
+		   (slot->state->state == FAILED && slot->state->down == 0 && slot->state->release == 1)) {
+			slot->state->state = OPENING;
+			printk("Dispenser: %s opening.\n", dev->gpiod->name);
+		} else {
+			slot->state->state = FAILED;
+			printk("Dispenser: %s failed up release: up = %i, down = %i, release = %i\n", dev->gpiod->name, slot->state->up, slot->state->down, slot->state->release);
+		}
 	}
-    } else { //Released
-	slot->full = 0;
-	if (slot->state->state == RELEASE ||
-	        (slot->state->state == FAILED && slot->state->down == 0 && slot->state->release == 1)) {
-		slot->state->state = OPENING;
-	} else {
-		slot->state->state = FAILED;
-	}
-    }
 }
 
 static void dispenser_down_event(struct dispenser_gpiod* dev, char new_val)
@@ -130,18 +139,23 @@ static void dispenser_down_event(struct dispenser_gpiod* dev, char new_val)
 		if (slot->state->state == OPENING || slot->state->state == CLOSING ||
 		                (slot->state->state == FAILED && slot->state->up == 0)) {
 			slot->state->state = OPEN;
+			dispenser_release_event(dev, 0); //Down. Stop timer.
+			printk("Dispenser: %s open.\n", dev->gpiod->name);
 		} else {
 			slot->state->state = FAILED;
+			printk("Dispenser: %s failed down: up = %i, down = %i, release = %i\n", dev->gpiod->name, slot->state->up, slot->state->down, slot->state->release);
 		}
 		//If open next->inittiate
-		if (slot->next)
-			dispenser_unit_release_slot(slot->next);
+		if (slot->next && slot->next->release_delayed)
+			dispenser_unit_release_slot(slot->next, 1, 0);
 	} else { //Closing
 		if (slot->state->state == OPEN ||
 		                (slot->state->state == FAILED && slot->state->up == 0 && slot->state->release == 0)) {
 			slot->state->state = CLOSING;
+			printk("Dispenser: %s closing.\n", dev->gpiod->name);
 		} else {
 			slot->state->state = FAILED;
+			printk("Dispenser: %s failed closing: up = %i, down = %i, release = %i\n", dev->gpiod->name, slot->state->up, slot->state->down, slot->state->release);
 		}
 	}
 }
@@ -159,8 +173,10 @@ static void dispenser_release_event(struct dispenser_gpiod* dev, char new_val)
 	if (slot->state->state == CLOSED ||
 	        (slot->state->state == FAILED && slot->state->up == 1)) {
 		slot->state->state = RELEASE;
+		printk("Dispenser: %s release.\n", dev->gpiod->name);
 	} else {
 		slot->state->state = FAILED;
+		printk("Dispenser: %s failed release: up = %i, down = %i, release = %i\n", dev->gpiod->name, slot->state->up, slot->state->down, slot->state->release);
 	}
 	dispenser_gpiod_set(dev, 1);
     } else { //Release timeout
@@ -172,8 +188,12 @@ static void dispenser_release_event(struct dispenser_gpiod* dev, char new_val)
 	} else {
 		//Failed
 		slot->state->state = FAILED;
+		printk("Dispenser: Release %s failed, re-release!\n", dev->gpiod->name);
+		dispenser_gpiod_set(dev, 1);
+		return;
 	}
 	dispenser_gpiod_set_tmout(dev, 0, 0);
+	printk("Dispenser: Release %s success.\n", dev->gpiod->name);
     }
 }
 
