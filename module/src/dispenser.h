@@ -169,6 +169,7 @@ static void dispenser_gpiod_tmr_callback(struct timer_list *timer);
 static void dispenser_gpiod_out_tmr_callback(struct timer_list *timer);
 static void dispenser_gpiod_set_pointer(struct dispenser_gpiod *pgpiod, volatile char *p);
 //static void dispenser_gpiod_timer_door(struct timer_list *timer);
+static void dispenser_gpiod_rename(struct dispenser_gpiod *pgpiod, char *name);
 
 static inline struct dispenser_gpiod *dispenser_gpiod_open(struct device *dev, const char *name, enum gpiod_flags flags)
 { return dispenser_gpiod_open_index(dev, name, 0, flags); }

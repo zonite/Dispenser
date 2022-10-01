@@ -113,6 +113,12 @@ static void dispenser_gpiod_close(struct dispenser_gpiod *pgpiod)
 	kfree(pgpiod);
 }
 
+static void dispenser_gpiod_rename(struct dispenser_gpiod *pgpiod, char *name)
+{
+	gpiod_set_consumer_name(pgpiod->gpiod, name);
+	//pgpiod->gpiod->label = name;
+}
+
 //static void gpio_device_set(struct gpio_device *pgpio, char value, unsigned long timeout) {
 //
 //}

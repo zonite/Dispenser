@@ -165,9 +165,9 @@ static int dispenser_unit_init(struct device *dev) {
 	RELEASE_TEXT[10] = '0' + col_iterator->col_id;
 	RELEASE_TEXT[11] = '0' + slot_list[n].slot_id;
 
-	slot_list[n].up = dispenser_gpiod_open_index(dev, UP_TEXT, n, GPIOD_IN);
-	slot_list[n].down = dispenser_gpiod_open_index(dev, DOWN_TEXT, n, GPIOD_IN);
-	slot_list[n].release = dispenser_gpiod_open_index(dev, RELEASE_TEXT, n, GPIOD_OUT_LOW);
+	slot_list[n].up = dispenser_gpiod_open_index(dev, "up", n, GPIOD_IN);
+	slot_list[n].down = dispenser_gpiod_open_index(dev, "down", n, GPIOD_IN);
+	slot_list[n].release = dispenser_gpiod_open_index(dev, "release", n, GPIOD_OUT_LOW);
 
 	if (!slot_list[n].up || !slot_list[n].down || !slot_list[n].release) {
 		printk("GPIOD allocation failed.\n");
@@ -190,6 +190,10 @@ static int dispenser_unit_init(struct device *dev) {
 	slot_list[n].release->timeout = cDispenser.iFailTimeout;
 	slot_list[n].release->event_handler = dispenser_release_event;
 	slot_list[n].release->parent = &slot_list[n];
+
+	dispenser_gpiod_rename(slot_list[n].up, UP_TEXT);
+	dispenser_gpiod_rename(slot_list[n].down, DOWN_TEXT);
+	dispenser_gpiod_rename(slot_list[n].release, RELEASE_TEXT);
 
 	//if (cols[n] == cols[(n + 1) % n]) {
 	//    slot_list[n].next = &slot_list[n + 1];
@@ -338,13 +342,16 @@ static void dispenser_unit_close()
 	while (s) {
 		printk("Close slot pos %i%i: name = %i, id = %i, slot_num = %i\n", s->column->col_id, s->slot_id, s->slot_name, s->slot_id, s->slot_num);
 
-	    dispenser_gpiod_close(s->up);
-	    dispenser_gpiod_close(s->down);
-	    dispenser_gpiod_close(s->release);
+		if (s->up)
+			dispenser_gpiod_close(s->up);
+		if (s->down)
+			dispenser_gpiod_close(s->down);
+		if (s->release)
+			dispenser_gpiod_close(s->release);
 
-	    u = s;
-	    s = s->next;
-	    u->next = NULL;
+		u = s;
+		s = s->next;
+		u->next = NULL;
 	}
 
 	t = c->next;
