@@ -52,3 +52,6 @@ QMAKE_EXTRA_COMPILERS += makedriver
 PRE_TARGETDEPS += compiler_makedriver_make_all
 
 #Automatic below...
+
+SOURCES += \
+        src/generic-netlink.c

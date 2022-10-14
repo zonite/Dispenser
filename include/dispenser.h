@@ -14,6 +14,26 @@
 #define INT_DEBOUNCE 40
 #define POLL_INTERVAL SEC_TO_MSEC(60)
 
+/**
+ * Dispenser Generic Netlink Interface
+ */
+
+#define DISPENSER_GENL_NAME "dispenser_genl"
+
+/**
+ * @brief The DISPENSER_GENL_ATTRIBUTE enum Netlink message payload
+ */
+
+enum DISPENSER_GENL_ATTRIBUTE {
+	DISPENSER_GENL_UNSPEC,
+	DISPENSER_SLOT_STATE,
+	__DISPENSER_GENL_ATTR_END,
+};
+
+enum DISPENSER_GENL_COMMAND {
+	__DISPENSER_GENL_CMD_END,
+};
+
 enum slot_state {
 	FAILED,
 	CLOSED,
