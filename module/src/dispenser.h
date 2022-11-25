@@ -123,7 +123,7 @@ static int dt_remove(struct platform_device *pdev);
 /* Unit */
 static int dispenser_unit_init(struct device *dev);
 static void dispenser_unit_close(void);
-static void dispenser_unit_release(char column, char slot);
+static int dispenser_unit_release(char column, char slot);
 static void dispenser_unit_release_all(char force);
 static void dispenser_unit_release_column(struct dispenser_col_list *col, char slots, char force);
 static void dispenser_unit_release_slot(struct dispenser_slot_list *slot, char count, char force);
@@ -204,6 +204,7 @@ static void dispenser_up_event(struct dispenser_gpiod* dev, char new_val);
 static void dispenser_down_event(struct dispenser_gpiod* dev, char new_val);
 static void dispenser_release_event(struct dispenser_gpiod* dev, char new_val);
 
+/* Netlink Generic */
 
 
 /*

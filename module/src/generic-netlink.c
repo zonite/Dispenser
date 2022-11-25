@@ -1,53 +1,209 @@
 #include <net/genetlink.h>
+#include <linux/version.h>
 
 #include "dispenser.h"
 
-static struct genl_ops dispenser_genl_ops[DISPENSER_GENL_OPS_LEN] = {
+// https://github.com/phip1611/generic-netlink-user-kernel-rust
+// https://stackoverflow.com/questions/60821210/how-to-send-and-receive-a-struct-through-netlink
+
+//#define DISPENSER_GENL_OPS_LEN DISPENSER_GENL_CMD_COUNT
+//#define DISPENSER_GENL_ATTR_LEN DISPENSER_GENL_ATTR_COUNT
+
+/** Dispenser Netlink Generic: private prototypes **/
+static int dispenser_genl_release(struct sk_buff *sender_buffer, struct  genl_info *info);
+static int dispenser_genl_slot_status(struct sk_buff *sender_buffer, struct  genl_info *info);
+static int dispenser_genl_unit_status(struct sk_buff *sender_buffer, struct  genl_info *info);
+static int dispenser_genl_environment(struct sk_buff *sender_buffer, struct  genl_info *info);
+static int dispenser_genl_calibration(struct sk_buff *sender_buffer, struct  genl_info *info);
+static int dispenser_genl_dump(struct sk_buff *sender_buffer, struct  genl_info *info);
+
+
+//static const struct genl_ops dispenser_genl_ops[DISPENSER_GENL_CMD_MAX] = {
+static const struct genl_ops dispenser_genl_ops[] = {
+/*
 {
-	.cmd = ,
+	.cmd = DISPENSER_GENL_CMD_UNSPEC, //NOT needed
 	.flags = 0,
 	.internal_flags = 0,
 	.doit = callback,
-	.dumpit = callback_noallocation,
+	.dumpit = callback_noallocation, //pre allocated buffer...
 	.start = lock,
 	.done = unlock,
 	.validate = 0,
 },
+*/
 {
-	.cmd = ,
-	.flags = 0,
-	.internal_flags = 0,
-	.doit = callback,
-	.dumpit = callback_noallocation,
-	.start = lock,
-	.done = unlock,
-	.validate = 0,
-
-}
+	.cmd = DISPENSER_GENL_CMD_RELEASE,
+	.doit = dispenser_genl_release,
+#if LINUX_VERSION_CODE < KERNEL_VERSION(5, 2, 0)
+	.policy = dispenser_genl_policy
+#endif
+},
+{
+	.cmd = DISPENSER_GENL_CMD_SLOT_STATUS,
+	.doit = dispenser_genl_slot_status,
+},
+{
+	.cmd = DISPENSER_GENL_CMD_UNIT_STATUS,
+	.doit = dispenser_genl_unit_status,
+},
+{
+	.cmd = DISPENSER_GENL_CMD_ENVIRONMENT,
+	.doit = dispenser_genl_environment,
+},
+{
+	.cmd = DISPENSER_GENL_CMD_CALIBRATION,
+	.doit = dispenser_genl_calibration,
+},
+{
+	.cmd = DISPENSER_GENL_CMD_DUMP,
+	.dumpit = dispenser_genl_dump,
+},
 };
 
-static struct nla_policy dispenser_genl_policy[] = {
-	[CMD] = { .type = NLA_UNSPEC },
-	[CMD] = { .type = NLA_NUL_STRING },
+static struct nla_policy const dispenser_genl_policy[DISPENSER_GENL_ATTR_COUNT] = {
+	[DISPENSER_GENL_CMD_UNSPEC] = { .type = NLA_UNSPEC },
+	[DISPENSER_GENL_MEM_COUNTER] = { .type = NLA_U32 }, //u32 attr
+	[DISPENSER_GENL_RELEASE_COUNT] = { .type = NLA_S8 }, //s8 attr // negative num to force
+	[DISPENSER_GENL_COL_NUM] = { .type = NLA_U8 }, //u8 attr
+	[DISPENSER_GENL_SLOT_NUM] = { .type = NLA_U8 }, //u8 attr
+	[DISPENSER_GENL_SLOT_STATUS] = { .type = NLA_U8 }, //bitfield up,down,release,+enum state (5bits) (settable)
+	[DISPENSER_GENL_SLOT_FAILED_UP] = { .type = NLA_S32 }, //u32 attr
+	[DISPENSER_GENL_SLOT_FAILED_DOWN] = { .type = NLA_S32 }, //u32 attr
+	[DISPENSER_GENL_UNIT_STATUS] = { .type = NLA_U8 }, //bitfield door,power,night,light (night+light settable)
+	[DISPENSER_GENL_TEMPERATURE] = { .type = NLA_U32 }, //u32 attr //raw temperature
+	[DISPENSER_GENL_PRESSURE] = { .type = NLA_U32 }, //u32 attr //raw pressure
+	[DISPENSER_GENL_HUMIDITY] = { .type = NLA_U32 }, //u32 attr //raw humidity
+	[DISPENSER_GENL_CALIBRATION] = { .type = NLA_U32 }, //calibration data
 };
 
+/** Generic Netlink Family Descriptor **/
 static struct genl_family dispenser_genl_family = {
-	.id = 0,
-	.hdrsize = 0,
+	.id = 0, //Not needed
+	.hdrsize = 0, //Not needed
 	.name = DISPENSER_GENL_NAME,
 	.version = 1,
 	.ops = dispenser_genl_ops,
-	.n_ops = DISPENSER_GENL_OPS_LEN,
+	.n_ops = ARRAY_SIZE(dispenser_genl_ops),
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 2, 0)
 	.policy = dispenser_genl_policy,
-	.maxattr = ,
+#endif
+	.maxattr = DISPENSER_GENL_ATTR_MAX,
 	.module = THIS_MODULE,
-	.parallel_ops = 0,
-	.netnsok = 0,
-	.pre_doit = NULL,
-	.post_doit = NULL,
+	.parallel_ops = 0, //Not needed
+	.netnsok = 0, //Not needed
+	.pre_doit = NULL, //Not needed
+	.post_doit = NULL, //Not needed
 };
 
-int dispenser_genl_doit(struct sk_buff *sender_buffer, struct  genl_info *info)
+static int dispenser_genl_release(struct sk_buff *sender_buffer, struct  genl_info *info)
+{
+	struct nlattr **attrs;
+	struct dispenser_col_list *col;
+	s8 count, force;
+	u8 s, c;
+
+	if (!info || !info->attrs) {
+		printk("Error: Generic Netlink null info.\n");
+		return -EINVAL;
+	}
+
+	attrs = info->attrs;
+	count = 1;
+	force = 0;
+
+	if (attrs[DISPENSER_GENL_RELEASE_COUNT]) {
+		count = nla_get_s8(attrs[DISPENSER_GENL_RELEASE_COUNT]);
+	}
+
+	if (!count)
+		return -EINVAL;
+
+	if (count < 0) {
+		force = 1;
+		count = (~count) + 1;
+	}
+
+	if (attrs[DISPENSER_GENL_COL_NUM]) {
+		c = nla_get_u8(attrs[DISPENSER_GENL_COL_NUM]);
+		col = dispenser_unit_get_column(c);
+
+		if (!col) {
+			return -EINVAL;
+		}
+
+		if (attrs[DISPENSER_GENL_SLOT_NUM]) {
+			s = nla_get_u8(attrs[DISPENSER_GENL_SLOT_NUM]);
+			return dispenser_unit_release(c, s); //release specific slot
+		}
+
+		dispenser_unit_release_column(col, count, force); //release from column
+		return 0;
+	}
+
+	dispenser_unit_release_count(count, force); //release from unit
+
+	return 0;
+}
+
+static int dispenser_genl_slot_status(struct sk_buff *sender_buffer, struct  genl_info *info)
+{
+	struct nlattr **attrs;
+	s32 up_failed, down_failed;
+	u8 s, c, status;
+
+	if (!info || !info->attrs) {
+		printk("Error: Generic Netlink null info.\n");
+		return -EINVAL;
+	}
+
+	if (!attrs[DISPENSER_GENL_COL_NUM] || attrs[DISPENSER_GENL_SLOT_NUM] ) {
+		printk("Error: no column or slot\n");
+		return -EINVAL;
+	}
+
+	c = nla_get_u8(attrs[DISPENSER_GENL_COL_NUM]);
+	s = nla_get_u8(attrs[DISPENSER_GENL_SLOT_NUM]);
+}
+
+static int dispenser_genl_unit_status(struct sk_buff *sender_buffer, struct  genl_info *info)
+{
+	if (!info) {
+		printk("Error: Generic Netlink null info.\n");
+		return -EINVAL;
+	}
+
+}
+
+static int dispenser_genl_environment(struct sk_buff *sender_buffer, struct  genl_info *info)
+{
+	if (!info) {
+		printk("Error: Generic Netlink null info.\n");
+		return -EINVAL;
+	}
+
+}
+
+static int dispenser_genl_calibration(struct sk_buff *sender_buffer, struct  genl_info *info)
+{
+	if (!info) {
+		printk("Error: Generic Netlink null info.\n");
+		return -EINVAL;
+	}
+
+}
+
+static int dispenser_genl_dump(struct sk_buff *sender_buffer, struct  genl_info *info)
+{
+	if (!info) {
+		printk("Error: Generic Netlink null info.\n");
+		return -EINVAL;
+	}
+
+}
+
+
+static int dispenser_genl_doit(struct sk_buff *sender_buffer, struct  genl_info *info)
 {
 	struct nlattr *attr;
 	struct sk_buff *reply_buffer;

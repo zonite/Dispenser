@@ -25,14 +25,42 @@
  */
 
 enum DISPENSER_GENL_ATTRIBUTE {
-	DISPENSER_GENL_UNSPEC,
-	DISPENSER_SLOT_STATE,
-	__DISPENSER_GENL_ATTR_END,
-};
+	DISPENSER_GENL_ATTR_UNSPEC,
+	DISPENSER_GENL_MEM_COUNTER, //u32 attr
+	DISPENSER_GENL_RELEASE_COUNT, //u8 attr
+	DISPENSER_GENL_COL_NUM, //u8 attr
+	DISPENSER_GENL_SLOT_NUM, //u8 attr
+	DISPENSER_GENL_SLOT_STATUS, //bitfield up,down,release,+enum state (5bits) (settable)
+	DISPENSER_GENL_SLOT_FAILED_UP, //u32 attr
+	DISPENSER_GENL_SLOT_FAILED_DOWN, //u32 attr
+	DISPENSER_GENL_UNIT_STATUS, //bitfield door,power,night,light (night+light settable)
+	DISPENSER_GENL_TEMPERATURE, //u32 attr //raw temperature
+	DISPENSER_GENL_PRESSURE, //u32 attr //raw pressure
+	DISPENSER_GENL_HUMIDITY, //u32 attr //raw humidity
+	DISPENSER_GENL_CALIBRATION, //calibration data
+	__DISPENSER_GENL_ATTR_MAX,
+} __attribute__ ((__packed__));
+
+#define DISPENSER_GENL_ATTR_COUNT (__DISPENSER_GENL_ATTR_MAX)
+#define DISPENSER_GENL_ATTR_MAX (__DISPENSER_GENL_ATTR_MAX - 1)
+
+/**
+ * @brief The DISPENSER_GENL_COMMAND enum Netlink commands (functions) executed by the receiver
+**/
 
 enum DISPENSER_GENL_COMMAND {
-	__DISPENSER_GENL_CMD_END,
-};
+	DISPENSER_GENL_CMD_UNSPEC,
+	DISPENSER_GENL_CMD_RELEASE, //action by attributes
+	DISPENSER_GENL_CMD_SLOT_STATUS, //u8 col, u8 slot, u8 state attr
+	DISPENSER_GENL_CMD_UNIT_STATUS, //u8 col, u8 slot, u8 state attr
+	DISPENSER_GENL_CMD_ENVIRONMENT, //u32 attr //raw temperature
+	DISPENSER_GENL_CMD_CALIBRATION, //calibration data
+	DISPENSER_GENL_CMD_DUMP, //Dumps the mmap-area
+	__DISPENSER_GENL_CMD_MAX,
+} __attribute__ ((__packed__));
+
+//#define DISPENSER_GENL_CMD_ENUM (__DISPENSER_GENL_CMD_MAX)
+#define DISPENSER_GENL_CMD_MAX (__DISPENSER_GENL_CMD_MAX - 1)
 
 enum slot_state {
 	FAILED,

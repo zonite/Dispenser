@@ -435,7 +435,7 @@ static void dispenser_unit_release_count(char count, char force)
 	kfree(col_count);
 }
 
-static void dispenser_unit_release(char column, char slot)
+static int dispenser_unit_release(char column, char slot)
 {
 	struct dispenser_slot_list *s = NULL;
 
@@ -444,7 +444,11 @@ static void dispenser_unit_release(char column, char slot)
 	if (s) {
 		dispenser_unit_release_slot(s, 1, 1);
 		printk("Dispenser: release column %i and slot %i\n", column, slot);
+
+		return 0;
 	}
+
+	return -EINVAL;
 }
 
 static void dispenser_unit_release_all(char force)
