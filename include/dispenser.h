@@ -1,6 +1,7 @@
 #ifndef DISPENSER_H
 #define DISPENSER_H
 
+#include <linux/kernel.h>
 #include <linux/types.h>
 
 #define SEC_TO_MSEC(A) ((A) * 1000)
@@ -104,10 +105,12 @@ struct dispenser_ioctl {
 };
 
 struct dispenser_mmap_unit {
+	volatile unsigned int counter;
 	volatile char charging;
 	volatile char button;
 	volatile char light;
 	volatile char door;
+	char night;
 	char cols;
 	char slots;
 };
@@ -132,12 +135,56 @@ union dispenser_mmap {
 	struct dispenser_mmap_slot slot;
 };
 
-
 #define WR_VALUE _IOW('a', 'a', int32_t *)
 #define RD_VALUE _IOR('a', 'b', int32_t *)
 #define GREETER  _IOW('a', 'c', struct dispenser_ioc *)
 //#define DISPENSERIOCTL _IO(0xB4, 0x20)
 
 #define DISPENSER_CMD _IOW(0xB4, 0x20, struct dispenser_ioctl *)
+
+
+//bitfield door,power,night,light (night+light settable)
+inline unsigned char dispenser_pack_unit_status(struct dispenser_mmap_unit *unit)
+{
+	unsigned char status = 0;
+	status |= (unit->door & 1) << 3;
+	status |= (unit->charging & 1) << 2;
+	status |= (unit->night & 1) << 1;
+	status |= (unit->light & 1);
+
+	return status;
+}
+
+inline void dispenser_unpack_unit_status(unsigned char status, struct dispenser_mmap_unit *unit)
+{
+	if (unit) {
+		unit->night = (status >> 1) & 1;
+		unit->light = status & 1;
+	}
+}
+
+//bitfield up,down,release,full,+enum state (4bits) (settable)
+inline unsigned char dispenser_pack_slot_status(struct dispenser_mmap_slot *state, unsigned char full)
+{
+	unsigned char status = 0;
+	status |= (state->up & 1) << 7;
+	status |= (state->down & 1) << 6;
+	status |= (state->release & 1) << 5;
+	status |= (full & 1) << 4;
+	status |= (state->state & 0xf);
+
+	return status;
+}
+
+inline void dispenser_unpack_slot_status(unsigned char status, struct dispenser_mmap_slot *state, unsigned char *full)
+{
+	if (state) {
+		state->state = (enum slot_state) (status & 0xf);
+	}
+	if (full) {
+		*full = (status >> 4) & 1;
+	}
+}
+
 
 #endif // DISPENSER_H

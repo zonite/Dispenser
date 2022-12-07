@@ -1,9 +1,10 @@
+.PRECIOUS: dispenser.o
 #obj-m += dispenser.o
 obj-m := dispenser.o
 targets += $(dtb-y)
 #dispenser-objs := chardev.o interface.o param.o interrupt.o
 #list-multi := dispenser.o
-EXTRA_CFLAGS=-I$(PWD)/../../include -I/lib/modules/$(shell uname -r)/source/
+EXTRA_CFLAGS=-I$(PWD)/../../include -S -save-temps -I/lib/modules/$(shell uname -r)/source/
 #INSTALL_MOD_PATH = /lib/modules/$(shell uname -r)/
 
 all: dt module
@@ -30,7 +31,7 @@ test:
 #dispenser.o : chardev.c interface.c param.c interrupt.c
 #	$(CC) -c -v $@ -mcmodel=kernel -fpermissive -fno-builtin -fno-exceptions -fno-rtti -nostdinc $<
 
-	#make -C $(INSTALL_MOD_PATH)/build M=$(PWD) modules_install
+        #make -C $(INSTALL_MOD_PATH)/build M=$(PWD) modules_install
 	#make -C /lib/modules/$(shell uname -r)/build M=/lib/modules/$(shell uname -r) modules_install
 	#make -C /lib/modules/$(shell uname -r)/build M=$(PWD) install *.ko
 	#make -C /lib/modules/5.15.44-v8+/build M=$(PWD) modules_install

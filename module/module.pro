@@ -54,4 +54,5 @@ PRE_TARGETDEPS += compiler_makedriver_make_all
 #Automatic below...
 
 SOURCES += \
+        src/bme280.c \
         src/generic-netlink.c

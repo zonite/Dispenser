@@ -9,25 +9,25 @@
 /* Global static variables */
 static struct of_device_id dispenser_driver_ids[] = {
     {
-        .compatible = COMPAT,
+	.compatible = COMPAT,
 /*    },
     {
-        .compatible = COMPAT_COL,
+	.compatible = COMPAT_COL,
     },
     {
-        .compatible = COMPAT_SLOT,*/
+	.compatible = COMPAT_SLOT,*/
     }, { /* NULL termination */ }
 };
 
 //static struct dispenser_private cDispenser = { 0 };
 static struct dispenser_private cDispenser = {
     .dispenser_driver = {
-        .probe = dt_probe,
-        .remove = dt_remove,
-        .driver = {
-            .name = "dispenser",
-            .of_match_table = dispenser_driver_ids,
-        },
+	.probe = dt_probe,
+	.remove = dt_remove,
+	.driver = {
+	    .name = "dispenser",
+	    .of_match_table = dispenser_driver_ids,
+	},
     0 },
 };
 
@@ -36,16 +36,16 @@ static union dispenser_mmap *pDispenser_mmap = NULL;
 /*
 static struct dispenser_private cDispenser = {
     .dispenser_driver = {
-        .probe = dt_probe,
-        .remove = dt_remove,
-        .driver = {
-            .name = "dispenser",
-            .of_match_table = (struct of_device_id[]) {
-                {
-                    .compatible = "hortensis,dispenser",
-                }, { }
-            },
-        },
+	.probe = dt_probe,
+	.remove = dt_remove,
+	.driver = {
+	    .name = "dispenser",
+	    .of_match_table = (struct of_device_id[]) {
+		{
+		    .compatible = "hortensis,dispenser",
+		}, { }
+	    },
+	},
     0 },
 };
 */
@@ -67,3 +67,4 @@ static struct gpio_device *p_sCharge = NULL;
 #include "platform.c"
 #include "event.c"
 #include "unit.c"
+#include "generic-netlink.c"

@@ -579,6 +579,79 @@ static void dispenser_unit_slot_failed(struct dispenser_slot_list *s)
 	s->state->state = FAILED;
 }
 
+static u32 dispenser_unit_counter(void)
+{
+	if (!pDispenser_mmap)
+		return 0;
+
+	return pDispenser_mmap->unit.counter;
+}
+
+static void dispenser_unit_set_state(struct dispenser_mmap_unit *new_state)
+{
+	int increment = 0;
+	if (!new_state)
+		return;
+
+	if (!pDispenser_mmap)
+		return;
+
+	if (pDispenser_mmap->unit.night != new_state->night) {
+		increment = 1;
+		pDispenser_mmap->unit.night = new_state->night;
+	}
+
+	if (pDispenser_mmap->unit.light != new_state->light) {
+		increment = 0;
+
+	}
+
+	if (increment)
+		++pDispenser_mmap->unit.counter;
+}
+
+static u32 dispenser_unit_set_slot_state(struct dispenser_slot_list *slot, struct dispenser_mmap_slot *new_state, unsigned char *full)
+{
+	if (!slot)
+		return 0;
+
+	slot->full = *full;
+
+	if (!slot->state || !pDispenser_mmap)
+		return 0;
+
+	memcpy(slot->state, new_state, sizeof (struct dispenser_mmap_slot));
+	++pDispenser_mmap->unit.counter;
+
+	dispenser_post_event(SLOT, "Slot state update", slot);
+
+	return pDispenser_mmap->unit.counter;
+}
+
+static void dispenser_unit_set_slot_up_failed(struct dispenser_slot_list *slot, s32 failed_up)
+{
+	if (!slot || !slot->state)
+		return;
+
+	slot->state->up_failed = failed_up;
+
+	++pDispenser_mmap->unit.counter;
+
+	dispenser_post_event(SLOT, "Slot failed up update", slot);
+}
+
+static void dispenser_unit_set_slot_down_failed(struct dispenser_slot_list *slot, s32 failed_down)
+{
+	if (!slot || !slot->state)
+		return;
+
+	slot->state->down_failed = failed_down;
+
+	++pDispenser_mmap->unit.counter;
+
+	dispenser_post_event(SLOT, "Slot failed down update", slot);
+}
+
 /*
 {
 
