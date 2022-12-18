@@ -20,6 +20,7 @@
  */
 
 #define DISPENSER_GENL_NAME "dispenser_genl"
+#define DISPENSER_GENL_GROUP 1
 
 /**
  * @brief The DISPENSER_GENL_ATTRIBUTE enum Netlink message payload
@@ -110,6 +111,9 @@ struct dispenser_mmap_unit {
 	volatile char button;
 	volatile char light;
 	volatile char door;
+	volatile __s32 temperature;
+	volatile __u32 pressure;
+	volatile __u32 humidity;
 	char night;
 	char cols;
 	char slots;
