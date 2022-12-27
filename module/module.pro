@@ -6,19 +6,22 @@ TEMPLATE = lib
 lupdate_only {
     SOURCES += \
         src/chardev.c \
-        src/gpio.c \
-        src/interface.c \
-        src/interrupt.c \
-        src/param.c \
-        src/platform.c \
-        src/dispenser.c \
-        src/gpio_device.c \
-        src/event.c \
-        src/unit.c
+	src/gpio.c \
+	src/interface.c \
+	src/interrupt.c \
+	src/param.c \
+	src/platform.c \
+	src/dispenser.c \
+	src/gpio_device.c \
+	src/event.c \
+	src/env.c \
+	src/bme280.c \
+	src/generic-netlink.c \
+	src/unit.c
 
     HEADERS += \
         src/dt-bindings/dispenser.h \
-        src/dispenser.h
+	src/dispenser.h
 
     DISTFILES += \
         src/rpioverlay.dts
@@ -53,6 +56,3 @@ PRE_TARGETDEPS += compiler_makedriver_make_all
 
 #Automatic below...
 
-SOURCES += \
-        src/bme280.c \
-        src/generic-netlink.c

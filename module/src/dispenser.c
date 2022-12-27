@@ -68,3 +68,5 @@ static struct gpio_device *p_sCharge = NULL;
 #include "event.c"
 #include "unit.c"
 #include "generic-netlink.c"
+#include "bme280.c"
+#include "env.c"
