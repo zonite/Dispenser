@@ -12,6 +12,11 @@
  *
  **/
 
+//plain 135 MB/s write
+//plain 682 MB/s read
+//crypt 13.1 MB/s write
+//crypt 766 MB/s read
+
 //BME280 addresses:
 #define I2C_BUS 1
 #define SLAVE_NAME "BMP280"
