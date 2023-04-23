@@ -23,6 +23,9 @@
 #define I2C_BUS 1
 #define SLAVE_NAME "BMP280"
 #define BMP280_ADDRESS 0x76
+#define BME280_32BIT_ENABLE
+//#define BME280_64BIT_ENABLE //__aeabi_ldivmod undef
+//#define BME280_FLOAT_ENABLE //__aeabi_dcmpgt undef
 
 /*
 //BME280 registers:

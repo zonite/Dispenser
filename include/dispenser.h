@@ -4,6 +4,9 @@
 #include <linux/kernel.h>
 #include <linux/types.h>
 
+#define DAEMON_NAME "Dispenser Daemon"
+#define DAEMON_VER "0.1"
+
 #define SEC_TO_MSEC(A) ((A) * 1000)
 #define LIGHT_TIMEOUT SEC_TO_MSEC(5 * 60)
 #define FAIL_TIMEOUT SEC_TO_MSEC(15)
