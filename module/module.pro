@@ -21,7 +21,9 @@ lupdate_only {
 
     HEADERS += \
         src/dt-bindings/dispenser.h \
-	src/dispenser.h
+	src/dispenser.h \
+	src/bme280.h \
+	src/bme280_defs.h
 
     DISTFILES += \
         src/rpioverlay.dts
@@ -55,4 +57,3 @@ QMAKE_EXTRA_COMPILERS += makedriver
 PRE_TARGETDEPS += compiler_makedriver_make_all
 
 #Automatic below...
-

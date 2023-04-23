@@ -216,6 +216,10 @@ static int dispenser_genl_init(void);
 static void dispenser_genl_exit(void);
 
 
+/* Env */
+static int8_t sensor_init(void);
+static void sensor_close(void);
+
 /*
 static void gpio_init(struct io *io);
 static void gpio_clear(struct io *io);

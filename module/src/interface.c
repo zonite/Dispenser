@@ -107,6 +107,8 @@ static int __init dispenser_init(void)
 	//init_param();
 	if (false)
 		init_param();
+	if (false)
+		sensor_init();
 
 	return SUCCESS;
 }
@@ -114,6 +116,9 @@ static int __init dispenser_init(void)
 static void __exit dispenser_exit(void)
 {
 	printk(KERN_INFO "Dispenser unload\n");
+
+	if (false)
+		sensor_close();
 
 	dispenser_genl_exit();
 	cleanup_chardev();

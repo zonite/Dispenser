@@ -4,6 +4,8 @@
 #include <linux/i2c.h>
 //#include <asm/fpu/api.h>
 
+#include "bme280.h"
+
 /**
  *
  *  https://github.com/Johannes4Linux/Linux_Driver_Tutorial/blob/main/07_BMP280/bmp280.c
@@ -22,6 +24,7 @@
 #define SLAVE_NAME "BMP280"
 #define BMP280_ADDRESS 0x76
 
+/*
 //BME280 registers:
 static u16 dig_T1 = 0; //register 0x88 / 0x89, u16le : reg[7:0]/[15:8] MSB
 static s16 dig_T2 = 0; //register 0x8A / 0x8B, s16le : reg[7:0]/[15:8] MSB
@@ -53,7 +56,9 @@ static u16 adc_H_raw = 0; //register 0xFD / 0xFE, u16be        : reg[15:8]/[7:0]
 //Globals:
 
 static s32 t_fine = 0;
+*/
 
+/*
 //Returns temp in deg C s32 5123 = 51.32 deg C
 static s32 BME280_compensate_T_32(s32 adc_T)
 {
@@ -64,7 +69,8 @@ static s32 BME280_compensate_T_32(s32 adc_T)
 	T = (t_fine * 5 + 128) >> 8;
 	return T;
 }
-
+*/
+/*
 static double BME280_compensate_T_double(s32 adc_T)
 {
 	double var1, var2, T;
@@ -80,7 +86,8 @@ static double BME280_compensate_T_double(s32 adc_T)
 
 	return T;
 }
-
+*/
+/*
 //Returns pressure u32 int in Q24.8 format (24 integer bits and 8 fractional bits)
 //24674867 = 24674867/256 = 96386.2 Pa = 963.862 hPa
 static u32 BME280_compensate_P_64(s32 adc_P)
@@ -105,7 +112,8 @@ static u32 BME280_compensate_P_64(s32 adc_P)
 
 	return (u32) p;
 }
-
+*/
+/*
 static double BME280_compensate_P_double(s32 adc_P)
 {
 	double var1, var2, p;
@@ -133,7 +141,9 @@ static double BME280_compensate_P_double(s32 adc_P)
 
 	return p;
 }
+*/
 
+/*
 //Returns humidity in %RH as unsigned 32 int in Q22.10 format (22 int bits and 10 fractional bits)
 //Output of 47445 = 47445 / 1024 = 46.333 %RH
 static u32 BME280_compensate_H_32(s32 adc_H)
@@ -147,7 +157,8 @@ static u32 BME280_compensate_H_32(s32 adc_H)
 
 	return (u32) (v_x1_u32r >> 12);
 }
-
+*/
+/*
 static double BME280_compensate_H_double(s32 adc_H)
 {
 	double var_H;
@@ -167,10 +178,11 @@ static double BME280_compensate_H_double(s32 adc_H)
 
 	return var_H;
 }
+*/
 
-static u8 sensor_read(u8 reg_address, u8 *reg_data, u32 len, void *i2c_addr)
+static s8 sensor_read(u8 reg_address, u8 *reg_data, u32 len, void *i2c_addr)
 {
-	u8 ret = 0;
+	s8 ret = 0;
 
 	/**
 	 * Data on the bus should be like
@@ -191,9 +203,9 @@ static u8 sensor_read(u8 reg_address, u8 *reg_data, u32 len, void *i2c_addr)
 	return ret;
 }
 
-static u8 sensor_write(u8 reg_address, u8 *reg_data, u32 len, void *i2c_addr)
+static s8 sensor_write(u8 reg_address, const u8 *reg_data, u32 len, void *i2c_addr)
 {
-	u8 ret = 0;
+	s8 ret = 0;
 
 	/**
 	 * Data on the bus should be like
@@ -212,9 +224,29 @@ static u8 sensor_write(u8 reg_address, u8 *reg_data, u32 len, void *i2c_addr)
 	return ret;
 }
 
-static void sensor_init(void)
+static void sensor_delay(u32 period, void *i2c_addr)
 {
 
+}
+
+static struct bme280_dev dev = {0};
+
+static int8_t sensor_init(void)
+{
+	int8_t rslt = BME280_OK;
+	uint8_t dev_addr = BME280_I2C_ADDR_PRIM;
+
+	dev.intf_ptr = &dev_addr;
+	dev.intf = BME280_I2C_INTF;
+	dev.read = sensor_read;
+	dev.write = sensor_write;
+	dev.delay_us = sensor_delay;
+
+	rslt = bme280_init(&dev);
+
+	//rslt = stream_sensor_data_forced_mode(&dev); //Not found!!!
+
+	return rslt;
 }
 
 static void sensor_close(void)
