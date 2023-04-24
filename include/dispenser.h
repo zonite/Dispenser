@@ -6,6 +6,7 @@
 
 #define DAEMON_NAME "Dispenser Daemon"
 #define DAEMON_VER "0.1"
+#define BME280_32BIT_ENABLE
 
 #define SEC_TO_MSEC(A) ((A) * 1000)
 #define LIGHT_TIMEOUT SEC_TO_MSEC(5 * 60)
