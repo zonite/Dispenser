@@ -31,6 +31,8 @@
 #define DEVICE_PATH "/dispenser/dispense_unit"
 #define MMAP_SLOT(A) (cDispenser.col_count + 1 + A)
 #define MMAP_COL(A) (1 + A)
+#define BME280_64BIT_ENABLE
+
 
 MODULE_LICENSE("GPL");
 MODULE_AUTHOR(DRIVER_AUTHOR);

@@ -4,8 +4,6 @@
 #include <linux/i2c.h>
 //#include <asm/fpu/api.h>
 
-#define BME280_64BIT_ENABLE
-
 #include "bme280.h"
 
 /**
