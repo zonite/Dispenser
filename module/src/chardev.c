@@ -157,8 +157,11 @@ static ssize_t device_read(struct file *filp, char *buffer, size_t length, loff_
 
 static ssize_t device_write(struct file *filp, const char *buff, size_t len, loff_t * off)
 {
-    printk(KERN_ALERT "Dispenser: Sorry, this operation isn't supported.\n");
-    return -EINVAL;
+	dispenser_unit_release_count(1, 0);
+	printk(KERN_ALERT "Dispenser: Test release.\n");
+	return -EAGAIN;
+	//printk(KERN_ALERT "Dispenser: Sorry, this operation isn't supported.\n");
+	//return -EINVAL;
 }
 
 static int device_mmap(struct file *pFile, struct vm_area_struct *vma)
