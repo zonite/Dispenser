@@ -528,11 +528,11 @@ static int dispenser_genl_doit(struct sk_buff *sender_buffer, struct  genl_info 
 
 static int dispenser_genl_init(void)
 {
-	if (genl_register_family(&dispenser_genl_family)) {
+	if (!genl_register_family(&dispenser_genl_family)) {
 		printk("Dispenser: successful Generic Netlink Registration.\n");
 	} else {
 		printk("Dispenser: Error Generic Netlink Registration.\n");
-		printk("Returned %i", genl_register_family(&dispenser_genl_family));
+		//printk("Returned %i\n", genl_register_family(&dispenser_genl_family));
 		return -1;
 	}
 
@@ -541,7 +541,7 @@ static int dispenser_genl_init(void)
 
 static void dispenser_genl_exit(void)
 {
-	if (genl_unregister_family(&dispenser_genl_family)) {
+	if (!genl_unregister_family(&dispenser_genl_family)) {
 		printk("Dispenser: successful Generic Netlink Unregistration.\n");
 	} else {
 		printk("Dispenser: Error Generic Netlink Unregistration.\n");
