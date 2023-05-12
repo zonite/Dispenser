@@ -532,6 +532,7 @@ static int dispenser_genl_init(void)
 		printk("Dispenser: successful Generic Netlink Registration.\n");
 	} else {
 		printk("Dispenser: Error Generic Netlink Registration.\n");
+		printk("Returned %i", genl_register_family(&dispenser_genl_family));
 		return -1;
 	}
 
