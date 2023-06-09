@@ -221,8 +221,8 @@ static void dispenser_unit_mmap_set(void)
 {
 	struct dispenser_col_list *c = cDispenser.cols;
 
-	pDispenser_mmap->unit.cols = cDispenser.col_count;
-	pDispenser_mmap->unit.slots = cDispenser.slot_count;
+	pDispenser_mmap->unit.ncols = cDispenser.col_count;
+	pDispenser_mmap->unit.nslots = cDispenser.slot_count;
 
 	/*
 	if (cDispenser.p_sLed)

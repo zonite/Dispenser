@@ -118,8 +118,8 @@ struct dispenser_mmap_unit {
 	volatile __u32 pressure;
 	volatile __u32 humidity;
 	char night;
-	char cols;
-	char slots;
+	char ncols;
+	char nslots;
 };
 
 struct dispenser_mmap_column {

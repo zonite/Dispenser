@@ -19,6 +19,8 @@ INCLUDEPATH += \
     ../include \
     /usr/include/qt5/QtDaemon
 
+LIBS += -lQt5Daemon
+
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
 else: unix:!android: target.path = /opt/$${TARGET}/bin
