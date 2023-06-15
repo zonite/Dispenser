@@ -1,0 +1,20 @@
+<RCC>
+    <qresource prefix="/">
+        <file>imports/Dispenser/Constants.qml</file>
+        <file>imports/Dispenser/TitilliumWeb-Regular.ttf</file>
+        <file>imports/Dispenser/qmldir</file>
+        <file>main.qml</file>
+        <file>qtquickcontrols2.conf</file>
+        <file>SlotButton.qml</file>
+        <file>MainWindow.qml</file>
+        <file>MainWindowForm.ui.qml</file>
+        <file>Status.qml</file>
+        <file>StatusForm.ui.qml</file>
+        <file>Time.qml</file>
+        <file>EnvironmentData.qml</file>
+        <file>Temp.qml</file>
+        <file>QNH.qml</file>
+        <file>DewP.qml</file>
+        <file>Messages.qml</file>
+    </qresource>
+</RCC>
