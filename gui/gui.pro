@@ -2,14 +2,17 @@ TEMPLATE = app
 
 
 #QT       += core gui
-QT       += qml quick
+#QT       += qml quick
+QT       += core quickcontrols2 websockets
 
 #greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
-CONFIG += c++11
+CONFIG += c++11 qmltypes
 
 # Additional import path used to resolve QML modules in Qt Creator's code model
+QML_IMPORT_NAME = eu.nykyri.dispenser
 QML_IMPORT_PATH = $$PWD/imports
+QML_IMPORT_MAJOR_VERSION = 1
 
 # Additional import path used to resolve QML modules just for Qt Quick Designer
 QML_DESIGNER_IMPORT_PATH =
@@ -28,8 +31,14 @@ RESOURCES += qml.qrc
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += \
-    main.cpp
+    main.cpp \
+    manager.cpp \
+    unitlist.cpp \
+    unitmodel.cpp
 #    mainwindow.cpp
+
+INCLUDEPATH += \
+    ../include
 
 #HEADERS += \
 #    mainwindow.h
@@ -48,3 +57,8 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
 
 DISTFILES +=
+
+HEADERS += \
+        manager.h \
+	unitlist.h \
+	unitmodel.h

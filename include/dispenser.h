@@ -4,6 +4,10 @@
 #include <linux/kernel.h>
 #include <linux/types.h>
 
+#define ORGANIZATION "MNY"
+#define DOMAIN "nykyri.eu"
+#define APPNAME "Dispenser"
+
 #define DAEMON_NAME "Dispenser Daemon"
 #define DAEMON_VER "0.1"
 

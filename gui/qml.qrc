@@ -9,7 +9,6 @@
         <file>MainWindow.qml</file>
         <file>MainWindowForm.ui.qml</file>
         <file>Status.qml</file>
-        <file>StatusForm.ui.qml</file>
         <file>Time.qml</file>
         <file>EnvironmentData.qml</file>
         <file>Temp.qml</file>

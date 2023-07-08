@@ -61,15 +61,183 @@ ApplicationWindow {
     height: Constants.height
     title: qsTr("Dispenser")
 
+    readonly property bool inPortrait: appWindow.width < appWindow.height
+
+    /** no toolbar
+    ToolBar {
+        id: overlayHeader
+
+        z: 1
+        width: parent.width
+        //parent: Overlay.overlay
+        parent: appWindow.overlay
+
+        Label {
+            id: label
+            anchors.centerIn: parent
+            text: qsTr("Dispenser")
+        }
+    }
+    */
+
+
+    Drawer {
+        id: drawer
+
+        //y: overlayHeader.height
+        width: appWindow.width / 2
+        height: appWindow.height //no ToolBar
+        //height: appWindow.height - overlayHeader.height
+
+        modal: inPortrait
+        //interactive: true
+        interactive: inPortrait
+        position: inPortrait ? 0 : 1
+        visible: !inPortrait
+
+        Status {
+            //implicitHeight: parent.height
+            anchors.fill: parent
+        }
+
+        ListView {
+            id: listView
+            anchors.fill: parent
+            clip: true
+
+            headerPositioning: ListView.OverlayHeader
+            header: Pane {
+                id: header
+                z: 2
+                width: parent.width
+
+                contentHeight: logo.height
+
+                /*
+                Image {
+                    id: logo
+                    width: parent.width
+                    source: "images/qt-logo.png"
+                    fillMode: implicitWidth > width ? Image.PreserveAspectFit : Image.Pad
+                }
+                */
+
+                Text {
+                    id: logo
+                    text: qsTr("QT")
+                }
+/*
+                MenuSeparator {
+                    parent: header
+                    width: parent.width
+                    anchors.verticalCenter: parent.bottom
+                    visible: !listView.atYBeginning
+                }
+                */
+            }
+
+            footer: ItemDelegate {
+                id: footer
+                text: qsTr("Footer")
+                width: parent.width
+
+                /*
+                MenuSeparator {
+                    parent: footer
+                    width: parent.width
+                    anchors.verticalCenter: parent.top
+                }
+                */
+            }
+
+            model: 10
+
+            delegate: ItemDelegate {
+                text: qsTr("Title %1").arg(index + 1)
+                width: listView.width
+            }
+
+            ScrollIndicator.vertical: ScrollIndicator { }
+        }
+    }
+
+    //RowLayout {
+        //height: parent.height
+
+//        Status {
+//            id: statusCol
+
+//        }
+
+        ListView {
+            id: view
+            //Layout.fillWidth: true
+            //Layout.fillHeight: true
+            //implicitWidth: appWindow.width
+            //anchors.left: statusCol.right
+            //x: drawer.width
+            //implicitHeight: appWindow.height
+            //implicitWidth: appWindow.width - drawer.width
+            anchors.fill: parent
+            anchors.leftMargin: !inPortrait ? drawer.width : undefined
+            topMargin: 5
+            bottomMargin: 5
+            //implicitHeight: 250
+            clip: true
+            orientation: Qt.Horizontal
+
+            /* Header as Drawer
+            //headerPositioning: ListView.PullBackHeader
+            headerPositioning: ListView.OverlayHeader
+            header: Status {
+                implicitHeight: parent.height
+                z: 2 //make above items
+            }
+            */
+
+
+            //snapMode: ListView.SnapOneItem
+            snapMode: ListView.SnapToItem
+
+            //spacing: 5
+
+            model: UnitModel {
+                list: unitList
+            }
+
+            delegate: Frame {
+                implicitHeight: view.height
+                RowLayout {
+                    height: parent.height
+
+                    CheckBox {
+                        checked: model.done
+                        onClicked: model.done = checked
+                    }
+                    Rectangle {
+                        implicitHeight: 50
+                        implicitWidth: 50
+                    }
+
+                    TextField {
+                        Layout.fillWidth: true
+                        text: model.description
+                        onEditingFinished: model.description = text
+                    }
+                }
+            }
+        }
+    //}
+
     //ApplicationFlow {
     //}
 
-    MainWindow {
+    //MainWindow {
         //minimumWidth: mainWindow.Layout.minimumWidth
         //minimumHeight: main.Layout.minimumHeight
         //maximumWidth: main.Layout.maximumWidth
         //maximumHeight: mainWindow.Layout.maximumHeight
-    }
+    //}
 
     //minimumWidth: mainWindow.Layout.minimumWidth
     //minimumHeight: mainWindow.main.Layout.minimumHeight
