@@ -9,11 +9,14 @@ Frame {
     //Layout.fillWidth: true
     Layout.fillHeight: true
     //color: "#202020"
+
+    /*
     background: Rectangle {
         anchors.fill: parent
         color: "black"
         z: -2
     }
+    */
 
     //border.color: Constants.borderColor
     //border.style: ridge

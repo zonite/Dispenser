@@ -15,5 +15,6 @@
         <file>QNH.qml</file>
         <file>DewP.qml</file>
         <file>Messages.qml</file>
+        <file>Unit.qml</file>
     </qresource>
 </RCC>

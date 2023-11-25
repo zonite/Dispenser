@@ -100,6 +100,7 @@ ApplicationWindow {
             anchors.fill: parent
         }
 
+        /*
         ListView {
             id: listView
             anchors.fill: parent
@@ -120,7 +121,7 @@ ApplicationWindow {
                     source: "images/qt-logo.png"
                     fillMode: implicitWidth > width ? Image.PreserveAspectFit : Image.Pad
                 }
-                */
+                /
 
                 Text {
                     id: logo
@@ -133,7 +134,7 @@ ApplicationWindow {
                     anchors.verticalCenter: parent.bottom
                     visible: !listView.atYBeginning
                 }
-                */
+                /
             }
 
             footer: ItemDelegate {
@@ -147,7 +148,7 @@ ApplicationWindow {
                     width: parent.width
                     anchors.verticalCenter: parent.top
                 }
-                */
+                /
             }
 
             model: 10
@@ -159,6 +160,7 @@ ApplicationWindow {
 
             ScrollIndicator.vertical: ScrollIndicator { }
         }
+        */
     }
 
     //RowLayout {
@@ -205,26 +207,8 @@ ApplicationWindow {
                 list: unitList
             }
 
-            delegate: Frame {
-                implicitHeight: view.height
-                RowLayout {
-                    height: parent.height
+            delegate: Unit {
 
-                    CheckBox {
-                        checked: model.done
-                        onClicked: model.done = checked
-                    }
-                    Rectangle {
-                        implicitHeight: 50
-                        implicitWidth: 50
-                    }
-
-                    TextField {
-                        Layout.fillWidth: true
-                        text: model.description
-                        onEditingFinished: model.description = text
-                    }
-                }
             }
         }
     //}
