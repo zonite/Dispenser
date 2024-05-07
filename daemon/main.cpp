@@ -12,21 +12,19 @@ int main(int argc, char *argv[])
     QDaemonApplication::setApplicationVersion(DAEMON_VER);
     QDaemonApplication::setOrganizationDomain("dispenser.daemon");
 
-    /*
     QCommandLineParser parser;
     parser.setApplicationDescription("Food Dispenser Daemon");
     parser.addHelpOption();
     parser.addVersionOption();
 
     QCommandLineOption fgOption(QStringList() << "f" << "foreground",
-	    QCoreApplication::translate("main", "Do not daemonize."));
+            QCoreApplication::translate("main", "Do not daemonize."));
     parser.addOption(fgOption);
 
     // Process the actual command line arguments given by the user
     parser.process(a);
 
     bool fg = parser.isSet(fgOption);
-    */
 
     QTranslator translator;
     const QStringList uiLanguages = QLocale::system().uiLanguages();

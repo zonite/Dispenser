@@ -61,7 +61,8 @@ int init_chardev(void)
 	return result;
     }
     //Create chardev;
-    if ( (cl = class_create(THIS_MODULE, DEVICE_CLASS) ) == NULL) {
+//    if ( (cl = class_create(THIS_MODULE, DEVICE_CLASS) ) == NULL) {
+    if ( (cl = class_create(DEVICE_CLASS) ) == NULL) {
 	printk(KERN_ALERT "Class creation failed\n");
 	unregister_chrdev_region(Major, 1);
 
