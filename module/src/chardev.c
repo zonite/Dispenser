@@ -187,8 +187,10 @@ static int device_mmap(struct file *pFile, struct vm_area_struct *vma)
   //		       vma->vm_end-vma->vm_start, vma->vm_page_prot))
   //  return -EAGAIN;
 
-    vma->vm_flags |= VM_DONTEXPAND | VM_SHARED;
-    vma->vm_flags &= ~(VM_WRITE | VM_EXEC);
+    //vma->vm_flags |= VM_DONTEXPAND | VM_SHARED;
+    //vma->vm_flags &= ~(VM_WRITE | VM_EXEC);
+    vm_flags_set(vma, VM_DONTEXPAND | VM_SHARED);
+    vm_flags_clear(vma, VM_WRITE | VM_EXEC);
 
     if (remap_pfn_range(vma, vma->vm_start, vmalloc_to_pfn(pDispenser_mmap),
                         PAGE_SIZE, vma->vm_page_prot))
