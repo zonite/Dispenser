@@ -5,6 +5,8 @@
 
 #include <dispenser.h>
 
+#include "kernelclient.h"
+
 int main(int argc, char *argv[])
 {
     QDaemonApplication a(argc, argv);
@@ -25,6 +27,8 @@ int main(int argc, char *argv[])
     parser.process(a);
 
     bool fg = parser.isSet(fgOption);
+
+    KernelClient kernel(&a);
 
     QTranslator translator;
     const QStringList uiLanguages = QLocale::system().uiLanguages();
