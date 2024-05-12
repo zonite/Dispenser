@@ -5,6 +5,7 @@
 #include <QtNetwork/QSslCertificate>
 #include <QtNetwork/QSslKey>
 #include <QtCore/QFile>
+#include <QDaemonLog>
 
 //openssl req -x509 -nodes -newkey rsa:4096 -keyout localhost.key -out localhost.cert -sha512 -days 365 -subj "/C=FI/ST=Helsinki/L=Helsinki/O=Dispenser/OU=Daemon/CN=localhost"
 
@@ -51,6 +52,7 @@ void WebSocketServer::onNewConnection()
 	QWebSocket *pSocket = m_pWebSocketServer->nextPendingConnection();
 
 	qDebug() << "Client connected:" << pSocket->peerName() << pSocket->origin();
+	qDaemonLog(QStringLiteral("Client connected"), QDaemonLog::ErrorEntry);
 
 	connect(pSocket, &QWebSocket::textMessageReceived, this, &WebSocketServer::processTextMessage);
 	connect(pSocket, &QWebSocket::binaryMessageReceived, this, &WebSocketServer::processBinaryMessage);
@@ -80,6 +82,8 @@ void WebSocketServer::processBinaryMessage(QByteArray message)
 void WebSocketServer::socketDisconnected()
 {
 	qDebug() << "Client disconnected";
+	qDaemonLog(QStringLiteral("Client disconnected"), QDaemonLog::ErrorEntry);
+
 	QWebSocket *pClient = qobject_cast<QWebSocket *>(sender());
 	if (pClient)
 	{
