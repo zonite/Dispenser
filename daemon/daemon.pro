@@ -1,5 +1,5 @@
 QT -= gui
-QT += network
+QT += network websockets
 
 CONFIG += c++11 console
 CONFIG -= app_bundle
@@ -33,3 +33,6 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 HEADERS += \
         kernelclient.h \
 	websocketserver.h
+
+RESOURCES += \
+        daemon.qrc

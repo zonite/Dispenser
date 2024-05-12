@@ -16,6 +16,7 @@ class WebSocketServer : public QObject
 	Q_OBJECT
 public:
 	explicit WebSocketServer(quint16 port, KernelClient *parent);
+	~WebSocketServer() override;
 
 signals:
 
@@ -27,7 +28,7 @@ private Q_SLOTS:
     void onSslErrors(const QList<QSslError> &errors);
 
 private:
-    QWebSocketServer *m_pWebSocketServer;
+    QWebSocketServer *m_pWebSocketServer = nullptr;
     QList<QWebSocket *> m_clients;
 };
 
