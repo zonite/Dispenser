@@ -1,4 +1,5 @@
 QT -= gui
+QT += network
 
 CONFIG += c++11 console
 CONFIG -= app_bundle
@@ -9,7 +10,8 @@ CONFIG -= app_bundle
 
 SOURCES += \
         kernelclient.cpp \
-        main.cpp
+	main.cpp \
+        websocketserver.cpp
 
 TRANSLATIONS += \
     daemon_en_US.ts
@@ -28,4 +30,5 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
 
 HEADERS += \
-        kernelclient.h
+        kernelclient.h \
+        websocketserver.h

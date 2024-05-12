@@ -1,6 +1,8 @@
 #include <QDebug>
 #include <QDaemonLog>
 #include <QCoreApplication>
+#include <QSocketNotifier>
+
 
 #include <sys/socket.h>
 #include <unistd.h>
@@ -29,12 +31,6 @@ struct generic_netlink_msg {
 };
 
 // Global Variables used for our Netlink example
-/** Netlink socket's file descriptor. */
-int nl_fd;
-/** Netlink socket address */
-struct sockaddr_nl nl_address;
-/** The family ID resolved by Generic Netlink control interface. Assigned when the kernel module registers the Family */
-int nl_family_id = -1;
 /** Number of bytes sent or received via send() or recv() */
 int nl_rxtx_length;
 /** Pointer to Netlink attributes structure within the payload */
@@ -56,6 +52,14 @@ KernelClient::KernelClient(QObject *parent)
 
 }
 
+KernelClient::~KernelClient()
+{
+	if (nl_fd > 0) {
+		::close(nl_fd);
+		nl_fd = -1;
+	}
+}
+
 int KernelClient::open_and_bind_socket()
 {
 	// Step 1: Open the socket. Note that protocol = NETLINK_GENERIC in the address family of Netlink (AF_NETLINK)
@@ -73,7 +77,7 @@ int KernelClient::open_and_bind_socket()
 	nl_address.nl_family = AF_NETLINK;
 
 	if (bind(nl_fd, (struct sockaddr *)&nl_address, sizeof(nl_address)) < 0) {
-		close(nl_fd);
+		//close(nl_fd);
 		//qDebug() << "Error binding socket";
 		qDaemonLog(QStringLiteral("Error binding socket. Couldn't start the server. bind(nl_fd, (struct sockaddr *)&nl_address, sizeof(nl_address) failed"), QDaemonLog::ErrorEntry);
 		qApp->quit();
@@ -127,7 +131,7 @@ int KernelClient::resolve_family_id_by_name()
 	nl_rxtx_length = sendto(nl_fd, (char *)&nl_request_msg, nl_request_msg.n.nlmsg_len,
 	                        0, (struct sockaddr *)&nl_address, sizeof(nl_address));
 	if ((__u32)nl_rxtx_length != nl_request_msg.n.nlmsg_len) {
-		close(nl_fd);
+		::close(nl_fd);
 		qDaemonLog(QStringLiteral("Error sending family id request"), QDaemonLog::ErrorEntry);
 		qApp->quit();
 		return -1;
