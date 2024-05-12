@@ -2,7 +2,7 @@
 #include <QDaemonLog>
 #include <QCoreApplication>
 #include <QSocketNotifier>
-
+#include <QCommandLineParser>
 
 #include <sys/socket.h>
 #include <unistd.h>
@@ -10,6 +10,8 @@
 #include <dispenser.h>
 
 #include "kernelclient.h"
+
+#include "websocketserver.h"
 
 
 // Generic macros for dealing with netlink sockets
@@ -44,12 +46,7 @@ struct generic_netlink_msg nl_response_msg;
 KernelClient::KernelClient(QObject *parent)
         : QObject{parent}
 {
-
-	failed = open_and_bind_socket();
-	failed = resolve_family_id_by_name();
-
-	qDebug() << "NL family id" << nl_family_id;
-
+	qRegisterMetaType<qintptr>("qintptr");
 }
 
 KernelClient::~KernelClient()
@@ -59,6 +56,66 @@ KernelClient::~KernelClient()
 		nl_fd = -1;
 	}
 }
+
+void KernelClient::start(const QStringList &arguments)
+{
+	quint16 port = DISPENSER_TCP_PORT;
+	const QCommandLineOption portOption(QStringList() << QStringLiteral("p") << QStringLiteral("port"), QCoreApplication::translate("main", "The port the server will listen to."), QStringLiteral("<port number>"));
+
+	QCommandLineParser parser;
+	parser.addOption(portOption);
+	parser.parse(arguments);
+
+	if (parser.isSet(portOption))  {
+		bool ok;
+		quint16 portOptionValue = parser.value(portOption).toInt(&ok);
+		if (ok)
+			port = portOptionValue;
+	}
+
+	if (!m_pKernel) {
+		open_and_bind_socket();
+	}
+
+	qDebug() << "Dispenser Kernel Daemon started. NL family id" << nl_family_id;
+
+	if (!m_pServer)
+		m_pServer = new WebSocketServer(port, this);
+}
+
+void KernelClient::stop()
+{
+	if (m_pServer) {
+		delete m_pServer;
+		m_pServer = nullptr;
+	}
+
+	if (m_pKernel) {
+		delete m_pKernel;
+		m_pKernel = nullptr;
+	}
+
+	if (nl_fd > 0) {
+		::close(nl_fd);
+		nl_fd = -1;
+	}
+	//if (!isListening())
+	//	return;
+
+	//close();
+
+	emit stopped();
+}
+
+/**
+ *  Read data from kernel.
+ */
+
+void KernelClient::readyRead()
+{
+	qDebug() << "Received data from kernel.";
+}
+
 
 int KernelClient::open_and_bind_socket()
 {
@@ -83,7 +140,8 @@ int KernelClient::open_and_bind_socket()
 		qApp->quit();
 		return -1;
 	}
-	return 0;
+
+	return resolve_family_id_by_name();
 }
 
 int KernelClient::resolve_family_id_by_name()
@@ -165,6 +223,18 @@ int KernelClient::resolve_family_id_by_name()
 	if (nl_na->nla_type == CTRL_ATTR_FAMILY_ID) {
 		nl_family_id = *(__u16 *)NLA_DATA(nl_na);
 	}
+
+	if (-1 == nl_family_id) {
+		qDaemonLog(QStringLiteral("Invalid kernel response. Is kernel driver installed?"), QDaemonLog::ErrorEntry);
+		qApp->quit();
+	}
+
+	m_pKernel = new QSocketNotifier(nl_fd, QSocketNotifier::Read, this);
+	connect(m_pKernel, SIGNAL(activated(int)), this, SLOT(readyRead()));
+	m_pKernel->setEnabled(true);
+
+	//connect(m_pKernel, QOverload<QSocketDescriptor, QSocketNotifier::Type>::of(&QSocketNotifier::activated),
+	//    [=](QSocketDescriptor socket, QSocketNotifier::Type Read){ /* ... */ });
 
 	return 0;
  }

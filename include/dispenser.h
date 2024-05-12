@@ -30,6 +30,13 @@
 #define DISPENSER_GENL_GROUP 1
 
 /**
+ * Dispenser Daemon config
+ */
+
+#define DISPENSER_TCP_PORT 80
+
+
+/**
  * @brief The DISPENSER_GENL_ATTRIBUTE enum Netlink message payload
  */
 

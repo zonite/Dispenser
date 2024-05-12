@@ -6,9 +6,34 @@
 #include <QtNetwork/QSslKey>
 
 
-WebSocketServer::WebSocketServer(quint16 port, QObject *parent)
+WebSocketServer::WebSocketServer(quint16 port, KernelClient *parent)
         : QObject{parent},
         m_pWebSocketServer(nullptr)
+{
+
+}
+
+void WebSocketServer::onNewConnection()
+{
+
+}
+
+void WebSocketServer::processTextMessage(QString message)
+{
+
+}
+
+void WebSocketServer::processBinaryMessage(QByteArray message)
+{
+
+}
+
+void WebSocketServer::socketDisconnected()
+{
+
+}
+
+void WebSocketServer::onSslErrors(const QList<QSslError> &errors)
 {
 
 }
