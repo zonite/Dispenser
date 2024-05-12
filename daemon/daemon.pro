@@ -11,7 +11,7 @@ CONFIG -= app_bundle
 SOURCES += \
         kernelclient.cpp \
 	main.cpp \
-        websocketserver.cpp
+	websocketserver.cpp
 
 TRANSLATIONS += \
     daemon_en_US.ts
@@ -20,7 +20,8 @@ CONFIG += embed_translations
 
 INCLUDEPATH += \
     ../include \
-    /usr/include/qt5/QtDaemon
+    /usr/include/qt5/QtDaemon \
+    /usr/include/aarch64-linux-gnu/qt5/QtDaemon
 
 LIBS += -lQt5Daemon
 
@@ -31,4 +32,4 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 
 HEADERS += \
         kernelclient.h \
-        websocketserver.h
+	websocketserver.h
