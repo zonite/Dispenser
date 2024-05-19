@@ -102,6 +102,7 @@ static struct genl_family dispenser_genl_family = {
 	.post_doit = NULL, //Not needed
 };
 
+/** Release a slot from dispenser **/
 static int dispenser_genl_release(struct sk_buff *sender_buffer, struct  genl_info *info)
 {
 	struct nlattr **attrs;
@@ -152,6 +153,7 @@ static int dispenser_genl_release(struct sk_buff *sender_buffer, struct  genl_in
 	return 0;
 }
 
+/** Get slot status request **/
 static int dispenser_genl_slot_status(struct sk_buff *sender_buffer, struct  genl_info *info)
 {
 	struct nlattr **attrs;
@@ -203,6 +205,7 @@ static int dispenser_genl_slot_status(struct sk_buff *sender_buffer, struct  gen
 	return __dispenser_genl_post_slot_status(slot, info);
 }
 
+/** Post slot status as event **/
 static int __dispenser_genl_post_slot_status(struct dispenser_slot_list *slot, struct  genl_info *info)
 {
 	struct sk_buff *reply_buffer;
@@ -273,6 +276,7 @@ static int __dispenser_genl_post_slot_status(struct dispenser_slot_list *slot, s
 	}
 }
 
+/** Set unit status request **/
 static int dispenser_genl_unit_status(struct sk_buff *sender_buffer, struct  genl_info *info)
 {
 	struct nlattr **attrs;
@@ -304,6 +308,7 @@ static int dispenser_genl_unit_status(struct sk_buff *sender_buffer, struct  gen
 	return __dispenser_genl_post_unit_status(info);
 }
 
+/** Get unit status request **/
 static int __dispenser_genl_post_unit_status(struct genl_info *info)
 {
 	struct sk_buff *reply_buffer;
@@ -363,6 +368,7 @@ static int __dispenser_genl_post_unit_status(struct genl_info *info)
 	}
 }
 
+/** Get unit environment request **/
 static int dispenser_genl_environment(struct sk_buff *sender_buffer, struct  genl_info *info)
 {
 	if (!info || !info->attrs) {

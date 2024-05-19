@@ -21,15 +21,15 @@ public:
 signals:
 
 private Q_SLOTS:
-    void onNewConnection();
-    void processTextMessage(QString message);
-    void processBinaryMessage(QByteArray message);
-    void socketDisconnected();
-    void onSslErrors(const QList<QSslError> &errors);
+	void onNewConnection();
+	void processTextMessage(QString message);
+	void processBinaryMessage(QByteArray message);
+	void socketDisconnected();
+	void onSslErrors(const QList<QSslError> &errors);
 
 private:
-    QWebSocketServer *m_pWebSocketServer = nullptr;
-    QList<QWebSocket *> m_clients;
+	QWebSocketServer *m_pWebSocketServer = nullptr;
+	QList<QWebSocket *> m_clients;
 };
 
 #endif // WEBSOCKETSERVER_H

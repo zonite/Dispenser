@@ -34,7 +34,8 @@ SOURCES += \
     main.cpp \
     manager.cpp \
     unitlist.cpp \
-    unitmodel.cpp
+    unitmodel.cpp \
+    websocketclient.cpp
 #    mainwindow.cpp
 
 INCLUDEPATH += \
@@ -61,4 +62,5 @@ DISTFILES +=
 HEADERS += \
         manager.h \
 	unitlist.h \
-	unitmodel.h
+	unitmodel.h \
+        websocketclient.h

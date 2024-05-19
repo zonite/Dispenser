@@ -17,11 +17,14 @@ TRANSLATIONS += \
     daemon_en_US.ts
 CONFIG += lrelease
 CONFIG += embed_translations
+CONFIG += link_pkgconfig
+
+PKGCONFIG += libnl-3.0 Qt5Daemon
 
 INCLUDEPATH += \
-    ../include \
-    /usr/include/qt5/QtDaemon \
-    /usr/include/aarch64-linux-gnu/qt5/QtDaemon
+    ../include
+#    /usr/include/qt5/QtDaemon \
+#    /usr/include/aarch64-linux-gnu/qt5/QtDaemon
 
 LIBS += -lQt5Daemon
 

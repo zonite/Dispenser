@@ -7,6 +7,11 @@
 #include <sys/socket.h>
 #include <unistd.h>
 
+#include <netlink/attr.h>
+#include <netlink/netlink.h>
+#include <netlink/genl/genl.h>
+#include <netlink/genl/ctrl.h>
+
 #include <dispenser.h>
 
 #include "kernelclient.h"
@@ -56,6 +61,7 @@ KernelClient::~KernelClient()
 		nl_fd = -1;
 	}
 }
+
 
 void KernelClient::start(const QStringList &arguments)
 {
@@ -114,6 +120,37 @@ void KernelClient::stop()
 void KernelClient::readyRead()
 {
 	qDebug() << "Received data from kernel.";
+}
+
+/**
+ * nl_attr_put - add an attribute to netlink message
+ * @param nlh pointer to the netlink message
+ * @param type netlink attribute type that you want to add
+ * @param len netlink attribute payload length
+ * @param data pointer to the data that will be stored by the new attribute
+ *
+ * This function updates the length field of the Netlink message (nlmsg_len)
+ * by adding the size (header + payload) of the new attribute.
+ * From libmnl: https://www.netfilter.org/projects/libmnl/index.html
+ */
+
+//#define NL_ALIGN(len) (((len)+3) & ~(3))
+
+void KernelClient::nl_attr_put(nlmsghdr *nlh, uint16_t type, size_t len, const void *data)
+{
+	struct nlattr *attr = (struct nlattr *)((char *)nlh + NLA_ALIGN(nlh->nlmsg_len));
+	uint16_t payload_len = NLA_ALIGN(sizeof(struct nlattr)) + len;
+	//uint16_t payload_len = NLA_ALIGN(sizeof(struct nlattr)) + len;
+	int pad;
+
+	attr->nla_type = type;
+	attr->nla_len = payload_len;
+	memcpy((char *)attr + NLA_HDRLEN, data, len);
+	pad = NLA_ALIGN(len) - len;
+	if (pad > 0)
+		memset((char *)attr + NLA_HDRLEN + len, 0, pad);
+
+	nlh->nlmsg_len += NLA_ALIGN(payload_len);
 }
 
 
@@ -177,6 +214,7 @@ int KernelClient::resolve_family_id_by_name()
 	qstrncpy((char *)NLA_DATA(nl_na), DISPENSER_GENL_NAME, 15); //Family name length can be upto 16 chars including \0
 
 	nl_request_msg.n.nlmsg_len += NLMSG_ALIGN(nl_na->nla_len);
+	//NLMSG_ALIGNTO = 4U
 
 	// tell the socket (nl_address) that we use NETLINK address family and that we target
 	// the kernel (pid = 0)
@@ -223,6 +261,7 @@ int KernelClient::resolve_family_id_by_name()
 	if (nl_na->nla_type == CTRL_ATTR_FAMILY_ID) {
 		nl_family_id = *(__u16 *)NLA_DATA(nl_na);
 	}
+	//NLA_ALIGNTO = 4
 
 	if (-1 == nl_family_id) {
 		qDaemonLog(QStringLiteral("Invalid kernel response. Is kernel driver installed?"), QDaemonLog::ErrorEntry);
@@ -237,5 +276,48 @@ int KernelClient::resolve_family_id_by_name()
 	//    [=](QSocketDescriptor socket, QSocketNotifier::Type Read){ /* ... */ });
 
 	return 0;
- }
+}
+
+int KernelClient::get_unit_status()
+{
+	/** Send Message to the Kernel requesting inut status */
+	memset(&nl_request_msg, 0, sizeof(nl_request_msg));
+	memset(&nl_response_msg, 0, sizeof(nl_response_msg));
+
+	nl_request_msg.n.nlmsg_len = NLMSG_LENGTH(GENL_HDRLEN);
+	// This is NOT the property for proper "routing" of the netlink message (that is located in the socket struct).
+	// This is family id for "good" messages or NLMSG_ERROR (0x2) for error messages
+	nl_request_msg.n.nlmsg_type = nl_family_id;
+
+	// You can use flags in an application specific way, e.g. NLM_F_CREATE or NLM_F_EXCL.
+	// Some flags have pre-defined functionality, like NLM_F_DUMP or NLM_F_ACK (Netlink will
+	// do actions before your callback in the kernel can start its processing). You can see
+	// some examples in https://elixir.bootlin.com/linux/v5.10.16/source/net/netlink/af_netlink.c
+	//
+	// NLM_F_REQUEST is REQUIRED for kernel requests, otherwise the packet is rejected!
+	// Kernel reference: https://elixir.bootlin.com/linux/v5.10.16/source/net/netlink/af_netlink.c#L2487
+	//
+	// if you add "NLM_F_DUMP" flag, the .dumpit callback will be invoked in the kernel
+	nl_request_msg.n.nlmsg_flags = NLM_F_REQUEST;
+	// It is up to you if you want to split a data transfer into multiple sequences. (application specific)
+	nl_request_msg.n.nlmsg_seq = 0;
+	// Port ID. Not necessarily the process id of the current process. This field
+	// could be used to identify different points or threads inside your application
+	// that send data to the kernel. This has nothing to do with "routing" the packet to
+	// the kernel, because this is done by the socket itself
+	nl_request_msg.n.nlmsg_pid = getpid();
+	// nl_request_msg.g.cmd = GNL_FOOBAR_XMPL_C_REPLY_WITH_NLMSG_ERR;
+	nl_request_msg.g.cmd = DISPENSER_GENL_CMD_UNIT_STATUS;
+	// You can evolve your application over time using different versions or ignore it.
+	// Application specific; receiver can check this value and do specific logic.
+	nl_request_msg.g.version = 1; // app specific; we don't use this on the receiving side in our example
+
+
+	nl_na = (struct nlattr *)GENLMSG_DATA(&nl_request_msg);
+	nl_na->nla_type = DISPENSER_GENL_CMD_UNSPEC;GNL_FOOBAR_XMPL_A_MSG
+	nl_na->nla_len = sizeof(MESSAGE_TO_KERNEL) + NLA_HDRLEN; // Message length
+	memcpy(NLA_DATA(nl_na), MESSAGE_TO_KERNEL, sizeof(MESSAGE_TO_KERNEL));
+	nl_request_msg.n.nlmsg_len += NLMSG_ALIGN(nl_na->nla_len);
+
+}
 

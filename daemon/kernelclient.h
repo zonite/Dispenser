@@ -5,9 +5,23 @@
 #include <QObject>
 #include <QSocketNotifier>
 
+#include <linux/netlink.h>
 #include <linux/genetlink.h>
 
 QT_FORWARD_DECLARE_CLASS(WebSocketServer)
+
+struct generic_netlink_msg {
+    /** Netlink header comes first. */
+    struct nlmsghdr n;
+    /** Afterwards the Generic Netlink header */
+    struct genlmsghdr g;
+    /** Custom data. Space for Netlink Attributes. */
+    char buf[256];
+};
+
+#define NL_ATTR_HDRLEN	NL_ALIGN(sizeof(struct nlattr))
+#define NL_NLMSG_HDRLEN	NL_ALIGN(sizeof(struct nlmsghdr))
+
 
 class KernelClient : public QObject
 {
@@ -33,8 +47,23 @@ protected:
 
 private:
 
+	//Genetlink interface:
+	void nl_attr_put(struct nlmsghdr *nlh, uint16_t type,size_t len, const void *data);
+	char *string_strldup(const char *src, size_t size);
+	void *nl_attr_get_payload(const struct nlattr *attr);
+	const char *nl_attr_get_str(const struct nlattr *attr);
+	uint16_t nl_attr_get_u16(const struct nlattr *attr);
+	uint16_t nl_attr_get_type(const struct nlattr *attr);
+	int nl_attr_type_valid(const struct nlattr *attr, uint16_t max);
+	int data_attr_cb(const struct nlattr *attr, void *data);
+	int parse_gen_message(const struct nlmsghdr *nlh, void *data);
+	int netlink_parse_nlmsg(netlink_sock_t *nls, char *buf, ssize_t buflen);
+	static ssize_t netlink_recvmsg(netlink_sock_t *nls, struct msghdr *msg, char *buf, size_t bufsz, char **outbuf, size_t *outbufsz);
+	void read_socket(int fd,  nls_opaque, int status);
+
 	int open_and_bind_socket();
 	int resolve_family_id_by_name();
+	int get_unit_status();
 	int failed;
 
 	/** The family ID resolved by Generic Netlink control interface. Assigned when the kernel module registers the Family */
@@ -43,6 +72,8 @@ private:
 	int nl_fd = -1;
 	/** Netlink socket address */
 	struct sockaddr_nl nl_address;
+	struct generic_netlink_msg nl_request_msg;
+	struct generic_netlink_msg nl_response_msg;
 
 	QSocketNotifier *m_pKernel = nullptr;
 
