@@ -4,11 +4,14 @@
 //#include <QTcpServer>
 #include <QObject>
 #include <QSocketNotifier>
+#include <QDataStream>
+#include <QBuffer>
 
 #include <linux/netlink.h>
 #include <linux/genetlink.h>
 
 QT_FORWARD_DECLARE_CLASS(WebSocketServer)
+QT_FORWARD_DECLARE_CLASS(KernelStream)
 
 struct generic_netlink_msg {
     /** Netlink header comes first. */
@@ -21,6 +24,34 @@ struct generic_netlink_msg {
 
 #define NL_ATTR_HDRLEN	NL_ALIGN(sizeof(struct nlattr))
 #define NL_NLMSG_HDRLEN	NL_ALIGN(sizeof(struct nlmsghdr))
+
+template <typename T> class KernelStreamIterator {
+public:
+	explicit KernelStreamIterator(KernelStream *stream);
+	explicit KernelStreamIterator(KernelStream *stream, qsizetype pos);
+	~KernelStreamIterator();
+
+	T *data();
+
+private:
+	KernelStream *p_mStream;
+	qsizetype mPos;
+};
+
+class KernelStream : public QDataStream
+{
+public:
+	KernelStream &operator<<(nlmsghdr &s);
+	KernelStream &operator<<(genlmsghdr &s);
+	KernelStream &operator<<(nlattr &s);
+	KernelStream &operator<<(QByteArray &s);
+
+	KernelStream &align();
+	KernelStream &alignAttr();
+
+private:
+
+};
 
 
 class KernelClient : public QObject
@@ -48,7 +79,11 @@ protected:
 private:
 
 	//Genetlink interface:
-	void nl_attr_put(struct nlmsghdr *nlh, uint16_t type,size_t len, const void *data);
+	static struct nlmsghdr* nl_hdr_put(KernelStream *out);
+	static struct genlmsghdr* genl_hdr_put(KernelStream *out, quint8 cmd, quint8 version = 1);
+	//static struct nl_attr* nl_attr_put(KernelStream *out, quint16 type, const char *str);
+	static struct nlattr *nl_attr_put(KernelStream *out, quint16 type, const QByteArray *str);
+	//static struct nl_attr* nl_attr_put(struct nlmsghdr *nlh, uint16_t type,size_t len, const void *data);
 	char *string_strldup(const char *src, size_t size);
 	void *nl_attr_get_payload(const struct nlattr *attr);
 	const char *nl_attr_get_str(const struct nlattr *attr);
@@ -57,9 +92,10 @@ private:
 	int nl_attr_type_valid(const struct nlattr *attr, uint16_t max);
 	int data_attr_cb(const struct nlattr *attr, void *data);
 	int parse_gen_message(const struct nlmsghdr *nlh, void *data);
-	int netlink_parse_nlmsg(netlink_sock_t *nls, char *buf, ssize_t buflen);
-	static ssize_t netlink_recvmsg(netlink_sock_t *nls, struct msghdr *msg, char *buf, size_t bufsz, char **outbuf, size_t *outbufsz);
-	void read_socket(int fd,  nls_opaque, int status);
+	//int netlink_parse_nlmsg(netlink_sock_t *nls, char *buf, ssize_t buflen);
+	//static ssize_t netlink_recvmsg(netlink_sock_t *nls, struct msghdr *msg, char *buf, size_t bufsz, char **outbuf, size_t *outbufsz);
+	//void read_socket(int fd,  nls_opaque, int status);
+	ssize_t sendToKernel(KernelStream *out);
 
 	int open_and_bind_socket();
 	int resolve_family_id_by_name();
@@ -79,6 +115,12 @@ private:
 
 	/** Websocket server */
 	WebSocketServer *m_pServer = nullptr;
+
+	QBuffer mOutBuffer;
+	QBuffer mInBuffer;
+
+	KernelStream mToKernel;
 };
+
 
 #endif // KERNELCLIENT_H

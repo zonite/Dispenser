@@ -5,6 +5,7 @@
 #include <QCommandLineParser>
 
 #include <sys/socket.h>
+#include <sys/user.h>
 #include <unistd.h>
 
 #include <netlink/attr.h>
@@ -18,24 +19,26 @@
 
 #include "websocketserver.h"
 
+#if NLA_ALIGNTO != NLMSG_ALIGNTO
+#error "NLA_ALIGNTO and NLMSG_ALIGNTO are not equal!"
+#endif
+
+#define MASK(align) (align - 1)
+#define PAD(len,align) ((align - (len & MASK(align))) & MASK(align))
+
+#define NLMSG_PAD(size) PAD(size,NLMSG_ALIGNTO)
+#define NLA_PAD(size) PAD(size,NLA_ALIGNTO)
+
 
 // Generic macros for dealing with netlink sockets
 #define GENLMSG_DATA(glh) ((void *)(((char *)NLMSG_DATA(glh) + GENL_HDRLEN)))
 #define GENLMSG_PAYLOAD(glh) (NLMSG_PAYLOAD(glh, 0) - GENL_HDRLEN)
 #define NLA_DATA(na) ((void *)((char *)(na) + NLA_HDRLEN))
 
-/**
- * Structure describing the memory layout of a Generic Netlink layout.
- * The buffer size of 256 byte here is chosen at will and for simplicity.
- */
-struct generic_netlink_msg {
-    /** Netlink header comes first. */
-    struct nlmsghdr n;
-    /** Afterwards the Generic Netlink header */
-    struct genlmsghdr g;
-    /** Custom data. Space for Netlink Attributes. */
-    char buf[256];
-};
+
+template class KernelStreamIterator<nlattr>;
+template class KernelStreamIterator<nlmsghdr>;
+template class KernelStreamIterator<genlmsghdr>;
 
 // Global Variables used for our Netlink example
 /** Number of bytes sent or received via send() or recv() */
@@ -51,6 +54,11 @@ struct generic_netlink_msg nl_response_msg;
 KernelClient::KernelClient(QObject *parent)
         : QObject{parent}
 {
+	nl_address.nl_family = AF_NETLINK;
+	nl_address.nl_pid = 0; // <-- we target the kernel; kernel pid is 0
+	nl_address.nl_groups = 0; // we don't use multicast groups
+	nl_address.nl_pad = 0;
+
 	qRegisterMetaType<qintptr>("qintptr");
 }
 
@@ -97,6 +105,7 @@ void KernelClient::stop()
 	}
 
 	if (m_pKernel) {
+		mOutBuffer.close();
 		delete m_pKernel;
 		m_pKernel = nullptr;
 	}
@@ -122,6 +131,126 @@ void KernelClient::readyRead()
 	qDebug() << "Received data from kernel.";
 }
 
+// will reset buffer
+nlmsghdr *KernelClient::nl_hdr_put(KernelStream *out)
+{
+	QBuffer *buf = dynamic_cast<QBuffer *>(out->device());
+
+	//Wrong type of stream if nullptr returned.
+	if (!buf)
+		return nullptr;
+
+	//buf->buffer().clear(); //Will deallocate
+	//buf->buffer().truncate(0);
+	buf->buffer().fill(0);
+	buf->buffer().data_ptr()->size = 0;
+	buf->seek(0);
+	//buf->reset();
+	buf->buffer().reserve(PAGE_SIZE);
+	//qsizetype pos = buf->buffer().size();
+
+	struct nlmsghdr nlmsg_hdr = {0, 0, 0, 0, 0};
+	KernelStreamIterator<nlmsghdr> i(out);
+	*out << nlmsg_hdr;
+
+	return i.data();
+	//return (nlmsghdr *)&buf->buffer().data()[pos];
+
+	//buffer->buffer().append(NLA_HDRLEN, 0);
+	//buffer->seek(NLA_HDRLEN);
+	//buffer->buffer().data_ptr();
+
+	//PAGE_SIZE;
+
+	//QByteArray::pointer i = buffer->buffer().data_ptr();
+
+	//buffer->pos();
+	//nlmsghdr *hdr = (nlmsghdr *)buffer->buffer().data();
+}
+
+genlmsghdr *KernelClient::genl_hdr_put(KernelStream *out, quint8 cmd, quint8 version)
+{
+	QBuffer *buf = dynamic_cast<QBuffer *>(out->device());
+
+	//Wrong type of stream if nullptr returned.
+	if (!buf)
+		return nullptr;
+
+	struct genlmsghdr genlmsg_hdr = {
+		.cmd = cmd,
+		.version = version,
+		.reserved = 0};
+
+	KernelStreamIterator<genlmsghdr> i(out);
+	*out << genlmsg_hdr;
+
+	return i.data();
+	//qsizetype pos = buf->buffer().size();
+	//return (genlmsghdr *)&buf->buffer().data()[pos];
+}
+
+/**
+ *  <------- NLA_HDRLEN ------> <-- NLA_ALIGN(payload)-->
+ * +---------------------+- - -+- - - - - - - - - -+- - -+
+ * |        Header       | Pad |     Payload       | Pad |
+ * |   (struct nlattr)   | ing |                   | ing |
+ * +---------------------+- - -+- - - - - - - - - -+- - -+
+ *  <-------------- nlattr->nla_len -------------->
+ */
+
+/**
+ * nla_type (16 bits)
+ * +---+---+-------------------------------+
+ * | N | O | Attribute Type                |
+ * +---+---+-------------------------------+
+ * N := Carries nested attributes
+ * O := Payload stored in network byte order
+ *
+ * Note: The N and O flag are mutually exclusive.
+ */
+
+nlattr *KernelClient::nl_attr_put(KernelStream *out, quint16 type, const QByteArray *str)
+{
+	QBuffer *buf = dynamic_cast<QBuffer *>(out->device());
+	//Wrong type of stream if nullptr returned.
+	if (!buf)
+		return nullptr;
+
+	struct nlattr attr = {
+		.nla_len = 0,
+		.nla_type = type
+	};
+
+	quint16 size = str->size() + 1;
+	attr.nla_len = NLA_HDRLEN + size;
+
+	KernelStreamIterator<nlattr> i(out);
+	*out << attr;
+	*out << str;
+	//out->pad(pad);
+
+	return i.data();
+}
+
+ssize_t KernelClient::sendToKernel(KernelStream *out)
+{
+	if (nl_fd < 0)
+		return nl_fd;
+
+	QBuffer *buf = dynamic_cast<QBuffer *>(out->device());
+
+	if (!buf)
+		return -1;
+
+	const QByteArray *array = &buf->data();
+	struct nlmsghdr *hdr = (struct nlmsghdr *) array->constData();
+	hdr->nlmsg_len = array->size();
+
+	return sendto(nl_fd, buf->data().constData(), hdr->nlmsg_len,
+	                        0, (struct sockaddr *)&nl_address, sizeof(nl_address));
+};
+
+
 /**
  * nl_attr_put - add an attribute to netlink message
  * @param nlh pointer to the netlink message
@@ -136,10 +265,11 @@ void KernelClient::readyRead()
 
 //#define NL_ALIGN(len) (((len)+3) & ~(3))
 
+/*
 void KernelClient::nl_attr_put(nlmsghdr *nlh, uint16_t type, size_t len, const void *data)
 {
 	struct nlattr *attr = (struct nlattr *)((char *)nlh + NLA_ALIGN(nlh->nlmsg_len));
-	uint16_t payload_len = NLA_ALIGN(sizeof(struct nlattr)) + len;
+	uint16_t payload_len = NLA_HDRLEN + len;
 	//uint16_t payload_len = NLA_ALIGN(sizeof(struct nlattr)) + len;
 	int pad;
 
@@ -152,7 +282,7 @@ void KernelClient::nl_attr_put(nlmsghdr *nlh, uint16_t type, size_t len, const v
 
 	nlh->nlmsg_len += NLA_ALIGN(payload_len);
 }
-
+*/
 
 int KernelClient::open_and_bind_socket()
 {
@@ -178,6 +308,10 @@ int KernelClient::open_and_bind_socket()
 		return -1;
 	}
 
+	mOutBuffer.open(QIODevice::ReadWrite);
+	mInBuffer.open(QIODevice::ReadWrite);
+	mToKernel.setDevice(&mOutBuffer);
+
 	return resolve_family_id_by_name();
 }
 
@@ -193,39 +327,67 @@ int KernelClient::resolve_family_id_by_name()
 	// Next we ask the Kernel for the ID.
 
 	// Populate the netlink header
-	nl_request_msg.n.nlmsg_type = GENL_ID_CTRL;
+	//QBuffer msg;
+	//QDataStream toKernel(&msg);
+	nlmsghdr *nlmsg = nl_hdr_put(&mToKernel);
+	if (!nlmsg) {
+		//error
+		return -1;
+	}
+
+	nlmsg->nlmsg_type = GENL_ID_CTRL;
 	// NLM_F_REQUEST is REQUIRED for kernel requests, otherwise the packet is rejected!
 	// Kernel reference: https://elixir.bootlin.com/linux/v5.10.16/source/net/netlink/af_netlink.c#L2487
-	nl_request_msg.n.nlmsg_flags = NLM_F_REQUEST;
-	nl_request_msg.n.nlmsg_seq = 0;
-	nl_request_msg.n.nlmsg_pid = getpid();
-	nl_request_msg.n.nlmsg_len = NLMSG_LENGTH(GENL_HDRLEN);
+	nlmsg->nlmsg_flags = NLM_F_REQUEST;
+	nlmsg->nlmsg_seq = 0;
+	nlmsg->nlmsg_pid = getpid();
+
 	// Populate the payload's "family header" : which in our case is genlmsghdr
-	nl_request_msg.g.cmd = CTRL_CMD_GETFAMILY;
-	nl_request_msg.g.version = 1;
+
+	genlmsghdr *genlmsg = genl_hdr_put(&mToKernel, CTRL_CMD_GETFAMILY);
+	if (!genlmsg) {
+		//error
+		return -1;
+	}
+	//genlmsg->version = 1;
+
+	//nl_request_msg.n.nlmsg_type = GENL_ID_CTRL;
+	// NLM_F_REQUEST is REQUIRED for kernel requests, otherwise the packet is rejected!
+	// Kernel reference: https://elixir.bootlin.com/linux/v5.10.16/source/net/netlink/af_netlink.c#L2487
+	//nl_request_msg.n.nlmsg_flags = NLM_F_REQUEST;
+	//nl_request_msg.n.nlmsg_seq = 0;
+	//nl_request_msg.n.nlmsg_pid = getpid();
+	//nl_request_msg.n.nlmsg_len = NLMSG_LENGTH(GENL_HDRLEN);
+	// Populate the payload's "family header" : which in our case is genlmsghdr
+	//nl_request_msg.g.cmd = CTRL_CMD_GETFAMILY;
+	//nl_request_msg.g.version = 1;
 	// Populate the payload's "netlink attributes"
-	nl_na = (struct nlattr *)GENLMSG_DATA(&nl_request_msg);
-	nl_na->nla_type = CTRL_ATTR_FAMILY_NAME;
 
-	QByteArray name(DISPENSER_GENL_NAME);
-	name.truncate(15);
+	QByteArray name = DISPENSER_GENL_NAME;
+	name.truncate(15); //Family name length can be upto 16 chars including \0
+	nlattr* name_attr = nl_attr_put(&mToKernel, CTRL_ATTR_FAMILY_NAME, &name);
+	Q_UNUSED(name_attr);
 
-	nl_na->nla_len = name.length() + 1 + NLA_HDRLEN;
-	qstrncpy((char *)NLA_DATA(nl_na), DISPENSER_GENL_NAME, 15); //Family name length can be upto 16 chars including \0
+	//nl_na = (struct nlattr *)GENLMSG_DATA(&nl_request_msg);
+	//nl_na->nla_type = CTRL_ATTR_FAMILY_NAME;
 
-	nl_request_msg.n.nlmsg_len += NLMSG_ALIGN(nl_na->nla_len);
+	//QByteArray name(DISPENSER_GENL_NAME);
+	//name.truncate(15);
+
+	//nl_na->nla_len = name.length() + 1 + NLA_HDRLEN;
+	//qstrncpy((char *)NLA_DATA(nl_na), DISPENSER_GENL_NAME, 15); //Family name length can be upto 16 chars including \0
+
+	//nl_request_msg.n.nlmsg_len += NLMSG_ALIGN(nl_na->nla_len);
 	//NLMSG_ALIGNTO = 4U
 
 	// tell the socket (nl_address) that we use NETLINK address family and that we target
 	// the kernel (pid = 0)
-	nl_address.nl_family = AF_NETLINK;
-	nl_address.nl_pid = 0; // <-- we target the kernel; kernel pid is 0
-	nl_address.nl_groups = 0; // we don't use multicast groups
-	nl_address.nl_pad = 0;
 
+	nl_rxtx_length = sendToKernel(&mToKernel);
 	// Send the family ID request message to the netlink controller
-	nl_rxtx_length = sendto(nl_fd, (char *)&nl_request_msg, nl_request_msg.n.nlmsg_len,
-	                        0, (struct sockaddr *)&nl_address, sizeof(nl_address));
+	//nl_rxtx_length = sendto(nl_fd, (char *)&nl_request_msg, nl_request_msg.n.nlmsg_len,
+	//                        0, (struct sockaddr *)&nl_address, sizeof(nl_address));
+
 	if ((__u32)nl_rxtx_length != nl_request_msg.n.nlmsg_len) {
 		::close(nl_fd);
 		qDaemonLog(QStringLiteral("Error sending family id request"), QDaemonLog::ErrorEntry);
@@ -314,10 +476,125 @@ int KernelClient::get_unit_status()
 
 
 	nl_na = (struct nlattr *)GENLMSG_DATA(&nl_request_msg);
-	nl_na->nla_type = DISPENSER_GENL_CMD_UNSPEC;GNL_FOOBAR_XMPL_A_MSG
-	nl_na->nla_len = sizeof(MESSAGE_TO_KERNEL) + NLA_HDRLEN; // Message length
-	memcpy(NLA_DATA(nl_na), MESSAGE_TO_KERNEL, sizeof(MESSAGE_TO_KERNEL));
+	//nl_na->nla_type = DISPENSER_GENL_CMD_UNSPEC;GNL_FOOBAR_XMPL_A_MSG
+	//nl_na->nla_len = sizeof(MESSAGE_TO_KERNEL) + NLA_HDRLEN; // Message length
+	//memcpy(NLA_DATA(nl_na), MESSAGE_TO_KERNEL, sizeof(MESSAGE_TO_KERNEL));
 	nl_request_msg.n.nlmsg_len += NLMSG_ALIGN(nl_na->nla_len);
+
+	return 0;
+}
+
+
+KernelStream &KernelStream::operator<<(nlmsghdr &s)
+{
+	writeRawData((char *)&s, NLMSG_HDRLEN);
+
+	return this->align();
+}
+
+KernelStream &KernelStream::align()
+{
+	QBuffer *buf = dynamic_cast<QBuffer *>(this->device());
+	if (!buf) {
+		return *this;
+	}
+
+	qsizetype pad = NLMSG_PAD(buf->size());
+	QByteArray padding(pad, 0);
+
+	writeRawData(padding, pad);
+
+	return *this;
+}
+
+KernelStream &KernelStream::alignAttr()
+{
+	QBuffer *buf = dynamic_cast<QBuffer *>(this->device());
+	if (!buf) {
+		return *this;
+	}
+
+	qsizetype pad = NLA_PAD(buf->size());
+	QByteArray padding(pad, 0);
+
+	writeRawData(padding, pad);
+
+	return *this;
+}
+
+KernelStream &KernelStream::operator<<(genlmsghdr &s)
+{
+	writeRawData((char *)&s, GENL_HDRLEN);
+
+	return this->align();
+}
+
+KernelStream &KernelStream::operator<<(nlattr &s)
+{
+	writeRawData((char *)&s, NLA_HDRLEN);
+
+	return this->alignAttr();
+}
+
+// QByteArray must be zero terminated!
+KernelStream &KernelStream::operator<<(QByteArray &s)
+{
+	writeRawData((char *)&s, s.size());
+	writeRawData("", 1);
+
+	return this->alignAttr();
+}
+
+template<typename T>
+KernelStreamIterator<T>::KernelStreamIterator(KernelStream *stream)
+{
+	QBuffer *buf = dynamic_cast<QBuffer *>(stream->device());
+	//Wrong type of stream if nullptr returned.
+	if (!buf) {
+		p_mStream = nullptr;
+		return;
+	}
+
+	KernelStreamIterator(stream, buf->size());
+	//KernelStreamIterator(stream, buf->buffer().size());
+}
+
+template<typename T>
+KernelStreamIterator<T>::KernelStreamIterator(KernelStream *stream, qsizetype pos)
+{
+	QBuffer *buf = dynamic_cast<QBuffer *>(stream->device());
+	//Wrong type of stream if nullptr returned.
+	if (!buf || buf->size() < mPos) {
+		p_mStream = nullptr;
+		return;
+	}
+
+	p_mStream = stream;
+	mPos = pos;
+}
+
+template<typename T>
+KernelStreamIterator<T>::~KernelStreamIterator()
+{
 
 }
 
+template<typename T>
+T *KernelStreamIterator<T>::data()
+{
+	if (!p_mStream) {
+		return nullptr;
+	}
+
+	QBuffer *buf = dynamic_cast<QBuffer *>(p_mStream->device());
+	if (!buf) {
+		p_mStream = nullptr;
+		return nullptr;
+	}
+
+	if (buf->size() < mPos) {
+		return nullptr;
+	}
+
+	return (T *)&(buf->buffer().data()[mPos]);
+}
