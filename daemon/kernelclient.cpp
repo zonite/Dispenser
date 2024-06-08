@@ -5,7 +5,7 @@
 #include <QCommandLineParser>
 
 #include <sys/socket.h>
-#include <sys/user.h>
+//#include <sys/user.h>
 #include <unistd.h>
 
 #include <netlink/attr.h>
@@ -29,6 +29,7 @@
 #define NLMSG_PAD(size) PAD(size,NLMSG_ALIGNTO)
 #define NLA_PAD(size) PAD(size,NLA_ALIGNTO)
 
+#define PAGE_SIZE 4096
 
 // Generic macros for dealing with netlink sockets
 #define GENLMSG_DATA(glh) ((void *)(((char *)NLMSG_DATA(glh) + GENL_HDRLEN)))
