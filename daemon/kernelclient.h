@@ -34,8 +34,8 @@ public:
 	T *data();
 
 private:
-	KernelStream *p_mStream;
-	qsizetype mPos;
+	KernelStream *p_mStream = nullptr;
+	qsizetype mPos = 0;
 };
 
 class KernelStream : public QDataStream

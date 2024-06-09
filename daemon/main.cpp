@@ -32,6 +32,7 @@ int main(int argc, char *argv[])
 
     KernelClient kernel(&a);
 
+
     QObject::connect(&a, &QDaemonApplication::daemonized, &kernel, &KernelClient::start);
     QObject::connect(&a, &QDaemonApplication::aboutToQuit, &kernel, &KernelClient::stop);
 
@@ -45,5 +46,6 @@ int main(int argc, char *argv[])
 	}
     }
 
-    return a.exec();
+    return QDaemonApplication::exec();
+//    return a.exec();
 }

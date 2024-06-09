@@ -55,6 +55,8 @@ struct generic_netlink_msg nl_response_msg;
 KernelClient::KernelClient(QObject *parent)
         : QObject{parent}
 {
+	qDaemonLog(QStringLiteral("KernelClient created."), QDaemonLog::NoticeEntry);
+
 	nl_address.nl_family = AF_NETLINK;
 	nl_address.nl_pid = 0; // <-- we target the kernel; kernel pid is 0
 	nl_address.nl_groups = 0; // we don't use multicast groups
@@ -87,6 +89,7 @@ void KernelClient::start(const QStringList &arguments)
 		if (ok)
 			port = portOptionValue;
 	}
+	qDebug() << "Open and bind socket.";
 
 	if (!m_pKernel) {
 		open_and_bind_socket();
@@ -565,7 +568,7 @@ KernelStreamIterator<T>::KernelStreamIterator(KernelStream *stream, qsizetype po
 {
 	QBuffer *buf = dynamic_cast<QBuffer *>(stream->device());
 	//Wrong type of stream if nullptr returned.
-	if (!buf || buf->size() < mPos) {
+	if (!buf || (buf->size() < pos)) {
 		p_mStream = nullptr;
 		return;
 	}
