@@ -4,7 +4,7 @@ QT += network websockets
 CONFIG += c++11 console
 CONFIG -= app_bundle
 
-QMAKE_CXXFLAGS += -g
+//QMAKE_CXXFLAGS += -g
 
 # You can make your code fail to compile if it uses deprecated APIs.
 # In order to do so, uncomment the following line.
@@ -17,7 +17,8 @@ SOURCES += \
 
 TRANSLATIONS += \
     daemon_en_US.ts
-CONFIG += lrelease
+#CONFIG += lrelease
+CONFIG += debug
 CONFIG += embed_translations
 CONFIG += link_pkgconfig
 

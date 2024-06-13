@@ -549,6 +549,7 @@ KernelStream &KernelStream::operator<<(QByteArray &s)
 	return this->alignAttr();
 }
 
+/*
 template<typename T>
 KernelStreamIterator<T>::KernelStreamIterator(KernelStream *stream)
 {
@@ -562,19 +563,26 @@ KernelStreamIterator<T>::KernelStreamIterator(KernelStream *stream)
 	KernelStreamIterator(stream, buf->size());
 	//KernelStreamIterator(stream, buf->buffer().size());
 }
+*/
 
 template<typename T>
 KernelStreamIterator<T>::KernelStreamIterator(KernelStream *stream, qsizetype pos)
 {
 	QBuffer *buf = dynamic_cast<QBuffer *>(stream->device());
+	qsizetype size = 0;
+
 	//Wrong type of stream if nullptr returned.
-	if (!buf || (buf->size() < pos)) {
+	if (!buf) {
 		p_mStream = nullptr;
 		return;
 	}
 
+	size = buf->size();
 	p_mStream = stream;
 	mPos = pos;
+
+	if (mPos < 0 || mPos > size)
+		mPos = size;
 }
 
 template<typename T>

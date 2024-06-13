@@ -27,8 +27,8 @@ struct generic_netlink_msg {
 
 template <typename T> class KernelStreamIterator {
 public:
-	explicit KernelStreamIterator(KernelStream *stream);
-	explicit KernelStreamIterator(KernelStream *stream, qsizetype pos);
+	//explicit KernelStreamIterator(KernelStream *stream);
+	explicit KernelStreamIterator(KernelStream *stream, qsizetype pos = -1);
 	~KernelStreamIterator();
 
 	T *data();
