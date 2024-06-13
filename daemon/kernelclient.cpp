@@ -230,7 +230,7 @@ nlattr *KernelClient::nl_attr_put(KernelStream *out, quint16 type, const QByteAr
 
 	KernelStreamIterator<nlattr> i(out);
 	*out << attr;
-	*out << str;
+	*out << *str;
 	//out->pad(pad);
 
 	return i.data();
@@ -547,7 +547,7 @@ KernelStream &KernelStream::operator<<(nlattr &s)
 // QByteArray must be zero terminated!
 KernelStream &KernelStream::operator<<(QByteArray &s)
 {
-	writeRawData((char *)&s, s.size());
+	writeRawData(s.constData(), s.size());
 	writeRawData("", 1);
 
 	return this->alignAttr();
