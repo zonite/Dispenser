@@ -336,6 +336,8 @@ int KernelClient::resolve_family_id_by_name()
 	nlmsghdr *nlmsg = nl_hdr_put(&mToKernel);
 	if (!nlmsg) {
 		//error
+		qDaemonLog(QStringLiteral("Error netlink message header"), QDaemonLog::ErrorEntry);
+		qApp->quit();
 		return -1;
 	}
 
@@ -351,6 +353,8 @@ int KernelClient::resolve_family_id_by_name()
 	genlmsghdr *genlmsg = genl_hdr_put(&mToKernel, CTRL_CMD_GETFAMILY);
 	if (!genlmsg) {
 		//error
+		qDaemonLog(QStringLiteral("Error genetlink message header"), QDaemonLog::ErrorEntry);
+		qApp->quit();
 		return -1;
 	}
 	//genlmsg->version = 1;
