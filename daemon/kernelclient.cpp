@@ -146,11 +146,12 @@ nlmsghdr *KernelClient::nl_hdr_put(KernelStream *out)
 
 	//buf->buffer().clear(); //Will deallocate
 	//buf->buffer().truncate(0);
+	//buf->buffer().reserve(PAGE_SIZE);
+	buf->buffer().resize(PAGE_SIZE);
 	buf->buffer().fill(0);
 	buf->buffer().data_ptr()->size = 0;
 	buf->seek(0);
 	//buf->reset();
-	buf->buffer().reserve(PAGE_SIZE);
 	//qsizetype pos = buf->buffer().size();
 
 	struct nlmsghdr nlmsg_hdr = {0, 0, 0, 0, 0};
@@ -510,7 +511,8 @@ KernelStream &KernelStream::align()
 	qsizetype pad = NLMSG_PAD(buf->size());
 	QByteArray padding(pad, 0);
 
-	writeRawData(padding, pad);
+	if (pad)
+		writeRawData(padding, pad);
 
 	return *this;
 }
@@ -525,9 +527,31 @@ KernelStream &KernelStream::alignAttr()
 	qsizetype pad = NLA_PAD(buf->size());
 	QByteArray padding(pad, 0);
 
-	writeRawData(padding, pad);
+	if (pad)
+		writeRawData(padding, pad);
 
 	return *this;
+}
+
+int *KernelStream::pSize()
+{
+	QBuffer *buf = dynamic_cast<QBuffer *>(this->device());
+	if (!buf) {
+		return nullptr;
+	}
+
+	QByteArray *data = &buf->buffer();
+	return &data->data_ptr()->size;
+}
+
+qint64 KernelStream::pos()
+{
+	QBuffer *buf = dynamic_cast<QBuffer *>(this->device());
+	if (!buf) {
+		return -1;
+	}
+
+	return buf->pos();
 }
 
 KernelStream &KernelStream::operator<<(genlmsghdr &s)

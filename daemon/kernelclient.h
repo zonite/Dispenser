@@ -49,6 +49,13 @@ public:
 	KernelStream &align();
 	KernelStream &alignAttr();
 
+	inline int size() { return *pSize(); }
+	int *pSize();
+
+	//inline qint64 pos() { return *pPos(); }
+	//qint64 *pPos();
+	qint64 pos();
+
 private:
 
 };
