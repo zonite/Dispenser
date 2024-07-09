@@ -570,7 +570,7 @@ KernelStream &KernelStream::operator<<(nlattr &s)
 }
 
 // QByteArray must be zero terminated!
-KernelStream &KernelStream::operator<<(QByteArray *s)
+KernelStream &KernelStream::operator<<(const QByteArray *s)
 {
 	writeRawData(s->constData(), s->size());
 	writeRawData("", 1);

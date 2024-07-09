@@ -38,15 +38,17 @@ private:
 	qsizetype mPos = 0;
 };
 
-class KernelStream : public QDataStream
+class KernelStream : protected QDataStream
 {
 public:
 	QDataStream &operator<<(const char *s) = delete;
+	QDataStream &operator<<(QVariant s) = delete;
+	QDataStream &operator<<(QVariant *s) = delete;
 
 	KernelStream &operator<<(nlmsghdr &s);
 	KernelStream &operator<<(genlmsghdr &s);
 	KernelStream &operator<<(nlattr &s);
-	KernelStream &operator<<(QByteArray *s);
+	virtual KernelStream &operator<<(const QByteArray *s);
 	//KernelStream &operator<<(const char *s) override;
 
 	KernelStream &align();
@@ -59,6 +61,8 @@ public:
 	//qint64 *pPos();
 	qint64 pos();
 
+	using QDataStream::device;
+	using QDataStream::setDevice;
 private:
 
 };
