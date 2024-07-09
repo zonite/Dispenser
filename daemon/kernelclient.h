@@ -55,6 +55,7 @@ public:
 	KernelStream &alignAttr();
 
 	inline int size() { return *pSize(); }
+	inline __u32 uSize() { return (__u32)*pSize(); }
 	int *pSize();
 
 	//inline qint64 pos() { return *pPos(); }

@@ -398,7 +398,8 @@ int KernelClient::resolve_family_id_by_name()
 	//nl_rxtx_length = sendto(nl_fd, (char *)&nl_request_msg, nl_request_msg.n.nlmsg_len,
 	//                        0, (struct sockaddr *)&nl_address, sizeof(nl_address));
 
-	if ((__u32)nl_rxtx_length != nl_request_msg.n.nlmsg_len) {
+	//if ((__u32)nl_rxtx_length != nl_request_msg.n.nlmsg_len) {
+	if ((__u32)nl_rxtx_length != mToKernel.uSize()) {
 		::close(nl_fd);
 		qDaemonLog(QStringLiteral("Error sending family id request"), QDaemonLog::ErrorEntry);
 		qApp->quit();
@@ -578,7 +579,8 @@ KernelStream &KernelStream::operator<<(const QByteArray *s)
 	return this->alignAttr();
 }
 
-// x/48xb 0x555559fbf8
+// x/48xb 0x555559fc48 0x555559fbf8
+// x/48cb 0x555559fc48
 
 /*
 template<typename T>
