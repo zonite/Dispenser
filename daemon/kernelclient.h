@@ -41,10 +41,13 @@ private:
 class KernelStream : public QDataStream
 {
 public:
+	QDataStream &operator<<(const char *s) = delete;
+
 	KernelStream &operator<<(nlmsghdr &s);
 	KernelStream &operator<<(genlmsghdr &s);
 	KernelStream &operator<<(nlattr &s);
-	KernelStream &operator<<(QByteArray &s);
+	KernelStream &operator<<(QByteArray *s);
+	//KernelStream &operator<<(const char *s) override;
 
 	KernelStream &align();
 	KernelStream &alignAttr();
