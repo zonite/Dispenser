@@ -5,6 +5,8 @@
 #include <QCommandLineParser>
 
 #include <sys/socket.h>
+#include <sys/ioctl.h>
+#include <sys/fcntl.h>
 //#include <sys/user.h>
 #include <unistd.h>
 
@@ -12,6 +14,7 @@
 #include <netlink/netlink.h>
 #include <netlink/genl/genl.h>
 #include <netlink/genl/ctrl.h>
+#include <linux/netlink.h>
 
 #include <dispenser.h>
 
@@ -29,7 +32,8 @@
 #define NLMSG_PAD(size) PAD(size,NLMSG_ALIGNTO)
 #define NLA_PAD(size) PAD(size,NLA_ALIGNTO)
 
-#define PAGE_SIZE 4096
+//#define PAGE_SIZE NLMSG_GOODSIZE
+//#define PAGE_SIZE 8192UL
 
 // Generic macros for dealing with netlink sockets
 #define GENLMSG_DATA(glh) ((void *)(((char *)NLMSG_DATA(glh) + GENL_HDRLEN)))
@@ -238,6 +242,17 @@ nlattr *KernelClient::nl_attr_put(KernelStream *out, quint16 type, const QByteAr
 	return i.data();
 }
 
+int KernelClient::parse_genl_message(KernelStream *in, struct genl_info *info)
+{
+	if (!in || !info)
+		return -EINVAL;
+
+
+	*in >> *info->nlhdr;
+
+	return info->nlhdr->nlmsg_len;
+}
+
 ssize_t KernelClient::sendToKernel(KernelStream *out)
 {
 	if (nl_fd < 0)
@@ -253,7 +268,411 @@ ssize_t KernelClient::sendToKernel(KernelStream *out)
 	hdr->nlmsg_len = array->size();
 
 	return sendto(nl_fd, buf->data().constData(), hdr->nlmsg_len,
-	                        0, (struct sockaddr *)&nl_address, sizeof(nl_address));
+	              0, (struct sockaddr *)&nl_address, sizeof(nl_address));
+}
+
+ssize_t KernelClient::recvFromKernel(void)
+{
+	ssize_t nl_rx_length = 0;
+	struct nlmsghdr *nlmsg = nullptr;
+	Buffer inBuffer;
+
+	if (nl_fd < 0)
+		return nl_fd;
+
+	ioctl(nl_fd, FIONREAD, &nl_rx_length); //return bytes available in buffer for read. Get the number of bytes in the input buffer.
+	qDaemonLog(QStringLiteral("Buffer has %l bytes.").arg(nl_rx_length), QDaemonLog::NoticeEntry);
+
+	/*
+	nl_rx_length = fcntl(nl_fd, F_GETFL);
+	if (!m_pKernel->isEnabled() && (nl_rx_length & O_NONBLOCK)) {
+		qDaemonLog(QStringLiteral("Buffer switch to blocking state."), QDaemonLog::NoticeEntry);
+		fcntl(nl_fd, F_SETFL, nl_rx_length & (~O_NONBLOCK));
+	}
+	*/
+
+	do {
+		nl_rx_length = recv(nl_fd, inBuffer.begin(), inBuffer.capacity(), 0);
+
+		if (nl_rx_length == -1 && (errno == EAGAIN)) {
+			qDaemonLog(QStringLiteral("FD has no more data."), QDaemonLog::NoticeEntry);
+			break;
+		}
+
+		//0x7ffffff880; 0x7ffffff894 ; 0x7ffffff898
+		//nlmsg
+		// type 16 = GENL_ID_CTRL (controller messages)
+		//genlmsg
+		// cmd 1 = CTRL_CMD_NEWFAMILY
+		//nlattr
+		// type 2 = CTRL_ATTR_FAMILY_NAME
+		// type 1 = CTRL_ATTR_FAMILY_ID
+
+		if (nl_rx_length < 0) {
+			qDaemonLog(QStringLiteral("Error receiving from kernel"), QDaemonLog::ErrorEntry);
+			qApp->quit();
+			return nl_rx_length;
+		}
+
+		inBuffer.resize(nl_rx_length); //Resize to the length of the data in buffer
+		inBuffer >> &nlmsg;
+
+		if (!NLMSG_OK((nlmsg), (__u32)nl_rx_length)) {
+			//qDaemonLog(QStringLiteral("Family ID request : invalid message"), QDaemonLog::ErrorEntry);
+			qDaemonLog(QStringLiteral("Error validating Kernel response: invalid length"), QDaemonLog::ErrorEntry);
+			qApp->quit();
+			return -1;
+		}
+
+		if (nl_family_id > 0 && nlmsg->nlmsg_type == nl_family_id) {
+			//Process Dispenser message
+			process_dispenser_message(inBuffer);
+		}
+
+		//Process standard messages
+		switch (nlmsg->nlmsg_type) {
+		case NLMSG_NOOP: //No-op. skip message.
+			qDaemonLog(QStringLiteral("NL message skip."), QDaemonLog::ErrorEntry);
+			break;
+		case NLMSG_DONE: //Dump done. skip message.
+			qDaemonLog(QStringLiteral("NL message dump done."), QDaemonLog::ErrorEntry);
+			break;
+		case NLMSG_ERROR:
+			qDaemonLog(QStringLiteral("Error validating Kernel response: receive error"), QDaemonLog::ErrorEntry);
+			qApp->quit();
+			return -1;
+			break;
+		case GENL_ID_CTRL: //GENL controller requests.
+			//Request GENL ID.
+			process_control_message(inBuffer);
+			break;
+		default:
+			qDaemonLog(QStringLiteral("Unknown type from netlink message"), QDaemonLog::ErrorEntry);
+			qApp->quit();
+			return -1;
+			break;
+		}
+
+
+	} while (nl_rx_length);
+
+
+
+	QBuffer *buf = dynamic_cast<QBuffer *>(in->device());
+
+	if (!buf)
+		return -1;
+
+	buf->buffer().resize(PAGE_SIZE);
+	buf->buffer().fill(0);
+	buf->seek(0);
+
+	//const QByteArray *array = &buf->data();
+	//array->reserve();
+
+	nl_rx_length = recv(nl_fd, buf->buffer().data(), PAGE_SIZE, 0);
+	buf->buffer().data_ptr()->size = nl_rx_length;
+
+	return buf->buffer().size();
+
+	nlmsg = (nlmsghdr*) buf->buffer().constData();
+
+	/**
+	 *
+	 * Buffer has
+	 *
+	 * struct nlmsghdr (.nlmsg_type = family_id)
+	 * struct genlmsghdr (.cmd = enum DISPENSER_GENL_COMMAND)
+	 * struct nlattr (.nla_type = enum DISPENSER_GENL_ATTRIBUTE) multiple times
+	 *
+	 * */
+
+	struct genl_info *msg = parse_genl_message(buf);
+
+	if (nl_rx_length < 0) {
+		qDaemonLog(QStringLiteral("Error receiving family id request result"), QDaemonLog::ErrorEntry);
+		qApp->quit();
+		return nl_rx_length;
+	}
+
+	// Validate response message
+	//if (!NLMSG_OK((&nl_response_msg.n), (__u32)nl_rxtx_length)) {
+	if (!NLMSG_OK((nlmsg), (__u32)nl_rx_length)) {
+		//qDaemonLog(QStringLiteral("Family ID request : invalid message"), QDaemonLog::ErrorEntry);
+		qDaemonLog(QStringLiteral("Error validating Kernel response: invalid length"), QDaemonLog::ErrorEntry);
+		qApp->quit();
+		return -1;
+	}
+
+	switch (nlmsg->nlmsg_type) {
+	case NLMSG_ERROR:
+		qDaemonLog(QStringLiteral("Error validating Kernel response: receive error"), QDaemonLog::ErrorEntry);
+		qApp->quit();
+		return -1;
+		break;
+	}
+
+	return buf->buffer().size();
+}
+
+void KernelClient::enableEvents()
+{
+	int flags = 0;
+
+	if (m_pKernel) {
+		//m_pKernel = new QSocketNotifier(nl_fd, QSocketNotifier::Read, this);
+		connect(m_pKernel, SIGNAL(activated(int)), this, SLOT(readyRead()));
+
+		//family acquired... Switch to nonblocking state for event driven io.
+		flags = fcntl(nl_fd, F_GETFL);
+		fcntl(nl_fd, F_SETFL, flags | O_NONBLOCK);
+
+		m_pKernel->setEnabled(true);
+	}
+}
+
+void KernelClient::parse_dispenser_message(Buffer &in)
+{
+	struct genlmsghdr *genl = nullptr;
+	struct genl_info genl_info = { 0, 0, 0, 0, 0, 0, { 0, 0 }, 0 };
+	struct nlattr *attrs[DISPENSER_GENL_ATTR_COUNT] = { nullptr };
+
+	in >> &genl;
+
+	if (!genl) {
+		//invalid
+		qDaemonLog(QStringLiteral("Invalid genl header"), QDaemonLog::ErrorEntry);
+		return;
+	}
+
+	genl_info.attrs = attrs;
+	genl_info.genlhdr = genl;
+
+	parse_dispenser_nlattr(in, attrs);
+
+	switch (genl->cmd) {
+	case DISPENSER_GENL_CMD_UNSPEC:
+		qDaemonLog(QStringLiteral("Invalid command"), QDaemonLog::ErrorEntry);
+		break;
+	case DISPENSER_GENL_CMD_RELEASE: //action by attributes, for daemon, release event received.
+		qDaemonLog(QStringLiteral("Release Event"), QDaemonLog::NoticeEntry);
+
+
+		break;
+	case DISPENSER_GENL_CMD_SLOT_STATUS: //u8 col, u8 slot, u8 state attr
+		qDaemonLog(QStringLiteral("Slot Status Info"), QDaemonLog::NoticeEntry);
+		__u8 *status;
+		__u8 *col;
+		__u8 *slot;
+		__u32 *failed_up, *failed_down, *counter;
+
+		get_nlattr_data(attrs[DISPENSER_GENL_COL_NUM], &col);
+		get_nlattr_data(attrs[DISPENSER_GENL_SLOT_NUM], &slot);
+		get_nlattr_data(attrs[DISPENSER_GENL_SLOT_STATUS], &status);
+		get_nlattr_data(attrs[DISPENSER_GENL_SLOT_FAILED_UP], &failed_up);
+		get_nlattr_data(attrs[DISPENSER_GENL_SLOT_FAILED_DOWN], &failed_down);
+		get_nlattr_data(attrs[DISPENSER_GENL_MEM_COUNTER], &counter);
+
+		break;
+	case DISPENSER_GENL_CMD_UNIT_STATUS: //u8 col, u8 slot, u8 state attr
+		qDaemonLog(QStringLiteral("Unit Status Info"), QDaemonLog::NoticeEntry);
+		break;
+	case DISPENSER_GENL_CMD_ENVIRONMENT: //u32 attr //raw temperature
+		qDaemonLog(QStringLiteral("Environment Info"), QDaemonLog::NoticeEntry);
+		break;
+	case DISPENSER_GENL_CMD_CALIBRATION: //calibration data
+		qDaemonLog(QStringLiteral("Calibration Data"), QDaemonLog::NoticeEntry);
+		break;
+	case DISPENSER_GENL_CMD_DUMP: //Dumps the mmap-area
+		qDaemonLog(QStringLiteral("Memory Dump"), QDaemonLog::NoticeEntry);
+		break;
+	}
+}
+
+ssize_t KernelClient::process_control_message(Buffer &in)
+{
+	struct genlmsghdr *genl = nullptr;
+
+	in >> &genl;
+
+	if (!genl) {
+		//invalid
+		return -1;
+	}
+
+	//enum control cmd:
+	switch (genl->cmd) {
+	case CTRL_CMD_UNSPEC:
+		break;
+	case CTRL_CMD_NEWFAMILY: //Return family ID.
+		qDaemonLog(QStringLiteral("Netlink Control received New family."), QDaemonLog::ErrorEntry);
+		process_control_newfamily(in);
+		break;
+	case CTRL_CMD_DELFAMILY:
+		qDaemonLog(QStringLiteral("Netlink Control received Del family."), QDaemonLog::ErrorEntry);
+		break;
+	case CTRL_CMD_GETFAMILY:
+		qDaemonLog(QStringLiteral("Netlink Control received Get family."), QDaemonLog::ErrorEntry);
+		break;
+	case CTRL_CMD_NEWOPS:
+		qDaemonLog(QStringLiteral("Netlink Control received New Ops."), QDaemonLog::ErrorEntry);
+		break;
+	case CTRL_CMD_DELOPS:
+		qDaemonLog(QStringLiteral("Netlink Control received Del Ops."), QDaemonLog::ErrorEntry);
+		break;
+	case CTRL_CMD_GETOPS:
+		qDaemonLog(QStringLiteral("Netlink Control received Get Ops."), QDaemonLog::ErrorEntry);
+		break;
+	case CTRL_CMD_NEWMCAST_GRP:
+		qDaemonLog(QStringLiteral("Netlink Control received New Mcast."), QDaemonLog::ErrorEntry);
+		break;
+	case CTRL_CMD_DELMCAST_GRP:
+		qDaemonLog(QStringLiteral("Netlink Control received Del Mcast."), QDaemonLog::ErrorEntry);
+		break;
+	case CTRL_CMD_GETMCAST_GRP: /* unused */
+		qDaemonLog(QStringLiteral("Netlink Control received Get Mcast."), QDaemonLog::ErrorEntry);
+		break;
+	case CTRL_CMD_GETPOLICY:
+		qDaemonLog(QStringLiteral("Netlink Control received Get Policy."), QDaemonLog::ErrorEntry);
+		break;
+	}
+}
+
+void KernelClient::parse_dispenser_nlattr(Buffer &in, nlattr **attrs)
+{
+	struct nlattr *attr = nullptr;
+	__u16 i = DISPENSER_GENL_ATTR_COUNT * 2;
+
+	in >> &attr;
+
+	while (attr && i) {
+		if (attr->nla_type < DISPENSER_GENL_ATTR_COUNT) {
+			attrs[attr->nla_type] = attr;
+		}
+
+		in >> &attr;
+		--i;
+	}
+}
+
+void KernelClient::process_control_newfamily(Buffer &in)
+{
+	struct nlattr *attr = nullptr;
+	bool correct_family = false;
+	__u16 *family_id = nullptr;
+	__u16 lenght = 0; //attr->nla_len;
+	char *name = nullptr;
+	__u16 i = CTRL_ATTR_MAX * 2;
+
+	in >> &attr;
+
+	while (attr && i) {
+		switch (attr->nla_type) {
+		case CTRL_ATTR_UNSPEC:
+			break;
+		case CTRL_ATTR_FAMILY_ID: //u16
+			qDaemonLog(QStringLiteral("Netlink Control received family id."), QDaemonLog::ErrorEntry);
+			get_nlattr_data(attr, &family_id);
+			break;
+		case CTRL_ATTR_FAMILY_NAME: //string
+			qDaemonLog(QStringLiteral("Netlink Control received family name."), QDaemonLog::ErrorEntry);
+			lenght = get_nlattr_data(attr, &name);
+			if (lenght > GENL_NAMSIZ)
+				lenght = GENL_NAMSIZ;
+			if (!strncmp(name, DISPENSER_GENL_NAME, lenght))
+				correct_family = true;
+			break;
+		case CTRL_ATTR_VERSION: //u32
+			qDaemonLog(QStringLiteral("Netlink Control received version."), QDaemonLog::ErrorEntry);
+			break;
+		case CTRL_ATTR_HDRSIZE: //u32
+			qDaemonLog(QStringLiteral("Netlink Control received hdrsize."), QDaemonLog::ErrorEntry);
+			break;
+		case CTRL_ATTR_MAXATTR: //u32
+			qDaemonLog(QStringLiteral("Netlink Control received maxattr."), QDaemonLog::ErrorEntry);
+			break;
+		case CTRL_ATTR_OPS:
+			qDaemonLog(QStringLiteral("Netlink Control received ops."), QDaemonLog::ErrorEntry);
+			break;
+		case CTRL_ATTR_MCAST_GROUPS:
+			qDaemonLog(QStringLiteral("Netlink Control received groups."), QDaemonLog::ErrorEntry);
+			break;
+		case CTRL_ATTR_POLICY:
+			qDaemonLog(QStringLiteral("Netlink Control received policy."), QDaemonLog::ErrorEntry);
+			break;
+		case CTRL_ATTR_OP_POLICY:
+			qDaemonLog(QStringLiteral("Netlink Control received op policy."), QDaemonLog::ErrorEntry);
+			break;
+		case CTRL_ATTR_OP:
+			qDaemonLog(QStringLiteral("Netlink Control received op."), QDaemonLog::ErrorEntry);
+			break;
+		}
+
+		in >> &attr;
+		--i;
+	}
+
+	if (correct_family && family_id) {
+		nl_family_id = *family_id;
+
+		enableEvents();
+	}
+
+	return;
+}
+
+void KernelClient::process_dispenser_message(Buffer &in)
+{
+
+}
+
+
+
+ssize_t KernelClient::process_event(KernelStream *in)
+{
+	QBuffer *buf = dynamic_cast<QBuffer *>(in->device());
+
+	if (!buf)
+		return -1;
+
+
+
+	return -1;
+}
+
+ssize_t KernelClient::get_nlattr_data(nlattr *attr, char **str)
+{
+	*str = (char *) NLA_DATA(attr);
+
+	return attr->nla_len - NLA_HDRLEN;
+}
+
+ssize_t KernelClient::get_nlattr_data(nlattr *attr, QByteArray *str)
+{
+	str->setRawData((const char *)NLA_DATA(attr), attr->nla_len);
+
+	return attr->nla_len - NLA_HDRLEN;
+}
+
+ssize_t KernelClient::get_nlattr_data(nlattr *attr, __u8 **i)
+{
+	*i = (__u8 *) NLA_DATA(attr);
+
+	return attr->nla_len - NLA_HDRLEN;
+}
+
+ssize_t KernelClient::get_nlattr_data(nlattr *attr, __u16 **i)
+{
+	*i = (__u16 *) NLA_DATA(attr);
+
+	return attr->nla_len - NLA_HDRLEN;
+}
+
+ssize_t KernelClient::get_nlattr_data(nlattr *attr, __u32 **i)
+{
+	*i = (__u32 *) NLA_DATA(attr);
+
+	return attr->nla_len - NLA_HDRLEN;
 };
 
 
@@ -314,9 +733,12 @@ int KernelClient::open_and_bind_socket()
 		return -1;
 	}
 
+	m_pKernel = new QSocketNotifier(nl_fd, QSocketNotifier::Read, this);
+
 	mOutBuffer.open(QIODevice::ReadWrite);
-	mInBuffer.open(QIODevice::ReadWrite);
+	//mInBuffer.open(QIODevice::ReadWrite);
 	mToKernel.setDevice(&mOutBuffer);
+	//FromKernel.setDevice(&mInBuffer);
 
 	return resolve_family_id_by_name();
 }
@@ -335,6 +757,18 @@ int KernelClient::resolve_family_id_by_name()
 	// Populate the netlink header
 	//QBuffer msg;
 	//QDataStream toKernel(&msg);
+	struct genl_info info;
+	struct nlattr *attrs[__DISPENSER_GENL_ATTR_MAX];
+	info.attrs = attrs;
+	int flags = 0;
+
+	//Make sure we block until we have family id!
+	flags = fcntl(nl_fd, F_GETFL);
+	if (flags & O_NONBLOCK) {
+		qDaemonLog(QStringLiteral("FD switch to blocking state."), QDaemonLog::NoticeEntry);
+		fcntl(nl_fd, F_SETFL, flags & (~O_NONBLOCK));
+	}
+
 	nlmsghdr *nlmsg = nl_hdr_put(&mToKernel);
 	if (!nlmsg) {
 		//error
@@ -352,7 +786,7 @@ int KernelClient::resolve_family_id_by_name()
 
 	// Populate the payload's "family header" : which in our case is genlmsghdr
 
-	genlmsghdr *genlmsg = genl_hdr_put(&mToKernel, CTRL_CMD_GETFAMILY);
+	genlmsghdr *genlmsg = genl_hdr_put(dynamic_cast<KernelStream *>(mToKernel.device()), CTRL_CMD_GETFAMILY);
 	if (!genlmsg) {
 		//error
 		qDaemonLog(QStringLiteral("Error genetlink message header"), QDaemonLog::ErrorEntry);
@@ -374,7 +808,7 @@ int KernelClient::resolve_family_id_by_name()
 	// Populate the payload's "netlink attributes"
 
 	QByteArray name = DISPENSER_GENL_NAME;
-	name.truncate(15); //Family name length can be upto 16 chars including \0
+	name.truncate(GENL_NAMSIZ - 1); //Family name length can be upto 16 chars including \0
 	nlattr* name_attr = nl_attr_put(&mToKernel, CTRL_ATTR_FAMILY_NAME, &name);
 	Q_UNUSED(name_attr);
 
@@ -407,14 +841,22 @@ int KernelClient::resolve_family_id_by_name()
 	}
 
 	// Wait for the response message
-	nl_rxtx_length = recv(nl_fd, &nl_response_msg, sizeof(nl_response_msg), 0);
+	//nl_rxtx_length = recv(nl_fd, &nl_response_msg, sizeof(nl_response_msg), 0);
+	nl_rxtx_length = recvFromKernel(&mFromKernel);
+
+	perse;
+
+	parse_genl_message(dynamic_cast<QBuffer *>(mFromKernel.device()), &info);
+	/*
 	if (nl_rxtx_length < 0) {
 		qDaemonLog(QStringLiteral("Error receiving family id request result"), QDaemonLog::ErrorEntry);
 		qApp->quit();
 		return -1;
 	}
+	*/
 
 	// Validate response message
+	/*
 	if (!NLMSG_OK((&nl_response_msg.n), (__u32)nl_rxtx_length)) {
 		qDaemonLog(QStringLiteral("Family ID request : invalid message"), QDaemonLog::ErrorEntry);
 		qDaemonLog(QStringLiteral("Error validating family id request result: invalid length"), QDaemonLog::ErrorEntry);
@@ -427,6 +869,8 @@ int KernelClient::resolve_family_id_by_name()
 		qApp->quit();
 	    return -1;
 	}
+	*/
+	process_event(&mFromKernel);
 
 	// Extract family ID
 	nl_na = (struct nlattr *)GENLMSG_DATA(&nl_response_msg);
@@ -441,9 +885,9 @@ int KernelClient::resolve_family_id_by_name()
 		qApp->quit();
 	}
 
-	m_pKernel = new QSocketNotifier(nl_fd, QSocketNotifier::Read, this);
-	connect(m_pKernel, SIGNAL(activated(int)), this, SLOT(readyRead()));
-	m_pKernel->setEnabled(true);
+	//m_pKernel = new QSocketNotifier(nl_fd, QSocketNotifier::Read, this);
+	//connect(m_pKernel, SIGNAL(activated(int)), this, SLOT(readyRead()));
+	//m_pKernel->setEnabled(true);
 
 	//connect(m_pKernel, QOverload<QSocketDescriptor, QSocketNotifier::Type>::of(&QSocketNotifier::activated),
 	//    [=](QSocketDescriptor socket, QSocketNotifier::Type Read){ /* ... */ });
@@ -453,7 +897,7 @@ int KernelClient::resolve_family_id_by_name()
 
 int KernelClient::get_unit_status()
 {
-	/** Send Message to the Kernel requesting inut status */
+	/** Send Message to the Kernel requesting unit status */
 	memset(&nl_request_msg, 0, sizeof(nl_request_msg));
 	memset(&nl_response_msg, 0, sizeof(nl_response_msg));
 
@@ -501,6 +945,59 @@ KernelStream &KernelStream::operator<<(nlmsghdr &s)
 	writeRawData((char *)&s, NLMSG_HDRLEN);
 
 	return this->align();
+}
+
+void *KernelStream::cur()
+{
+	QBuffer *buf = dynamic_cast<QBuffer *>(this->device());
+	if (!buf) {
+		return nullptr;
+	}
+
+	qint64 pos = buf->pos();
+	void *data = &(buf->buffer().data()[pos]);
+
+	return data;
+}
+
+const void *KernelStream::constCur()
+{
+	QBuffer *buf = dynamic_cast<QBuffer *>(this->device());
+	if (!buf) {
+		return nullptr;
+	}
+
+	qint64 pos = buf->pos();
+	const void *data = &(buf->buffer().constData()[pos]);
+
+	return data;
+}
+
+KernelStream &KernelStream::operator>>(nlattr **s)
+{
+	s = *(const nlmsghdr *)constCur();
+
+	skipRawData(NLMSG_HDRLEN);
+
+	return *this;
+}
+
+KernelStream &KernelStream::operator>>(genlmsghdr **s)
+{
+	s = *(const genlmsghdr *)constCur();
+
+	skipRawData(GENL_HDRLEN);
+
+	return *this;
+}
+
+KernelStream &KernelStream::operator>>(nlattr **s)
+{
+	s = *(const nlattr *)constCur();
+
+	skipRawData(NLA_HDRLEN);
+
+	return *this;
 }
 
 KernelStream &KernelStream::align()

@@ -67,10 +67,11 @@ enum DISPENSER_GENL_ATTRIBUTE {
 enum DISPENSER_GENL_COMMAND {
 	DISPENSER_GENL_CMD_UNSPEC,
 	DISPENSER_GENL_CMD_RELEASE, //action by attributes
-	DISPENSER_GENL_CMD_SLOT_STATUS, //u8 col, u8 slot, u8 state attr
-	DISPENSER_GENL_CMD_UNIT_STATUS, //u8 col, u8 slot, u8 state attr
-	DISPENSER_GENL_CMD_ENVIRONMENT, //u32 attr //raw temperature
-	DISPENSER_GENL_CMD_CALIBRATION, //calibration data
+	DISPENSER_GENL_CMD_SLOT_STATUS, //u8 col, u8 slot, u8 state attr, u32 counter
+	DISPENSER_GENL_CMD_COL_STATUS, //u8 col, u8 slot, u32 counter
+	DISPENSER_GENL_CMD_UNIT_STATUS, //u8 col, u8 slot, u8 state attr, u32 counter
+	DISPENSER_GENL_CMD_ENVIRONMENT, //u32 temp, u32 press, u32 humid, u32 counter //raw temperature
+	DISPENSER_GENL_CMD_CALIBRATION, //u32 temp, u32 press, u32 humid, u32 counter //calibration data
 	DISPENSER_GENL_CMD_DUMP, //Dumps the mmap-area
 	__DISPENSER_GENL_CMD_MAX,
 } __attribute__ ((__packed__));
