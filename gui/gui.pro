@@ -39,7 +39,8 @@ SOURCES += \
 #    mainwindow.cpp
 
 INCLUDEPATH += \
-    ../include
+    ../include \
+    ../lib
 
 #HEADERS += \
 #    mainwindow.h
@@ -63,4 +64,4 @@ HEADERS += \
         manager.h \
 	unitlist.h \
 	unitmodel.h \
-        websocketclient.h
+	websocketclient.h

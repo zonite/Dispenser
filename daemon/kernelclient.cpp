@@ -41,32 +41,48 @@
 #define NLA_DATA(na) ((void *)((char *)(na) + NLA_HDRLEN))
 
 
+/** Template instantiations **/
+
 template class KernelStreamIterator<nlattr>;
 template class KernelStreamIterator<nlmsghdr>;
 template class KernelStreamIterator<genlmsghdr>;
+
+//template KernelStream &KernelStream::operator<<<int>(const int s);
+template KernelStream &KernelStream::operator<<(const __u8 s);
+template KernelStream &KernelStream::operator<<(const __s8 s);
+template KernelStream &KernelStream::operator<<(const __u16 s);
+template KernelStream &KernelStream::operator<<(const __s16 s);
+template KernelStream &KernelStream::operator<<(const __u32 s);
+template KernelStream &KernelStream::operator<<(const __s32 s);
+template KernelStream &KernelStream::operator<<(const __u64 s);
+template KernelStream &KernelStream::operator<<(const __s64 s);
+
 
 // Global Variables used for our Netlink example
 /** Number of bytes sent or received via send() or recv() */
 int nl_rxtx_length;
 /** Pointer to Netlink attributes structure within the payload */
-struct nlattr *nl_na;
+//struct nlattr *nl_na;
 /** Memory for Netlink request message. */
-struct generic_netlink_msg nl_request_msg;
+//struct generic_netlink_msg nl_request_msg;
 /** Memory for Netlink response message. */
-struct generic_netlink_msg nl_response_msg;
+//struct generic_netlink_msg nl_response_msg;
 
+KernelClient *KernelClient::m_pClient = nullptr;
 
 KernelClient::KernelClient(QObject *parent)
         : QObject{parent}
 {
-	qDaemonLog(QStringLiteral("KernelClient created."), QDaemonLog::NoticeEntry);
+        qDaemonLog(QStringLiteral("KernelClient created."), QDaemonLog::NoticeEntry);
 
-	nl_address.nl_family = AF_NETLINK;
-	nl_address.nl_pid = 0; // <-- we target the kernel; kernel pid is 0
-	nl_address.nl_groups = 0; // we don't use multicast groups
-	nl_address.nl_pad = 0;
+        nl_address.nl_family = AF_NETLINK;
+        nl_address.nl_pid = 0; // <-- we target the kernel; kernel pid is 0
+        nl_address.nl_groups = 0; // we don't use multicast groups
+        nl_address.nl_pad = 0;
 
-	qRegisterMetaType<qintptr>("qintptr");
+        m_pClient = this;
+
+        qRegisterMetaType<qintptr>("qintptr");
 }
 
 KernelClient::~KernelClient()
@@ -76,7 +92,6 @@ KernelClient::~KernelClient()
 		nl_fd = -1;
 	}
 }
-
 
 void KernelClient::start(const QStringList &arguments)
 {
@@ -137,6 +152,7 @@ void KernelClient::stop()
 void KernelClient::readyRead()
 {
 	qDebug() << "Received data from kernel.";
+	recvFromKernel();
 }
 
 // will reset buffer
@@ -242,15 +258,55 @@ nlattr *KernelClient::nl_attr_put(KernelStream *out, quint16 type, const QByteAr
 	return i.data();
 }
 
-int KernelClient::parse_genl_message(KernelStream *in, struct genl_info *info)
+/*
+nlattr *KernelClient::nl_attr_put(KernelStream *out, quint16 type, const __u8 data)
 {
-	if (!in || !info)
-		return -EINVAL;
+	QBuffer *buf = dynamic_cast<QBuffer *>(out->device());
+	//Wrong type of stream if nullptr returned.
+	if (!buf)
+		return nullptr;
 
+	struct nlattr attr = {
+		.nla_len = 0,
+		.nla_type = type
+	};
 
-	*in >> *info->nlhdr;
+	quint16 size = sizeof(data);
+	attr.nla_len = NLA_HDRLEN + size;
 
-	return info->nlhdr->nlmsg_len;
+	KernelStreamIterator<nlattr> i(out);
+	*out << attr;
+	// *out << str->constData();
+	*out << data;
+	//out->pad(pad);
+
+	return i.data();
+}
+*/
+
+template<typename T>
+nlattr *KernelClient::nl_attr_put(KernelStream *out, quint16 type, const T data)
+{
+	QBuffer *buf = dynamic_cast<QBuffer *>(out->device());
+	//Wrong type of stream if nullptr returned.
+	if (!buf)
+		return nullptr;
+
+	struct nlattr attr = {
+		.nla_len = 0,
+		.nla_type = type
+	};
+
+	quint16 size = sizeof(data);
+	attr.nla_len = NLA_HDRLEN + size;
+
+	KernelStreamIterator<nlattr> i(out);
+	*out << attr;
+	//*out << str->constData();
+	*out << data;
+	//out->pad(pad);
+
+	return i.data();
 }
 
 ssize_t KernelClient::sendToKernel(KernelStream *out)
@@ -266,6 +322,7 @@ ssize_t KernelClient::sendToKernel(KernelStream *out)
 	const QByteArray *array = &buf->data();
 	struct nlmsghdr *hdr = (struct nlmsghdr *) array->constData();
 	hdr->nlmsg_len = array->size();
+	hdr->nlmsg_seq = msg_seq++;
 
 	return sendto(nl_fd, buf->data().constData(), hdr->nlmsg_len,
 	              0, (struct sockaddr *)&nl_address, sizeof(nl_address));
@@ -356,26 +413,7 @@ ssize_t KernelClient::recvFromKernel(void)
 
 	} while (nl_rx_length);
 
-
-
-	QBuffer *buf = dynamic_cast<QBuffer *>(in->device());
-
-	if (!buf)
-		return -1;
-
-	buf->buffer().resize(PAGE_SIZE);
-	buf->buffer().fill(0);
-	buf->seek(0);
-
-	//const QByteArray *array = &buf->data();
-	//array->reserve();
-
-	nl_rx_length = recv(nl_fd, buf->buffer().data(), PAGE_SIZE, 0);
-	buf->buffer().data_ptr()->size = nl_rx_length;
-
-	return buf->buffer().size();
-
-	nlmsg = (nlmsghdr*) buf->buffer().constData();
+	return nl_rx_length;
 
 	/**
 	 *
@@ -386,33 +424,6 @@ ssize_t KernelClient::recvFromKernel(void)
 	 * struct nlattr (.nla_type = enum DISPENSER_GENL_ATTRIBUTE) multiple times
 	 *
 	 * */
-
-	struct genl_info *msg = parse_genl_message(buf);
-
-	if (nl_rx_length < 0) {
-		qDaemonLog(QStringLiteral("Error receiving family id request result"), QDaemonLog::ErrorEntry);
-		qApp->quit();
-		return nl_rx_length;
-	}
-
-	// Validate response message
-	//if (!NLMSG_OK((&nl_response_msg.n), (__u32)nl_rxtx_length)) {
-	if (!NLMSG_OK((nlmsg), (__u32)nl_rx_length)) {
-		//qDaemonLog(QStringLiteral("Family ID request : invalid message"), QDaemonLog::ErrorEntry);
-		qDaemonLog(QStringLiteral("Error validating Kernel response: invalid length"), QDaemonLog::ErrorEntry);
-		qApp->quit();
-		return -1;
-	}
-
-	switch (nlmsg->nlmsg_type) {
-	case NLMSG_ERROR:
-		qDaemonLog(QStringLiteral("Error validating Kernel response: receive error"), QDaemonLog::ErrorEntry);
-		qApp->quit();
-		return -1;
-		break;
-	}
-
-	return buf->buffer().size();
 }
 
 void KernelClient::enableEvents()
@@ -448,44 +459,46 @@ void KernelClient::parse_dispenser_message(Buffer &in)
 	genl_info.attrs = attrs;
 	genl_info.genlhdr = genl;
 
-	parse_dispenser_nlattr(in, attrs);
+	parse_dispenser_nlattr(in, attrs); //setup attrs struct with dispenser attrs
 
 	switch (genl->cmd) {
 	case DISPENSER_GENL_CMD_UNSPEC:
 		qDaemonLog(QStringLiteral("Invalid command"), QDaemonLog::ErrorEntry);
 		break;
-	case DISPENSER_GENL_CMD_RELEASE: //action by attributes, for daemon, release event received.
-		qDaemonLog(QStringLiteral("Release Event"), QDaemonLog::NoticeEntry);
 
-
+	case DISPENSER_GENL_CMD_RELEASE: //action by attributes, for daemon, release event received (command received).
+		qDaemonLog(QStringLiteral("Release Command received"), QDaemonLog::NoticeEntry);
 		break;
+
 	case DISPENSER_GENL_CMD_SLOT_STATUS: //u8 col, u8 slot, u8 state attr
 		qDaemonLog(QStringLiteral("Slot Status Info"), QDaemonLog::NoticeEntry);
-		__u8 *status;
-		__u8 *col;
-		__u8 *slot;
-		__u32 *failed_up, *failed_down, *counter;
-
-		get_nlattr_data(attrs[DISPENSER_GENL_COL_NUM], &col);
-		get_nlattr_data(attrs[DISPENSER_GENL_SLOT_NUM], &slot);
-		get_nlattr_data(attrs[DISPENSER_GENL_SLOT_STATUS], &status);
-		get_nlattr_data(attrs[DISPENSER_GENL_SLOT_FAILED_UP], &failed_up);
-		get_nlattr_data(attrs[DISPENSER_GENL_SLOT_FAILED_DOWN], &failed_down);
-		get_nlattr_data(attrs[DISPENSER_GENL_MEM_COUNTER], &counter);
-
+		parse_slot_cmd(attrs);
 		break;
+
+	case DISPENSER_GENL_CMD_COL_STATUS: //u8 col, u8 slot, u32 counter
+		qDaemonLog(QStringLiteral("Slot Status Info"), QDaemonLog::NoticeEntry);
+		parse_col_cmd(attrs);
+		break;
+
 	case DISPENSER_GENL_CMD_UNIT_STATUS: //u8 col, u8 slot, u8 state attr
 		qDaemonLog(QStringLiteral("Unit Status Info"), QDaemonLog::NoticeEntry);
+		parse_unit_cmd(attrs);
 		break;
 	case DISPENSER_GENL_CMD_ENVIRONMENT: //u32 attr //raw temperature
 		qDaemonLog(QStringLiteral("Environment Info"), QDaemonLog::NoticeEntry);
 		break;
-	case DISPENSER_GENL_CMD_CALIBRATION: //calibration data
-		qDaemonLog(QStringLiteral("Calibration Data"), QDaemonLog::NoticeEntry);
+	case DISPENSER_GENL_CMD_TEMPERATURE_CALIBRATION: //calibration data
+		qDaemonLog(QStringLiteral("Calibration Temperature Data"), QDaemonLog::NoticeEntry);
 		break;
-	case DISPENSER_GENL_CMD_DUMP: //Dumps the mmap-area
-		qDaemonLog(QStringLiteral("Memory Dump"), QDaemonLog::NoticeEntry);
+	case DISPENSER_GENL_CMD_PRESSURE_CALIBRATION: //calibration data
+		qDaemonLog(QStringLiteral("Calibration Pressure Data"), QDaemonLog::NoticeEntry);
 		break;
+	case DISPENSER_GENL_CMD_HUMIDITY_CALIBRATION: //calibration data
+		qDaemonLog(QStringLiteral("Calibration Humidity Data"), QDaemonLog::NoticeEntry);
+		break;
+//	case DISPENSER_GENL_CMD_DUMP: //Dumps the mmap-area
+//		qDaemonLog(QStringLiteral("Memory Dump"), QDaemonLog::NoticeEntry);
+//		break;
 	}
 }
 
@@ -536,6 +549,8 @@ ssize_t KernelClient::process_control_message(Buffer &in)
 		qDaemonLog(QStringLiteral("Netlink Control received Get Policy."), QDaemonLog::ErrorEntry);
 		break;
 	}
+
+	return in.size();
 }
 
 void KernelClient::parse_dispenser_nlattr(Buffer &in, nlattr **attrs)
@@ -552,6 +567,134 @@ void KernelClient::parse_dispenser_nlattr(Buffer &in, nlattr **attrs)
 
 		in >> &attr;
 		--i;
+	}
+}
+
+void KernelClient::parse_slot_cmd(nlattr *attrs[])
+{
+	SlotItem *pSlot;
+	//ColItem *pCol;
+	__u8 *status;
+	__u8 *col;
+	__u8 *slot;
+	__u32 *failed_up, *failed_down, *counter;
+
+	if (!attrs[DISPENSER_GENL_COL_NUM] || !attrs[DISPENSER_GENL_SLOT_NUM]) {
+		//No col or no slot
+		qDaemonLog(QStringLiteral("Slot identifier bad"), QDaemonLog::ErrorEntry);
+		return;
+	}
+	get_nlattr_data(attrs[DISPENSER_GENL_COL_NUM], &col);
+	get_nlattr_data(attrs[DISPENSER_GENL_SLOT_NUM], &slot);
+
+	pSlot = m_cUnit.slot(*col, *slot);
+	//pCol = m_cUnit[*col];
+
+	if (pSlot) {
+		if (attrs[DISPENSER_GENL_SLOT_FAILED_UP]) {
+			get_nlattr_data(attrs[DISPENSER_GENL_SLOT_FAILED_UP], &failed_up);
+			pSlot->setFailedUp(*failed_up);
+		}
+
+		if (attrs[DISPENSER_GENL_SLOT_FAILED_DOWN]) {
+			get_nlattr_data(attrs[DISPENSER_GENL_SLOT_FAILED_DOWN], &failed_down);
+			pSlot->setFailedDown(*failed_down);
+		}
+
+		if (attrs[DISPENSER_GENL_SLOT_STATUS]) {
+			struct dispenser_mmap_slot new_slot_state = { UNKNOWN, 0, 0, 0, 0, 0};
+			unsigned char full = 0;
+
+			get_nlattr_data(attrs[DISPENSER_GENL_SLOT_STATUS], &status);
+
+			dispenser_unpack_slot_status(*status, &new_slot_state, &full);
+
+			pSlot->setFull(full);
+			pSlot->setUp(new_slot_state.up);
+			pSlot->setDown(new_slot_state.down);
+			pSlot->setRelease(new_slot_state.release);
+			pSlot->setState(new_slot_state.state);
+
+			if (new_slot_state.state == UNKNOWN) {
+				setSlotStatus(pSlot);
+			}
+		}
+
+		if (attrs[DISPENSER_GENL_MEM_COUNTER]) {
+			get_nlattr_data(attrs[DISPENSER_GENL_MEM_COUNTER], &counter);
+			m_cUnit.setCounter(*counter);
+		}
+	}
+}
+
+void KernelClient::parse_col_cmd(nlattr *attrs[])
+{
+	ColItem *pCol;
+	__u32 *counter;
+	__u8 *col, *slot;
+
+	if (!attrs[DISPENSER_GENL_COL_NUM]) {
+		//No col or no slot
+		qDaemonLog(QStringLiteral("Col identifier bad"), QDaemonLog::ErrorEntry);
+		return;
+	}
+
+	get_nlattr_data(attrs[DISPENSER_GENL_COL_NUM], &col);
+
+	pCol = m_cUnit.col(*col);
+
+	if (pCol) {
+		if (attrs[DISPENSER_GENL_SLOT_NUM]) {
+			get_nlattr_data(attrs[DISPENSER_GENL_SLOT_NUM], &slot);
+			if (pCol->setSlots(*slot)) {
+				connectSlots(pCol);
+				pCol->initSlots();
+			}
+		}
+
+		if (attrs[DISPENSER_GENL_MEM_COUNTER]) {
+			get_nlattr_data(attrs[DISPENSER_GENL_MEM_COUNTER], &counter);
+			m_cUnit.setCounter(*counter);
+		}
+	}
+}
+
+void KernelClient::parse_unit_cmd(nlattr *attrs[])
+{
+	struct dispenser_mmap_unit received_unit_data = { 0, 0, 0, 0, 0, 0, 0, 0, { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, 0, 0, 0, 0 };
+	__u32 *counter = 0;
+	__u8 *status = 0, *num_cols = 0, *num_slots = 0, *initialized = 0;
+
+	if (attrs[DISPENSER_GENL_UNIT_STATUS]) {
+		get_nlattr_data(attrs[DISPENSER_GENL_UNIT_STATUS], &status);
+		dispenser_unpack_unit_status(*status, &received_unit_data);
+		m_cUnit.setDoor(received_unit_data.door);
+		m_cUnit.setNight(received_unit_data.night);
+		m_cUnit.setCharging(received_unit_data.charging);
+		m_cUnit.setLight(received_unit_data.light);
+	}
+
+	if (attrs[DISPENSER_GENL_COL_NUM]) {
+		get_nlattr_data(attrs[DISPENSER_GENL_COL_NUM], &num_cols);
+		m_cUnit.setCols(*num_cols);
+
+		connectCols();
+		m_cUnit.initCols();
+	}
+
+	if (attrs[DISPENSER_GENL_SLOT_NUM]) {
+		get_nlattr_data(attrs[DISPENSER_GENL_SLOT_NUM], &num_slots);
+		m_cUnit.setSlots(*num_slots);
+	}
+
+	if (attrs[DISPENSER_GENL_MEM_COUNTER]) {
+		get_nlattr_data(attrs[DISPENSER_GENL_MEM_COUNTER], &counter);
+		m_cUnit.setCounter(*counter);
+	}
+
+	if (attrs[DISPENSER_GENL_INITIALIZED]) {
+		get_nlattr_data(attrs[DISPENSER_GENL_INITIALIZED], &initialized);
+		m_cUnit.setInitialized(*initialized);
 	}
 }
 
@@ -621,13 +764,7 @@ void KernelClient::process_control_newfamily(Buffer &in)
 	return;
 }
 
-void KernelClient::process_dispenser_message(Buffer &in)
-{
-
-}
-
-
-
+/*
 ssize_t KernelClient::process_event(KernelStream *in)
 {
 	QBuffer *buf = dynamic_cast<QBuffer *>(in->device());
@@ -639,6 +776,7 @@ ssize_t KernelClient::process_event(KernelStream *in)
 
 	return -1;
 }
+*/
 
 ssize_t KernelClient::get_nlattr_data(nlattr *attr, char **str)
 {
@@ -786,7 +924,7 @@ int KernelClient::resolve_family_id_by_name()
 
 	// Populate the payload's "family header" : which in our case is genlmsghdr
 
-	genlmsghdr *genlmsg = genl_hdr_put(dynamic_cast<KernelStream *>(mToKernel.device()), CTRL_CMD_GETFAMILY);
+	genlmsghdr *genlmsg = genl_hdr_put(&mToKernel, CTRL_CMD_GETFAMILY);
 	if (!genlmsg) {
 		//error
 		qDaemonLog(QStringLiteral("Error genetlink message header"), QDaemonLog::ErrorEntry);
@@ -842,11 +980,24 @@ int KernelClient::resolve_family_id_by_name()
 
 	// Wait for the response message
 	//nl_rxtx_length = recv(nl_fd, &nl_response_msg, sizeof(nl_response_msg), 0);
-	nl_rxtx_length = recvFromKernel(&mFromKernel);
+	nl_rxtx_length = recvFromKernel();
 
-	perse;
+	if (nl_fd < 0) {
+		qDaemonLog(QStringLiteral("Error receiving family id request"), QDaemonLog::ErrorEntry);
+		qApp->quit();
+		return -1;
+	}
 
-	parse_genl_message(dynamic_cast<QBuffer *>(mFromKernel.device()), &info);
+	/** Succeeded! Initialize data structures. Fetch data from kernel. **/
+	//request unit status
+	getUnitStatus();
+
+	connect(&m_cUnit, &UnitItem::nightChanged, this, &KernelClient::setUnitStatus);
+
+	loadAlarms();
+
+	return 0;
+
 	/*
 	if (nl_rxtx_length < 0) {
 		qDaemonLog(QStringLiteral("Error receiving family id request result"), QDaemonLog::ErrorEntry);
@@ -870,8 +1021,9 @@ int KernelClient::resolve_family_id_by_name()
 	    return -1;
 	}
 	*/
-	process_event(&mFromKernel);
+	//process_event(&mFromKernel);
 
+	/*
 	// Extract family ID
 	nl_na = (struct nlattr *)GENLMSG_DATA(&nl_response_msg);
 	nl_na = (struct nlattr *)((char *)nl_na + NLA_ALIGN(nl_na->nla_len));
@@ -884,6 +1036,7 @@ int KernelClient::resolve_family_id_by_name()
 		qDaemonLog(QStringLiteral("Invalid kernel response. Is kernel driver installed?"), QDaemonLog::ErrorEntry);
 		qApp->quit();
 	}
+*/
 
 	//m_pKernel = new QSocketNotifier(nl_fd, QSocketNotifier::Read, this);
 	//connect(m_pKernel, SIGNAL(activated(int)), this, SLOT(readyRead()));
@@ -892,12 +1045,210 @@ int KernelClient::resolve_family_id_by_name()
 	//connect(m_pKernel, QOverload<QSocketDescriptor, QSocketNotifier::Type>::of(&QSocketNotifier::activated),
 	//    [=](QSocketDescriptor socket, QSocketNotifier::Type Read){ /* ... */ });
 
-	return 0;
+	//return 0;
 }
 
+KernelStream &KernelClient::initRequest(KernelStream *buffer, enum DISPENSER_GENL_COMMAND cmd)
+{
+	nlmsghdr *nlmsg = nl_hdr_put(buffer);
+	if (!nlmsg) {
+		//error
+		qDaemonLog(QStringLiteral("Error netlink message header"), QDaemonLog::ErrorEntry);
+		return *buffer;
+	}
+
+	//Dispenser Kernel Client message
+	nlmsg->nlmsg_type = nl_family_id;
+	// NLM_F_REQUEST is REQUIRED for kernel requests, otherwise the packet is rejected!
+	// Kernel reference: https://elixir.bootlin.com/linux/v5.10.16/source/net/netlink/af_netlink.c#L2487
+	nlmsg->nlmsg_flags = NLM_F_REQUEST;
+	nlmsg->nlmsg_seq = 0;
+	nlmsg->nlmsg_pid = getpid();
+
+	// Populate the payload's "family header" : which in our case is genlmsghdr
+
+	genlmsghdr *genlmsg = genl_hdr_put(buffer, cmd);
+	if (!genlmsg) {
+		//error
+		qDaemonLog(QStringLiteral("Error genetlink message header"), QDaemonLog::ErrorEntry);
+		return *buffer;
+	}
+
+	return *buffer;
+}
+
+void KernelClient::getUnitStatus()
+{
+	KernelStream toKernel;
+	initRequest(&toKernel, DISPENSER_GENL_CMD_UNIT_STATUS);
+	sendToKernel(&toKernel);
+}
+
+void KernelClient::getColStatus(ColItem *col)
+{
+	KernelStream toKernel;
+
+	if (!col)
+		return;
+
+	initRequest(&toKernel, DISPENSER_GENL_CMD_COL_STATUS);
+	nl_attr_put(&toKernel, DISPENSER_GENL_COL_NUM, col->getId());
+	sendToKernel(&toKernel);
+}
+
+void KernelClient::getSlotStatus(SlotItem *slot)
+{
+	KernelStream toKernel;
+
+	if (!slot)
+		return;
+
+	initRequest(&toKernel, DISPENSER_GENL_CMD_SLOT_STATUS);
+	nl_attr_put(&toKernel, DISPENSER_GENL_COL_NUM, slot->getCol()->getId());
+	nl_attr_put(&toKernel, DISPENSER_GENL_SLOT_NUM, slot->getId());
+	sendToKernel(&toKernel);
+}
+
+void KernelClient::setUnitStatus()
+{
+	KernelStream toKernel;
+	__u8 status = dispenser_pack_unit_status(m_cUnit.getUnitStatus());
+
+	initRequest(&toKernel, DISPENSER_GENL_CMD_UNIT_STATUS);
+	nl_attr_put(&toKernel, DISPENSER_GENL_UNIT_STATUS, status);
+	nl_attr_put(&toKernel, DISPENSER_GENL_INITIALIZED, m_cUnit.initialized());
+	sendToKernel(&toKernel);
+}
+
+//Nothing settable at the moment...
+void KernelClient::setColStatus(ColItem *col)
+{
+	KernelStream toKernel;
+
+	if (!col)
+		return;
+
+	initRequest(&toKernel, DISPENSER_GENL_CMD_COL_STATUS);
+	nl_attr_put(&toKernel, DISPENSER_GENL_COL_NUM, col->getId());
+	sendToKernel(&toKernel);
+}
+
+void KernelClient::setSlotStatus(SlotItem *slot)
+{
+	KernelStream toKernel;
+	__u8 status;
+
+	if (!slot)
+		return;
+
+	status = dispenser_pack_slot_status(slot->getSlotStatus(), slot->getFull());
+
+	initRequest(&toKernel, DISPENSER_GENL_CMD_SLOT_STATUS);
+	nl_attr_put(&toKernel, DISPENSER_GENL_COL_NUM, slot->getCol()->getId());
+	nl_attr_put(&toKernel, DISPENSER_GENL_SLOT_NUM, slot->getId());
+	nl_attr_put(&toKernel, DISPENSER_GENL_SLOT_STATUS, status);
+	nl_attr_put(&toKernel, DISPENSER_GENL_SLOT_FAILED_UP, slot->getFailedUp());
+	nl_attr_put(&toKernel, DISPENSER_GENL_SLOT_FAILED_DOWN, slot->getFailedDown());
+	sendToKernel(&toKernel);
+}
+
+void KernelClient::connectCols()
+{
+	ColItem *col = nullptr;
+	int count = m_cUnit.numCols();
+
+	for (int i = 0; i < count; ++i) {
+		col = m_cUnit.col(i);
+		if (col) {
+			connect(col, &ColItem::idChanged, this, &KernelClient::getColStatus);
+		}
+	}
+}
+
+void KernelClient::connectSlots(ColItem *col)
+{
+	SlotItem *slot = nullptr;
+	int count;
+
+	if (!col)
+		return;
+
+	count = col->getSlotCount();
+
+	for (int i = 0; i < count; ++i) {
+		slot = col->slot(i);
+		if (slot) {
+			connect(slot, &SlotItem::idChanged, this, &KernelClient::getSlotStatus);
+		}
+	}
+}
+
+void KernelClient::setLight(int on)
+{
+	m_cUnit.setLight(on);
+
+	setUnitStatus();
+}
+
+void KernelClient::setNight(int on)
+{
+	m_cUnit.setNight(on);
+
+	setUnitStatus();
+}
+
+//Not implemented
+void KernelClient::setRelease(Alarm *alarm)
+{
+	KernelStream toKernel;
+
+	if (!alarm)
+		return;
+
+	//initRequest(&toKernel, DISPENSER_GENL_CMD_SET_ALARM);
+	if (alarm->getCol())
+		nl_attr_put(&toKernel, DISPENSER_GENL_COL_NUM, alarm->getCol()->getId());
+	//nl_attr_put(&toKernel, DISPENSER_GENL_ALARM_SECONDS, alarm->getSeconds());
+	//nl_attr_put(&toKernel, DISPENSER_GENL_ALARM_DAYS, alarm->getDays());
+	//sendToKernel(&toKernel);
+}
+
+void KernelClient::release(__s8 col, __s8 slot, bool force, int count)
+{
+	KernelStream toKernel;
+	if (count > 0 && force)
+		count = -count;
+
+	initRequest(&toKernel, DISPENSER_GENL_CMD_RELEASE);
+	nl_attr_put(&toKernel, DISPENSER_GENL_RELEASE_COUNT, count); //Defaults to one. Not needed to be set.
+
+	if (col >= 0) {
+		nl_attr_put(&toKernel, DISPENSER_GENL_COL_NUM, col);
+		if (slot >= 0)
+			nl_attr_put(&toKernel, DISPENSER_GENL_COL_NUM, slot);
+	}
+
+	sendToKernel(&toKernel);
+}
+
+void KernelClient::release(SlotItem *slot, bool force)
+{
+	if (slot)
+		return release(slot->getCol()->getId(), slot->getId(), force);
+}
+
+void KernelClient::release(ColItem *col, bool force, int count)
+{
+	if (col)
+		return release(col->getId(), -1, force, count);
+}
+
+
+
+/*
 int KernelClient::get_unit_status()
 {
-	/** Send Message to the Kernel requesting unit status */
+	/ ** Send Message to the Kernel requesting unit status * /
 	memset(&nl_request_msg, 0, sizeof(nl_request_msg));
 	memset(&nl_response_msg, 0, sizeof(nl_response_msg));
 
@@ -938,11 +1289,20 @@ int KernelClient::get_unit_status()
 
 	return 0;
 }
-
+*/
 
 KernelStream &KernelStream::operator<<(nlmsghdr &s)
 {
 	writeRawData((char *)&s, NLMSG_HDRLEN);
+
+	return this->align();
+
+}
+
+template <typename T>
+KernelStream &KernelStream::operator<<(T s)
+{
+	writeRawData((char *)&s, sizeof(T));
 
 	return this->align();
 }
@@ -973,27 +1333,27 @@ const void *KernelStream::constCur()
 	return data;
 }
 
-KernelStream &KernelStream::operator>>(nlattr **s)
+KernelStream &KernelStream::operator>>(const nlmsghdr **s)
 {
-	s = *(const nlmsghdr *)constCur();
+	*s = (const nlmsghdr *)constCur();
 
 	skipRawData(NLMSG_HDRLEN);
 
 	return *this;
 }
 
-KernelStream &KernelStream::operator>>(genlmsghdr **s)
+KernelStream &KernelStream::operator>>(const genlmsghdr **s)
 {
-	s = *(const genlmsghdr *)constCur();
+	*s = (const genlmsghdr *)constCur();
 
 	skipRawData(GENL_HDRLEN);
 
 	return *this;
 }
 
-KernelStream &KernelStream::operator>>(nlattr **s)
+KernelStream &KernelStream::operator>>(const nlattr **s)
 {
-	s = *(const nlattr *)constCur();
+	*s = (const nlattr *)constCur();
 
 	skipRawData(NLA_HDRLEN);
 

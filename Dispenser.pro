@@ -2,6 +2,7 @@ TEMPLATE = subdirs
 
 SUBDIRS += \
     gui \
+    lib \
     test \
     daemon \
     module

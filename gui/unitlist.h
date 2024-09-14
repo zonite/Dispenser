@@ -4,11 +4,14 @@
 #include <QObject>
 #include <QVector>
 
+#include <slotitem.h>
+/*
 struct UnitItem
 {
 	bool done;
 	QString description;
 };
+*/
 
 class UnitList : public QObject
 {

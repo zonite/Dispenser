@@ -240,6 +240,7 @@ static void dispenser_unit_mmap_set(void)
 	dispenser_gpiod_set_pointer(cDispenser.p_sCharge, &pDispenser_mmap->unit.charging);
 	dispenser_gpiod_set_pointer(cDispenser.p_sButton, &pDispenser_mmap->unit.button);
 
+	//daemon expects an UNKNOWN state is uninitialize driver!
 	while (c) {
 		struct dispenser_slot_list *s = c->first;
 		struct dispenser_mmap_column *col_mmap = &pDispenser_mmap[MMAP_COL(c->col_id)].column;

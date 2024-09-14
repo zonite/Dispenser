@@ -1,0 +1,150 @@
+#include "slotitem.h"
+
+#include "colitem.h"
+
+SlotItem::SlotItem(ColItem *parent)
+        : m_pCol(parent)
+//SlotItem::SlotItem()
+{
+	/*
+	m_sSlot.state;
+	m_sSlot.up;
+	m_sSlot.down;
+	m_sSlot.release;
+	m_sSlot.up_failed;
+	m_sSlot.down_failed;
+	*/
+}
+
+SlotItem::SlotItem(const SlotItem &src)
+        : QObject()
+{
+	m_pCol = src.m_pCol;
+	m_bFull = src.m_bFull;
+	m_sSlot = src.m_sSlot;
+}
+
+SlotItem::~SlotItem()
+{
+	char col = this->getCol()->getId();
+
+	m_cSettings.beginGroup(QStringLiteral("Col%uSlot%u").arg(col).arg(slotId));
+	m_cSettings.setValue("state", m_sSlot.state);
+	m_cSettings.setValue("full", m_bFull);
+	m_cSettings.setValue("up", m_sSlot.up);
+	m_cSettings.setValue("down", m_sSlot.down);
+	m_cSettings.setValue("release", m_sSlot.release);
+	m_cSettings.setValue("failed_up", m_sSlot.up_failed);
+	m_cSettings.setValue("failed_down", m_sSlot.down_failed);
+	m_cSettings.endGroup();
+
+}
+
+void SlotItem::setState(__u8 state)
+{
+	enum slot_state saved_state = UNKNOWN;
+
+	if (state == UNKNOWN) {
+		char col = this->getCol()->getId();
+		bool full;
+		char up, down, release;
+		int failed_up, failed_down;
+
+		m_cSettings.beginGroup(QStringLiteral("Col%uSlot%u").arg(col).arg(slotId));
+		saved_state = (enum slot_state) m_cSettings.value("state", UNKNOWN).toInt();
+		full = m_cSettings.value("full", 0).toInt();
+		up = m_cSettings.value("up", -1).toInt();
+		down = m_cSettings.value("down", -1).toInt();
+		release = m_cSettings.value("release", -1).toInt();
+		failed_up = m_cSettings.value("failed_up", 0).toInt();
+		failed_down = m_cSettings.value("failed_down", 0).toInt();
+		m_cSettings.endGroup();
+
+		if (up == m_sSlot.up && down == m_sSlot.down && release == m_sSlot.release) {
+			state = saved_state;
+		}
+
+		if (state == UNKNOWN) {
+			if (!m_sSlot.up && m_sSlot.down) {
+				state = OPEN;
+			} else if (!m_sSlot.down) {
+				if (m_sSlot.up) {
+					state = m_sSlot.release ? RELEASE : CLOSED;
+				} else {
+					state = CLOSING;
+				}
+			}
+		}
+
+		if (state == CLOSED)
+			setFull(full);
+
+		setFailedUp(failed_up);
+		setFailedDown(failed_down);
+	}
+
+	if (state != m_sSlot.state) {
+		emit stateChanged(m_sSlot.state);
+	}
+}
+
+void SlotItem::setFull(bool full)
+{
+	if (full != m_bFull) {
+		m_bFull = full;
+
+		emit fullChanged(m_bFull);
+	}
+}
+
+void SlotItem::setUp(__u8 up)
+{
+	if (up != m_sSlot.up) {
+		m_sSlot.up = up;
+
+		emit upChanged(m_sSlot.up);
+	}
+}
+
+void SlotItem::setDown(__u8 down)
+{
+	if (down != m_sSlot.down) {
+		m_sSlot.down = down;
+
+		emit downChanged(m_sSlot.down);
+	}
+
+}
+
+void SlotItem::setRelease(__u8 release)
+{
+	if (release != m_sSlot.release) {
+		m_sSlot.release = release;
+
+		emit releaseChanged(m_sSlot.release);
+	}
+}
+
+void SlotItem::setFailedUp(__s32 failures)
+{
+	if (failures != m_sSlot.up_failed) {
+		m_sSlot.up_failed = failures;
+	}
+}
+
+void SlotItem::setFailedDown(__s32 failures)
+{
+	if (failures != m_sSlot.down_failed) {
+		m_sSlot.down_failed = failures;
+	}
+}
+
+ColItem *SlotItem::getCol()
+{
+	if (!m_pCol) {
+		assert(true);
+	}
+
+	return m_pCol;
+}
+

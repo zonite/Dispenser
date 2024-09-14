@@ -10,6 +10,9 @@
 #include <linux/netlink.h>
 #include <linux/genetlink.h>
 
+#include <unititem.h>
+#include <alarm.h>
+
 #include "daemon.h"
 #include "buffer.h"
 
@@ -79,11 +82,12 @@ public:
 	KernelStream &operator<<(genlmsghdr &s);
 	KernelStream &operator<<(nlattr &s);
 	virtual KernelStream &operator<<(const QByteArray *s);
+	template <typename T> KernelStream &operator<<(const T s);
 	//KernelStream &operator<<(const char *s) override;
 
-	KernelStream &operator>>(nlmsghdr **s);
-	KernelStream &operator>>(genlmsghdr **s);
-	KernelStream &operator>>(nlattr **s);
+	KernelStream &operator>>(const nlmsghdr **s);
+	KernelStream &operator>>(const genlmsghdr **s);
+	KernelStream &operator>>(const nlattr **s);
 
 	void *cur();
 	const void *constCur();
@@ -101,6 +105,7 @@ public:
 
 	using QDataStream::device;
 	using QDataStream::setDevice;
+
 private:
 
 };
@@ -113,6 +118,15 @@ public:
 	explicit KernelClient(QObject *parent = nullptr);
 	~KernelClient();
 
+	//Methods to access kernel
+	void setLight(int on);
+	void setNight(int on);
+	void setRelease(Alarm *alarm); //Bit mask days which to fire. Seconds from 00:00 localtime to release. Num col to release (negative to release unit)
+	void release(__s8 col = -1, __s8 slot = -1, bool force = false, int count = 1); //release now
+	void release(SlotItem *slot, bool force = false); //release now
+	void release(ColItem *col, bool force = false, int count = 1); //release now
+
+	static KernelClient *getKernel() { return m_pClient; }
 signals:
 	void stopped();
 
@@ -128,13 +142,30 @@ private slots:
 protected:
 //	void incomingConnection(qintptr) Q_DECL_OVERRIDE;
 
+private slots:
+	void setUnitStatus();
+	void getColStatus(ColItem *col);
+
 private:
 
 	//Genetlink interface:
 	static struct nlmsghdr* nl_hdr_put(KernelStream *out);
 	static struct genlmsghdr* genl_hdr_put(KernelStream *out, quint8 cmd, quint8 version = 1);
 	//static struct nl_attr* nl_attr_put(KernelStream *out, quint16 type, const char *str);
+
 	static struct nlattr *nl_attr_put(KernelStream *out, quint16 type, const QByteArray *str);
+	template <typename T> static struct nlattr *nl_attr_put(KernelStream *out, quint16 type, const T data);
+
+	/*
+	static struct nlattr *nl_attr_put(KernelStream *out, quint16 type, const __s8 data);
+	static struct nlattr *nl_attr_put(KernelStream *out, quint16 type, const __u16 data);
+	static struct nlattr *nl_attr_put(KernelStream *out, quint16 type, const __s16 data);
+	static struct nlattr *nl_attr_put(KernelStream *out, quint16 type, const __u32 data);
+	static struct nlattr *nl_attr_put(KernelStream *out, quint16 type, const __s32 data);
+	static struct nlattr *nl_attr_put(KernelStream *out, quint16 type, const __u64 data);
+	static struct nlattr *nl_attr_put(KernelStream *out, quint16 type, const __s64 data);
+	*/
+
 	//static struct nl_attr* nl_attr_put(struct nlmsghdr *nlh, uint16_t type,size_t len, const void *data);
 	char *string_strldup(const char *src, size_t size);
 	void *nl_attr_get_payload(const struct nlattr *attr);
@@ -149,12 +180,19 @@ private:
 	ssize_t sendToKernel(KernelStream *out);
 	ssize_t recvFromKernel(void);
 	void enableEvents(void);
-	void parse_dispenser_message(Buffer &in);
+
+	/** Dispenser kernel receiver interface */
+	void parse_dispenser_message(Buffer &in); //Receives GENL Dispenser message from kernel
+	void parse_dispenser_nlattr(Buffer &in, struct nlattr **attrs); //Parse attributes in GENL Dispenser CMD
+	void parse_slot_cmd(struct nlattr *attrs[]); //Parse slot status CMD
+	void parse_col_cmd(struct nlattr *attrs[]); //Parse col status CMD
+	void parse_unit_cmd(struct nlattr *attrs[]); //Parse unit status CMD
+
+
 	ssize_t process_control_message(Buffer &in);
-	void parse_dispenser_nlattr(Buffer &in, struct nlattr **attrs);
 	void process_control_newfamily(Buffer &in);
 	void process_dispenser_message(Buffer &in);
-	ssize_t process_event(KernelStream *in);
+	//ssize_t process_event(KernelStream *in);
 	ssize_t get_nlattr_data(struct nlattr *attr, char **str);
 	ssize_t get_nlattr_data(struct nlattr *attr, QByteArray *str);
 	ssize_t get_nlattr_data(struct nlattr *attr, __u8 **i);
@@ -166,25 +204,49 @@ private:
 	int get_unit_status();
 	int failed;
 
+
+	KernelStream &initRequest(KernelStream *buffer, enum DISPENSER_GENL_COMMAND cmd);
+
+
+	//Kernel commands:
+	void getUnitStatus();
+	void getSlotStatus(SlotItem *slot);
+	void setColStatus(ColItem *col);
+	void setSlotStatus(SlotItem *slot);
+
+
+	//Initialize data
+	void connectCols();
+	void connectSlots(ColItem *col);
+
+	//Data
+
+	static KernelClient *m_pClient;
+
 	/** The family ID resolved by Generic Netlink control interface. Assigned when the kernel module registers the Family */
 	int nl_family_id = -1;
 	/** Netlink socket's file descriptor. */
 	int nl_fd = -1;
 	/** Netlink socket address */
 	struct sockaddr_nl nl_address;
-	struct generic_netlink_msg nl_request_msg;
-	struct generic_netlink_msg nl_response_msg;
+	//struct generic_netlink_msg nl_request_msg;
+	//struct generic_netlink_msg nl_response_msg;
 
 	QSocketNotifier *m_pKernel = nullptr;
 
 	/** Websocket server */
 	WebSocketServer *m_pServer = nullptr;
+	/** Datamodel */
+	UnitItem m_cUnit;
+	/** Alarmmodel */
 
 	QBuffer mOutBuffer;
 	Buffer mInBuffer;
 
 	KernelStream mToKernel;
 	KernelStream mFromKernel;
+
+	unsigned int msg_seq = 0; //sequence num of nl messages to kernel.
 };
 
 

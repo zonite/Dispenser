@@ -12,12 +12,16 @@
 /** Dispenser Netlink Generic: private prototypes **/
 static int dispenser_genl_release(struct sk_buff *sender_buffer, struct  genl_info *info);
 static int dispenser_genl_slot_status(struct sk_buff *sender_buffer, struct  genl_info *info);
+static int dispenser_genl_col_status(struct sk_buff *sender_buffer, struct  genl_info *info);
 static int dispenser_genl_unit_status(struct sk_buff *sender_buffer, struct  genl_info *info);
 static int dispenser_genl_environment(struct sk_buff *sender_buffer, struct  genl_info *info);
-//static int dispenser_genl_calibration(struct sk_buff *sender_buffer, struct  genl_info *info);
+//static int dispenser_genl_temperature_calibration(struct sk_buff *sender_buffer, struct  genl_info *info);
+//static int dispenser_genl_pressure_calibration(struct sk_buff *sender_buffer, struct  genl_info *info);
+//static int dispenser_genl_humidity_calibration(struct sk_buff *sender_buffer, struct  genl_info *info);
 //static int dispenser_genl_dump(struct sk_buff *sender_buffer, struct  genl_info *info);
 
 static int __dispenser_genl_post_slot_status(struct dispenser_slot_list *slot, struct  genl_info *info);
+static int __dispenser_genl_post_col_status(struct dispenser_col_list *col, struct  genl_info *info);
 static int __dispenser_genl_post_unit_status(struct  genl_info *info);
 static int __dispenser_genl_post_environment(struct  genl_info *info);
 
@@ -48,6 +52,10 @@ static const struct genl_ops dispenser_genl_ops[] = {
 	.doit = dispenser_genl_slot_status,
 },
 {
+	.cmd = DISPENSER_GENL_CMD_COL_STATUS,
+	.doit = dispenser_genl_col_status,
+},
+{
 	.cmd = DISPENSER_GENL_CMD_UNIT_STATUS,
 	.doit = dispenser_genl_unit_status,
 },
@@ -57,8 +65,16 @@ static const struct genl_ops dispenser_genl_ops[] = {
 },
 /*
 {
-	.cmd = DISPENSER_GENL_CMD_CALIBRATION,
-	.doit = dispenser_genl_calibration,
+	.cmd = DISPENSER_GENL_CMD_TEMPERATURE_CALIBRATION,
+	.doit = dispenser_genl_temperature_calibration,
+},
+{
+	.cmd = DISPENSER_GENL_CMD_PRESSURE_CALIBRATION,
+	.doit = dispenser_genl_pressure_calibration,
+},
+{
+	.cmd = DISPENSER_GENL_CMD_HUMIDITY_CALIBRATION,
+	.doit = dispenser_genl_humidity_calibration,
 },
 {
 	.cmd = DISPENSER_GENL_CMD_DUMP,
@@ -80,6 +96,8 @@ static struct nla_policy const dispenser_genl_policy[DISPENSER_GENL_ATTR_COUNT] 
 	[DISPENSER_GENL_TEMPERATURE] = { .type = NLA_S32 }, //s32 attr //temperature
 	[DISPENSER_GENL_PRESSURE] = { .type = NLA_U32 }, //u32 attr //pressure
 	[DISPENSER_GENL_HUMIDITY] = { .type = NLA_U32 }, //u32 attr //humidity
+	[DISPENSER_GENL_CALIBRATION0] = { .type = NLA_U64 }, //calibration data u64
+	[DISPENSER_GENL_CALIBRATION1] = { .type = NLA_S16 }, //calibration data s16
 //	[DISPENSER_GENL_CALIBRATION] = { .type = NLA_U32 }, //calibration data
 };
 
@@ -128,7 +146,7 @@ static int dispenser_genl_release(struct sk_buff *sender_buffer, struct  genl_in
 
 	if (count < 0) {
 		force = 1;
-		count = (~count) + 1;
+		count = (~count) + 1; //one's complement
 	}
 
 	if (attrs[DISPENSER_GENL_COL_NUM]) {
@@ -249,19 +267,121 @@ static int __dispenser_genl_post_slot_status(struct dispenser_slot_list *slot, s
 		return -ret;
 	}
 
+	if (slot->state->state != UNKNOWN) {
+		ret = nla_put_u32(reply_buffer, DISPENSER_GENL_SLOT_FAILED_UP, slot->state->up_failed);
+		if (ret) {
+			printk("Error adding failed up to message.\n");
+			return -ret;
+		}
+
+		ret = nla_put_u32(reply_buffer, DISPENSER_GENL_SLOT_FAILED_DOWN, slot->state->down_failed);
+		if (ret) {
+			printk("Error adding failed down to message.\n");
+			return -ret;
+		}
+	}
+
 	ret = nla_put_u32(reply_buffer, DISPENSER_GENL_MEM_COUNTER, dispenser_unit_counter());
 	if (ret) {
-		printk("Error adding status to message.\n");
+		printk("Error adding counter to message.\n");
 		return -ret;
 	}
 
-	ret = nla_put_u32(reply_buffer, DISPENSER_GENL_SLOT_FAILED_UP, slot->state->up_failed);
+	genlmsg_end(reply_buffer, reply_header);
+
+	if (info) {
+		return genlmsg_reply(reply_buffer, info);
+	} else {
+		return genlmsg_multicast(&dispenser_genl_family, reply_buffer, 0, DISPENSER_GENL_GROUP, 0);
+	}
+}
+
+/** Set col status request **/
+static int dispenser_genl_col_status(struct sk_buff *sender_buffer, struct  genl_info *info)
+{
+	struct nlattr **attrs;
+	struct dispenser_col_list *col;
+	u8 c;
+
+	if (!info || !info->attrs) {
+		printk("Error: Generic Netlink null info.\n");
+		return -EINVAL;
+	}
+
+	if (!pDispenser_mmap) {
+		return -EINVAL;
+	}
+
+	attrs = info->attrs;
+
+	if (!attrs[DISPENSER_GENL_COL_NUM]) {
+		printk("Error: no column\n");
+		return -EINVAL;
+	}
+
+	c = nla_get_u8(attrs[DISPENSER_GENL_COL_NUM]);
+
+	col = dispenser_unit_get_column(c);
+	if (!col) {
+		printk("Column not found %u\n", c);
+		return -EINVAL;
+	}
+
+	return __dispenser_genl_post_col_status(col, info);
+}
+
+/** Post col status reply **/
+static int __dispenser_genl_post_col_status(struct dispenser_col_list *col, struct  genl_info *info)
+{
+	struct sk_buff *reply_buffer;
+	void *reply_header;
+	//s32 up_failed, down_failed;
+	static u32 seq = 0;
+	int ret;
+
+	if (!col) {
+		printk("Invalid column %p\n", col);
+		return -EINVAL;
+	}
+
+	reply_buffer = genlmsg_new(NLMSG_GOODSIZE, GFP_KERNEL);
+	if (reply_buffer == NULL) {
+		printk("Error: No memory in %s.\n", __func__);
+		return -ENOMEM;
+	}
+
+	if (info) {
+		reply_header = genlmsg_put(reply_buffer, info->snd_portid, info->snd_seq + 1, &dispenser_genl_family, 0, DISPENSER_GENL_CMD_COL_STATUS);
+	} else {
+		//info == NULL --> broadcast!
+		//reply_header = genlmsg_put(reply_buffer, info->snd_portid, info->snd_seq + 1, &dispenser_genl_family, 0, DISPENSER_GENL_CMD_UNIT_STATUS);
+		reply_header = genlmsg_put(reply_buffer, 0, seq++, &dispenser_genl_family, 0, DISPENSER_GENL_CMD_COL_STATUS);
+	}
+	if (reply_header == NULL) {
+		printk("Header memory error.\n");
+		return -ENOMEM;
+	}
+
+	ret = nla_put_u8(reply_buffer, DISPENSER_GENL_COL_NUM, col->col_id);
 	if (ret) {
 		printk("Error adding status to message.\n");
 		return -ret;
 	}
 
-	ret = nla_put_u32(reply_buffer, DISPENSER_GENL_SLOT_FAILED_DOWN, slot->state->down_failed);
+/* Not implemented
+	ret = nla_put_string(reply_buffer, DISPENSER_GENL_COL_NAME, col->col_name);
+	if (ret) {
+		printk("Error adding status to message.\n");
+		return -ret;
+	}
+*/
+	ret = nla_put_u8(reply_buffer, DISPENSER_GENL_SLOT_NUM, col->slot_count);
+	if (ret) {
+		printk("Error adding status to message.\n");
+		return -ret;
+	}
+
+	ret = nla_put_u32(reply_buffer, DISPENSER_GENL_MEM_COUNTER, dispenser_unit_counter());
 	if (ret) {
 		printk("Error adding status to message.\n");
 		return -ret;
@@ -281,7 +401,7 @@ static int dispenser_genl_unit_status(struct sk_buff *sender_buffer, struct  gen
 {
 	struct nlattr **attrs;
 	struct dispenser_mmap_unit *unit;
-	u8 status = 0;
+	u8 status = 0, ret = 0;
 
 	if (!info || !info->attrs) {
 		printk("Error: Generic Netlink null info.\n");
@@ -303,6 +423,11 @@ static int dispenser_genl_unit_status(struct sk_buff *sender_buffer, struct  gen
 		dispenser_unpack_unit_status(status, &new_state);
 
 		dispenser_unit_set_state(&new_state);
+	}
+
+	if (attrs[DISPENSER_GENL_INITIALIZED]) {
+		ret = nla_get_u8(attrs[DISPENSER_GENL_INITIALIZED]);
+		unit->initialized = ret;
 	}
 
 	return __dispenser_genl_post_unit_status(info);
@@ -347,15 +472,33 @@ static int __dispenser_genl_post_unit_status(struct genl_info *info)
 		return -ENOMEM;
 	}
 
-	ret = nla_put_u8(reply_buffer, DISPENSER_GENL_UNIT_STATUS, status);
+	ret = nla_put_u8(reply_buffer, DISPENSER_GENL_UNIT_STATUS, status); //Door, charging, night, light
 	if (ret) {
 		printk("Error adding status to message.\n");
 		return -ret;
 	}
 
-	ret = nla_put_u32(reply_buffer, DISPENSER_GENL_MEM_COUNTER, dispenser_unit_counter());
+	ret = nla_put_u8(reply_buffer, DISPENSER_GENL_COL_NUM, unit->ncols); //num columns
 	if (ret) {
 		printk("Error adding status to message.\n");
+		return -ret;
+	}
+
+	ret = nla_put_u8(reply_buffer, DISPENSER_GENL_SLOT_NUM, unit->nslots); //num slots
+	if (ret) {
+		printk("Error adding status to message.\n");
+		return -ret;
+	}
+
+	ret = nla_put_u8(reply_buffer, DISPENSER_GENL_INITIALIZED, unit->initialized);
+	if (ret) {
+		printk("Error adding counter to message.\n");
+		return -ret;
+	}
+
+	ret = nla_put_u32(reply_buffer, DISPENSER_GENL_MEM_COUNTER, dispenser_unit_counter());
+	if (ret) {
+		printk("Error adding counter to message.\n");
 		return -ret;
 	}
 

@@ -12,7 +12,7 @@ CONFIG -= app_bundle
 
 SOURCES += \
         buffer.cpp \
-        kernelclient.cpp \
+	kernelclient.cpp \
 	main.cpp \
 	websocketserver.cpp
 
@@ -26,11 +26,12 @@ CONFIG += link_pkgconfig
 PKGCONFIG += libnl-3.0 Qt5Daemon
 
 INCLUDEPATH += \
-    ../include
+    ../include \
+    ../lib
 #    /usr/include/qt5/QtDaemon \
 #    /usr/include/aarch64-linux-gnu/qt5/QtDaemon
 
-LIBS += -lQt5Daemon
+LIBS += -L"$$PRO_FILE_PWD/../lib/" -lQt5Daemon -lDispenser
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
@@ -39,8 +40,8 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 
 HEADERS += \
         buffer.h \
-        daemon.h \
-        kernelclient.h \
+	daemon.h \
+	kernelclient.h \
 	websocketserver.h
 
 RESOURCES += \
