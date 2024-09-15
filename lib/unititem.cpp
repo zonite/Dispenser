@@ -43,6 +43,43 @@ UnitItem::UnitItem(QObject *parent)
 
 	nightStartTimer.start(msetToSunset);
 	nightEndTimer.start(msetToSunrise);
+
+	//qRegisterMetaTypeStreamOperators<QList<QVariant>>("QList<QVariant>");
+	//qRegisterMetaTypeStreamOperators<QList<int>>("QList<int>");
+	//qRegisterMetaTypeStreamOperators<Alarm>("Alarm");
+
+	//m_cAlarms = Alarm::toAlarm(m_cSettings.value("Unit").value<QList<int>>());
+
+	//qRegisterMetaTypeStreamOperators<QList<Alarm> >("QList<Alarm>");
+
+	//m_cAlarms = m_cSettings.value("Unit").value<QList<Alarm> >();
+
+	//m_cSettings.value("Unit").value<QList<QVariant>>();
+	//Alarm al;
+
+	//QVariant a = QVariant::fromValue(al);
+	//QVariant list = QVariant::fromValue(m_cAlarms);
+	//QList<QVariant> var = m_cAlarms;
+
+	//int i = al;
+	//QList<int> ilist(m_cAlarms);
+
+	//a = al;
+	//list = m_cAlarms;
+
+	//QVariant list = m_cSettings.value("Unit");
+	m_cAlarms = Alarm::fromVariant(m_cSettings.value("Unit"));
+
+	if (m_cAlarms.size() == 0) {
+		m_cAlarms.append(Alarm(8 * 3600, EVERYDAY)); //Alarm at 8.
+	}
+
+	Alarm::clean(m_cAlarms);
+}
+
+UnitItem::~UnitItem()
+{
+	saveAlarms();
 }
 
 SlotItem *UnitItem::slot(int column, int slot)
@@ -111,20 +148,9 @@ void UnitItem::setCharging(char state)
 	emit chargingChanged(m_sUnit.charging);
 }
 
-bool UnitItem::setInitialized(qint8 init) //returns true, if update to kernel needs to be sent
+void UnitItem::setInitialized(qint8 init)
 {
-	if (m_sUnit.initialized)
-		return false;
-
-	if (init) { //Kernel portion is initialized
-
-
-		return false;
-	} else { //Kernel portion is not initialized
-
-		m_sUnit.initialized = 1;
-		return true;
-	}
+	m_sUnit.initialized = init;
 }
 
 void UnitItem::setCols(int i)
@@ -137,6 +163,10 @@ void UnitItem::setCols(int i)
 
 	m_cCols.resize(i);
 	m_sUnit.ncols = m_cCols.size();
+
+	initCols();
+
+	emit colsChanged(this);
 }
 
 void UnitItem::setSlots(int i)
@@ -154,12 +184,41 @@ void UnitItem::addCol()
 	//m_cCols.append(new_col);
 }
 
+void UnitItem::checkInitialized()
+{
+	for (int i = 0; i < m_cCols.size(); ++i) {
+		const ColItem *col = &m_cCols.at(i);
+		const QVector<SlotItem> *Slots = col->getSlots();
+
+		if (!col->getInitialized())
+			return;
+
+		for (int k = 0; k < Slots->size(); ++k) {
+			const SlotItem *slot = &Slots->at(k);
+
+			if (!slot->getInitialized())
+				return;
+		}
+	}
+	m_bInitialized = true;
+
+	emit initialized(this);
+}
+
 void UnitItem::initCols()
 {
 	for (int i = 0; i < m_cCols.size(); ++i) {
 		m_cCols[i].setParent(this);
 		m_cCols[i].setColId(i);
 	}
+}
+
+void UnitItem::saveAlarms()
+{
+	//m_cSettings.setValue("Unit", QVariant::fromValue(m_cAlarms));
+	m_cSettings.setValue("Unit", Alarm::toVariant(m_cAlarms));
+
+	m_cSettings.sync();
 }
 
 void UnitItem::nightEnds()
@@ -170,4 +229,9 @@ void UnitItem::nightEnds()
 void UnitItem::nightStarts()
 {
 	setNight(1);
+}
+
+void UnitItem::releaseTimeout()
+{
+	emit releaseEvent(this);
 }

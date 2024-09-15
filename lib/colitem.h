@@ -7,8 +7,10 @@
 #include "lib_global.h"
 
 #include "slotitem.h"
+#include "alarm.h"
 
 class UnitItem;
+class Alarm;
 
 class LIB_EXPORT ColItem : public QObject
 {
@@ -18,23 +20,34 @@ public:
 	ColItem(const ColItem &src);
 	~ColItem();
 
-	void initSlots();
 
 	SlotItem *slot(int slot);
 
+	void setSlots(int i);
 	void setColId(__s8 id);
-	bool setSlots(int i);
 	void addSlot();
-	char getId();
-	char getSlotCount() { return m_sCol.slot_count; }
+	char getId() const;
+	bool getInitialized() const { return m_bInitialized; }
+	char getSlotCount() const { return m_sCol.slot_count; }
+	const QVector<SlotItem> *getSlots() const { return &m_cSlots; }
 
 signals:
-	void idChanged(ColItem *col);
+	void slotCountChanged(ColItem *col);
+	void releaseEvent(ColItem *col);
+
+private slots:
+	void releaseTimeout();
 
 private:
+	void initSlots();
+
+	QSettings m_cSettings;
+	QList<Alarm> m_cAlarms; //Release timer!
+
 	struct dispenser_mmap_column m_sCol = { .col_id = -1, .slot_count = -1 };
 	QVector<SlotItem> m_cSlots;
 	UnitItem *m_pUnit = nullptr;
+	bool m_bInitialized = false;
 };
 
 #endif // COLITEM_H

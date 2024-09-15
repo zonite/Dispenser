@@ -1,5 +1,7 @@
 #include "colitem.h"
 
+#include <QDaemonLog>
+
 #include "unititem.h"
 
 ColItem::ColItem(UnitItem *parent)
@@ -34,17 +36,16 @@ void ColItem::setColId(__s8 id)
 		return;
 
 	m_sCol.col_id = id;
-
-	emit idChanged(this);
+	//emit idChanged(this);
 }
 
-bool ColItem::setSlots(int i)
+void ColItem::setSlots(int i)
 {
 	//QVector<QObject> lista;
 	//lista.resize(10);
 
 	if (i == m_cSlots.size())
-		return false;
+		return;
 
 	if (m_cSlots.size())
 		m_cSlots.clear();
@@ -52,7 +53,12 @@ bool ColItem::setSlots(int i)
 	m_cSlots.resize(i);
 	m_sCol.slot_count = m_cSlots.size();
 
-	return true;
+	initSlots();
+	m_bInitialized = true;
+
+	emit slotCountChanged(this);
+
+	return;
 }
 
 void ColItem::addSlot()
@@ -66,20 +72,27 @@ void ColItem::addSlot()
 	//m_sCol.slot_count = m_cSlots.size();
 }
 
-char ColItem::getId()
+char ColItem::getId() const
 {
 	if (m_sCol.col_id < 0 && m_pUnit) {
-		m_pUnit->initCols();
+		//Error
+		//m_pUnit->initCols();
+		qDaemonLog(QStringLiteral("Uninitilized column."), QDaemonLog::ErrorEntry);
 	}
 
 	return m_sCol.col_id;
 }
 
+void ColItem::releaseTimeout()
+{
+	emit releaseEvent(this);
+}
+
 void ColItem::initSlots()
 {
 	for (int i = 0; i < m_cSlots.size(); ++i) {
-		m_cSlots[i].setParent(this);
-		m_cSlots[i].setId(i);
+		m_cSlots[i].setParentNid(this, i);
+		//m_cSlots[i].setId(i);
 	}
 }
 

@@ -615,14 +615,18 @@ void KernelClient::parse_slot_cmd(nlattr *attrs[])
 			pSlot->setRelease(new_slot_state.release);
 			pSlot->setState(new_slot_state.state);
 
-			if (new_slot_state.state == UNKNOWN) {
-				setSlotStatus(pSlot);
-			}
+			//if (new_slot_state.state == UNKNOWN) {
+			//	setSlotStatus(pSlot);
+			//}
 		}
 
 		if (attrs[DISPENSER_GENL_MEM_COUNTER]) {
 			get_nlattr_data(attrs[DISPENSER_GENL_MEM_COUNTER], &counter);
 			m_cUnit.setCounter(*counter);
+		}
+
+		if (!m_cUnit.daemonInitialized()) { //Test if all cols and slots are initialized
+			m_cUnit.checkInitialized();
 		}
 	}
 }
@@ -646,10 +650,12 @@ void KernelClient::parse_col_cmd(nlattr *attrs[])
 	if (pCol) {
 		if (attrs[DISPENSER_GENL_SLOT_NUM]) {
 			get_nlattr_data(attrs[DISPENSER_GENL_SLOT_NUM], &slot);
-			if (pCol->setSlots(*slot)) {
-				connectSlots(pCol);
-				pCol->initSlots();
-			}
+			pCol->setSlots(*slot);
+
+			//if (pCol->setSlots(*slot)) {
+			        //connectSlots(pCol);
+			        //pCol->initSlots();
+			//}
 		}
 
 		if (attrs[DISPENSER_GENL_MEM_COUNTER]) {
@@ -677,9 +683,8 @@ void KernelClient::parse_unit_cmd(nlattr *attrs[])
 	if (attrs[DISPENSER_GENL_COL_NUM]) {
 		get_nlattr_data(attrs[DISPENSER_GENL_COL_NUM], &num_cols);
 		m_cUnit.setCols(*num_cols);
-
-		connectCols();
-		m_cUnit.initCols();
+		//connectCols();
+		//m_cUnit.initCols();
 	}
 
 	if (attrs[DISPENSER_GENL_SLOT_NUM]) {
@@ -989,12 +994,12 @@ int KernelClient::resolve_family_id_by_name()
 	}
 
 	/** Succeeded! Initialize data structures. Fetch data from kernel. **/
+	connect(&m_cUnit, &UnitItem::nightChanged, this, &KernelClient::setUnitStatus, Qt::QueuedConnection);
+	connect(&m_cUnit, &UnitItem::colsChanged, this, &KernelClient::connectCols, Qt::QueuedConnection);
+	connect(&m_cUnit, &UnitItem::initialized, this, &KernelClient::moduleAndDaemonInitialized, Qt::QueuedConnection);
+
 	//request unit status
 	getUnitStatus();
-
-	connect(&m_cUnit, &UnitItem::nightChanged, this, &KernelClient::setUnitStatus);
-
-	loadAlarms();
 
 	return 0;
 
@@ -1116,7 +1121,7 @@ void KernelClient::setUnitStatus()
 
 	initRequest(&toKernel, DISPENSER_GENL_CMD_UNIT_STATUS);
 	nl_attr_put(&toKernel, DISPENSER_GENL_UNIT_STATUS, status);
-	nl_attr_put(&toKernel, DISPENSER_GENL_INITIALIZED, m_cUnit.initialized());
+	nl_attr_put(&toKernel, DISPENSER_GENL_INITIALIZED, true);
 	sendToKernel(&toKernel);
 }
 
@@ -1152,15 +1157,17 @@ void KernelClient::setSlotStatus(SlotItem *slot)
 	sendToKernel(&toKernel);
 }
 
-void KernelClient::connectCols()
+void KernelClient::connectCols(UnitItem *unit)
 {
 	ColItem *col = nullptr;
-	int count = m_cUnit.numCols();
+	int count = unit->numCols();
 
 	for (int i = 0; i < count; ++i) {
-		col = m_cUnit.col(i);
+		col = unit->col(i);
 		if (col) {
-			connect(col, &ColItem::idChanged, this, &KernelClient::getColStatus);
+			connect(col, &ColItem::slotCountChanged, this, &KernelClient::connectSlots, Qt::QueuedConnection);
+
+			getColStatus(col);
 		}
 	}
 }
@@ -1178,9 +1185,27 @@ void KernelClient::connectSlots(ColItem *col)
 	for (int i = 0; i < count; ++i) {
 		slot = col->slot(i);
 		if (slot) {
-			connect(slot, &SlotItem::idChanged, this, &KernelClient::getSlotStatus);
+			//connect(slot, &SlotItem::idChanged, this, &KernelClient::getSlotStatus);
+
+			if (m_cUnit.moduleInitialized())
+				getSlotStatus(slot);
+			else
+				setSlotStatus(slot);
 		}
 	}
+}
+
+void KernelClient::moduleAndDaemonInitialized(UnitItem *unit)
+{
+	//Module and Daemon has been Initialized.
+
+
+	//Connect signals to websocketserver!
+
+	Q_UNUSED(unit);
+	Q_UNUSED(m_pServer);
+
+	//loadAlarms();
 }
 
 void KernelClient::setLight(int on)

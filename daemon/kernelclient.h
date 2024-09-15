@@ -139,6 +139,11 @@ private slots:
 	//void threadFinished();
 	void readyRead();
 
+	//Initialize data
+	void connectCols(UnitItem *unit);
+	void connectSlots(ColItem *col);
+	void moduleAndDaemonInitialized(UnitItem *unit);
+
 protected:
 //	void incomingConnection(qintptr) Q_DECL_OVERRIDE;
 
@@ -214,10 +219,6 @@ private:
 	void setColStatus(ColItem *col);
 	void setSlotStatus(SlotItem *slot);
 
-
-	//Initialize data
-	void connectCols();
-	void connectSlots(ColItem *col);
 
 	//Data
 

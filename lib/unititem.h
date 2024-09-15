@@ -9,14 +9,18 @@
 
 #include "colitem.h"
 #include "slotitem.h"
+#include "alarm.h"
 
 //class SlotItem;
+
+class Alarm;
 
 class LIB_EXPORT UnitItem : public QObject
 {
 	Q_OBJECT
 public:
 	explicit UnitItem(QObject *parent = nullptr);
+	~UnitItem();
 
 	SlotItem *slot(int col, int slot);
 	ColItem *col(int col);
@@ -29,31 +33,44 @@ public:
 	void setNight(char state);
 	void setLight(char state);
 	void setCharging(char state);
-	bool setInitialized(qint8 init);
+	void setInitialized(qint8 init);
 
 	int numCols() { return m_sUnit.ncols; };
 	void setCols(int i);
 	void setSlots(int i);
 	void addCol();
 
-	qint8 initialized() { return m_sUnit.initialized; }
-	void initCols();
+	qint8 moduleInitialized() { return m_sUnit.initialized; }
+	qint8 daemonInitialized() { return m_bInitialized; }
+
+	void checkInitialized();
+
+public slots:
+	void releaseTimeout();
 
 signals:
-	void counterChanged(__u8);
-	void doorChanged(__u8);
-	void lightChanged(__u8);
-	void chargingChanged(__u8);
-	void nightChanged(__u8);
+	void counterChanged(__u32 counter);
+	void doorChanged(__u8 door);
+	void lightChanged(__u8 light);
+	void chargingChanged(__u8 charging);
+	void nightChanged(__u8 night);
+	void colsChanged(UnitItem *unit);
+	void initialized(UnitItem *unit);
+	void releaseEvent(UnitItem *unit);
 
 private slots:
 	void nightEnds();
 	void nightStarts();
 
 private:
+	void initCols();
+	void saveAlarms();
 
 	struct dispenser_mmap_unit m_sUnit = { 0, 0, 0, 0, 0, 0, 0, 0, { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, 0, 0, 0, 0 };
 	QVector<ColItem> m_cCols;
+	bool m_bInitialized = false;
+	QList<Alarm> m_cAlarms; //Release timer!
+	QSettings m_cSettings;
 
 	QTimer nightStartTimer;
 	QTimer nightEndTimer;

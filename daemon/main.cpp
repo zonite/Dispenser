@@ -4,6 +4,7 @@
 #include <QCommandLineParser>
 
 #include <dispenser.h>
+#include <alarm.h>
 
 #include "kernelclient.h"
 
@@ -29,6 +30,7 @@ int main(int argc, char *argv[])
 
     bool fg = parser.isSet(fgOption);
     */
+    qRegisterMetaType<Alarm>();
 
     KernelClient kernel(&a);
 

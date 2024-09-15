@@ -1,5 +1,7 @@
 #include "slotitem.h"
 
+#include <QDaemonLog>
+
 #include "colitem.h"
 
 SlotItem::SlotItem(ColItem *parent)
@@ -26,9 +28,9 @@ SlotItem::SlotItem(const SlotItem &src)
 
 SlotItem::~SlotItem()
 {
-	char col = this->getCol()->getId();
+	char col = m_pCol->getId();
 
-	m_cSettings.beginGroup(QStringLiteral("Col%uSlot%u").arg(col).arg(slotId));
+	m_cSettings.beginGroup(QStringLiteral("Col%uSlot%u").arg(col).arg(m_iSlotId));
 	m_cSettings.setValue("state", m_sSlot.state);
 	m_cSettings.setValue("full", m_bFull);
 	m_cSettings.setValue("up", m_sSlot.up);
@@ -50,7 +52,7 @@ void SlotItem::setState(__u8 state)
 		char up, down, release;
 		int failed_up, failed_down;
 
-		m_cSettings.beginGroup(QStringLiteral("Col%uSlot%u").arg(col).arg(slotId));
+		m_cSettings.beginGroup(QStringLiteral("Col%uSlot%u").arg(col).arg(m_iSlotId));
 		saved_state = (enum slot_state) m_cSettings.value("state", UNKNOWN).toInt();
 		full = m_cSettings.value("full", 0).toInt();
 		up = m_cSettings.value("up", -1).toInt();
@@ -76,12 +78,16 @@ void SlotItem::setState(__u8 state)
 			}
 		}
 
-		if (state == CLOSED)
+		if (state != CLOSED && state != RELEASE)
+			setFull(false);
+		else
 			setFull(full);
 
 		setFailedUp(failed_up);
 		setFailedDown(failed_down);
 	}
+
+	m_bInitialized = true;
 
 	if (state != m_sSlot.state) {
 		emit stateChanged(m_sSlot.state);
@@ -142,9 +148,38 @@ void SlotItem::setFailedDown(__s32 failures)
 ColItem *SlotItem::getCol()
 {
 	if (!m_pCol) {
+		qDaemonLog(QStringLiteral("Uninitilized column."), QDaemonLog::ErrorEntry);
 		assert(true);
 	}
 
 	return m_pCol;
 }
 
+void SlotItem::setParentNid(ColItem *parent, __s8 i)
+{
+	m_pCol = parent;
+	m_iSlotId = i;
+
+	if (!m_pCol) {
+		qDaemonLog(QStringLiteral("Uninitilized column."), QDaemonLog::ErrorEntry);
+		return;
+	}
+
+	m_cSettings.beginGroup(QStringLiteral("Col%uSlot%u").arg(m_pCol->getId()).arg(m_iSlotId));
+	m_sSlot.state = (enum slot_state) m_cSettings.value("state", UNKNOWN).toInt();
+	setFull(m_cSettings.value("full", 0).toInt());
+	setUp(m_cSettings.value("up", -1).toInt());
+	setDown(m_cSettings.value("down", -1).toInt());
+	setRelease(m_cSettings.value("release", -1).toInt());
+	setFailedUp(m_cSettings.value("failed_up", 0).toInt());
+	setFailedDown(m_cSettings.value("failed_down", 0).toInt());
+	m_cSettings.endGroup();
+}
+
+/*
+void SlotItem::setId(__s8 i)
+{
+	slotId = i;
+	emit idChanged(this);
+}
+*/
