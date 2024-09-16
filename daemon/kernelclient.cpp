@@ -10,10 +10,12 @@
 //#include <sys/user.h>
 #include <unistd.h>
 
-#include <netlink/attr.h>
-#include <netlink/netlink.h>
-#include <netlink/genl/genl.h>
-#include <netlink/genl/ctrl.h>
+//libnl (Netlink)
+//#include <netlink/attr.h>
+//#include <netlink/netlink.h>
+//#include <netlink/genl/genl.h>
+//#include <netlink/genl/ctrl.h>
+
 #include <linux/netlink.h>
 
 #include <dispenser.h>
