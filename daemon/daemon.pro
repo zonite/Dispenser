@@ -23,7 +23,8 @@ CONFIG += debug
 CONFIG += embed_translations
 CONFIG += link_pkgconfig
 
-PKGCONFIG += libnl-3.0 Qt5Daemon
+#PKGCONFIG += libnl-3.0 Qt5Daemon
+PKGCONFIG += Qt5Daemon
 
 INCLUDEPATH += \
     ../include \
