@@ -68,19 +68,40 @@ UnitItem::UnitItem(QObject *parent)
 	//list = m_cAlarms;
 
 	//QVariant list = m_cSettings.value("Unit");
-	m_cAlarms = Alarm::fromVariant(m_cSettings.value("Unit"));
 
-	if (m_cAlarms.size() == 0) {
-		m_cAlarms.append(Alarm(8 * 3600, EVERYDAY)); //Alarm at 8.
+	QList<int> alarmList = m_cSettings.value("Unit").value<QList<int>>();
+	Alarm<UnitItem>::mapFromIntList(this, m_pAlarms, alarmList);
+
+	//m_cAlarms = Alarm::fromVariant(m_cSettings.value("Unit"));
+
+	if (m_pAlarms.size() == 0) {
+		//Alarm<UnitItem> *new_alarm = new Alarm<UnitItem>(this);
+		//new_alarm->setDays(EVERYDAY);
+		//new_alarm->setSeconds(8 * 3600); //Alarm at 8.
+		//m_pAlarms.insert(new_alarm->getSeconds(), new_alarm);
+		m_pAlarms.insert(0 * 3600, new Alarm<UnitItem>(this, 8 * 3600, EVERYDAY));
+		m_pAlarms.insert(4 * 3600, new Alarm<UnitItem>(this, 8 * 3600, EVERYDAY));
+		m_pAlarms.insert(8 * 3600, new Alarm<UnitItem>(this, 8 * 3600, EVERYDAY));
+		m_pAlarms.insert(12 * 3600, new Alarm<UnitItem>(this, 8 * 3600, EVERYDAY));
+		m_pAlarms.insert(16 * 3600, new Alarm<UnitItem>(this, 8 * 3600, EVERYDAY));
+		m_pAlarms.insert(20 * 3600, new Alarm<UnitItem>(this, 8 * 3600, EVERYDAY));
 	}
 
-	Alarm::clean(m_cAlarms);
+	//Alarm::clean(m_cAlarms);
 }
 
 UnitItem::~UnitItem()
 {
 	saveAlarms();
+
+	for (const Alarm<UnitItem> *alarm : m_pAlarms) {
+		delete alarm;
+		alarm = nullptr;
+	}
+
+	m_pAlarms.clear();
 }
+
 
 SlotItem *UnitItem::slot(int column, int slot)
 {
@@ -205,18 +226,36 @@ void UnitItem::checkInitialized()
 	emit initialized(this);
 }
 
+void UnitItem::releaseTimeout(Alarm<UnitItem> *alarm)
+{
+	Q_UNUSED(alarm);
+
+	emit releaseEvent(this);
+
+	/*
+	int weekday = QDate::currentDate().dayOfWeek();
+
+	if (weekday & alarm->getDays()) {
+		emit releaseEvent(this);
+	}
+	*/
+}
+
 void UnitItem::initCols()
 {
 	for (int i = 0; i < m_cCols.size(); ++i) {
 		m_cCols[i].setParent(this);
 		m_cCols[i].setColId(i);
+
+		emit newCol(&m_cCols[i]);
 	}
 }
 
 void UnitItem::saveAlarms()
 {
 	//m_cSettings.setValue("Unit", QVariant::fromValue(m_cAlarms));
-	m_cSettings.setValue("Unit", Alarm::toVariant(m_cAlarms));
+	//m_cSettings.setValue("Unit", Alarm::toVariant(m_cAlarms));
+	m_cSettings.setValue("Unit", QVariant::fromValue(Alarm<UnitItem>::toIntList(m_pAlarms)));
 
 	m_cSettings.sync();
 }
@@ -229,9 +268,4 @@ void UnitItem::nightEnds()
 void UnitItem::nightStarts()
 {
 	setNight(1);
-}
-
-void UnitItem::releaseTimeout()
-{
-	emit releaseEvent(this);
 }

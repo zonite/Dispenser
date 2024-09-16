@@ -4,6 +4,74 @@
 
 //qRegisterMetaTypeStreamOperators<QList<Alarm>>("Alarm");
 
+
+//template void Alarm::mapFromIntList(UnitItem *parent, QMap<int, Alarm *> &map, QList<int> &list);
+//template void Alarm::mapFromIntList(ColItem *parent, QMap<int, Alarm *> &map, QList<int> &list);
+
+template class Alarm<UnitItem>;
+template class Alarm<ColItem>;
+
+/*
+template<typename T>
+Alarm::Alarm(Alarm::T *p, const int *i)
+{
+
+}
+*/
+template<typename T>
+Alarm<T>::Alarm(const T *parent, qint32 sec, weekdays days)
+{
+	setParent(parent);
+
+	setDays(days);
+	setSeconds(sec);
+}
+
+template<typename T>
+Alarm<T>::Alarm(const T *parent, const int *i)
+{
+	setParent(parent);
+
+	setupInt(i);
+}
+
+template<typename T>
+void Alarm<T>::setParent(const T *parent)
+{
+	m_pParent = parent;
+
+	if (m_pParent) {
+		//QObject::connect(this, &Alarm::releaseTimeout, m_pParent, &T::releaseTimeout);
+		//connect(this, &AlarmSignalsSlotsAlarm<T>::releaseTimeout, m_pParent, &T::releaseTimeout);
+		//connect(this, &AlarmSignalsSlots::releaseTimeout, m_pParent, &T::releaseTimeout);
+		connect(this, SIGNAL(AlarmSignalsSlots::releaseTimeout(Alarm<T> *)), m_pParent, SLOT(T::releaseTimeout()));
+		connectTimer();
+	}
+}
+
+
+/*
+Alarm::Alarm(UnitItem *unit, const int *i)
+{
+	m_pUnit = unit;
+
+	connect(this, &Alarm::releaseTimeout, m_pUnit, &UnitItem::releaseTimeout);
+	connectTimer();
+
+	setupInt(i);
+}
+
+Alarm::Alarm(ColItem *col, const int *i)
+{
+	m_pCol = col;
+
+	connect(this, &Alarm::releaseTimeout, m_pCol, &ColItem::releaseTimeout);
+	connectTimer();
+
+	setupInt(i);
+}
+*/
+/*
 Alarm::Alarm(qint32 sec, weekdays days)
 {
 	m_iActive = days;
@@ -20,8 +88,10 @@ Alarm::Alarm(const QVariant &var)
 	m_iActive = (enum weekdays) ((char) i & 0xFF);
 	setSeconds(i >> 8);
 }
+*/
 
-Alarm::~Alarm()
+template <typename T>
+Alarm<T>::~Alarm()
 {
 	/*
 	if (m_pTimer) {
@@ -31,6 +101,30 @@ Alarm::~Alarm()
 	*/
 }
 
+template<typename T>
+void Alarm<T>::mapFromIntList(T *parent, QMap<int, Alarm *> &map, const QList<int> &list)
+{
+	for (const int &item : list) {
+		Alarm *alarm = new Alarm(parent, &item);
+		map.insert(alarm->getSeconds(), alarm);
+	}
+}
+
+template<typename T>
+QList<int> Alarm<T>::toIntList(const QMap<int, Alarm *> alarms)
+{
+	QList<int> ints;
+
+	for (const Alarm<T> *alarm : alarms) {
+		int i = alarm->toInt();
+		ints.append(i);
+	}
+
+	return ints;
+
+}
+
+/*
 Alarm::Alarm(const Alarm &src)
 {
 	m_iActive = src.m_iActive;
@@ -54,6 +148,7 @@ bool Alarm::operator<(const Alarm &b) const
 {
 	return m_iSeconds < b.m_iSeconds;
 }
+*/
 
 /*
 QList<Alarm> &Alarm::fromVariant(const QVariant &var)
@@ -64,6 +159,7 @@ QList<Alarm> &Alarm::fromVariant(const QVariant &var)
 }
 */
 
+/*
 void Alarm::clean(QList<Alarm> &list)
 {
 //	std::sort(list.begin(), list.end(), cmp);
@@ -84,7 +180,9 @@ void Alarm::clean(QList<Alarm> &list)
 	}
 	//Done.
 }
+*/
 
+/*
 QList<Alarm> Alarm::fromVariant(QVariant var)
 {
 	QList<Alarm> alarms;
@@ -98,7 +196,9 @@ QList<Alarm> Alarm::fromVariant(QVariant var)
 
 	return alarms;
 }
+*/
 
+/*
 Alarm Alarm::fromInt(int i)
 {
 	Alarm a;
@@ -108,7 +208,9 @@ Alarm Alarm::fromInt(int i)
 
 	return a;
 }
+*/
 
+/*
 QVariant Alarm::toVariant(QList<Alarm> alarms)
 {
 	return QVariant::fromValue(toIntList(alarms));
@@ -124,7 +226,9 @@ QList<int> Alarm::toIntList(QList<Alarm> alarms)
 
 	return ints;
 }
+*/
 
+/*
 QTimer *Alarm::setParent(UnitItem *unit)
 {
 	if (m_pUnit || m_pCol || !unit)
@@ -149,33 +253,61 @@ QTimer *Alarm::setParent(ColItem *col)
 
 	return &m_cTimer;
 }
+*/
 
-void Alarm::setAlarm(QTime time)
+template<typename T>
+void Alarm<T>::setAlarm(QTime time)
 {
 	setSeconds(time.msecsSinceStartOfDay() / 1000);
 }
 
-void Alarm::setSeconds(qint32 seconds)
+template<typename T>
+void Alarm<T>::setSeconds(qint32 seconds)
 {
 	m_iSeconds = seconds % 86400;
+
+	startTimer();
 }
 
-void Alarm::setDays(weekdays days)
+template<typename T>
+void Alarm<T>::setDays(weekdays days)
+{
+	m_iActive = days;
+}
+
+template<typename T>
+void Alarm<T>::orDays(weekdays days)
 {
 	m_iActive = (enum weekdays) ((char) m_iActive | (char) days);
 }
 
-QString Alarm::getTimevalue() const
+template<typename T>
+void Alarm<T>::setupInt(const int *i)
+{
+	if (i) {
+		setDays((enum weekdays) ((char) (*i) & 0xFF));
+		setSeconds((*i) >> 8);
+	}
+}
+
+template<typename T>
+bool Alarm<T>::checkDay()
+{
+	int weekday = QDate::currentDate().dayOfWeek();
+
+	return (weekday & m_iActive);
+}
+
+template<typename T>
+QString Alarm<T>::getTimevalue() const
 {
 	return QString("%i:%i").arg(getSeconds() / 3600 ).arg(getSeconds() / 60 % 60);
 }
 
-void Alarm::startTimer()
+template<typename T>
+void Alarm<T>::startTimer()
 {
 	int msecToRelease;
-
-	m_cTimer.setTimerType(Qt::VeryCoarseTimer);
-	m_cTimer.setInterval(24 * 3600 * 1000);
 
 	msecToRelease = m_iSeconds * 1000 - QTime::currentTime().msecsSinceStartOfDay();
 	if (msecToRelease < 0)
@@ -184,21 +316,35 @@ void Alarm::startTimer()
 	m_cTimer.start(msecToRelease);
 }
 
-QDebug operator<<(QDebug dbg, const Alarm &alarm)
+template<typename T>
+void Alarm<T>::connectTimer()
+{
+	m_cTimer.setTimerType(Qt::VeryCoarseTimer);
+	m_cTimer.setInterval(24 * 3600 * 1000);
+
+	//QObject::connect(&m_cTimer, &QTimer::timeout, this, &Alarm::timeout);
+	//connect(&m_cTimer, &QTimer::timeout, this, &Alarm<T>::timeout);
+	connect(&m_cTimer, &QTimer::timeout, this, &AlarmSignalsSlots::timeout);
+}
+
+template<typename T>
+QDebug operator<<(QDebug dbg, const Alarm<T> &alarm)
 {
 	dbg.nospace() << "Alarm " << alarm.getTimevalue() << ". Days " << alarm.getDays() << ".";
 
 	return dbg;
 }
 
-QDataStream &operator<<(QDataStream &out, const Alarm &alarm)
+template<typename T>
+QDataStream &operator<<(QDataStream &out, const Alarm<T> &alarm)
 {
 	out << QVariant(alarm.getSeconds()) << QVariant((char)alarm.getDays());
 
 	return out;
 }
 
-QDataStream &operator>>(QDataStream &in, Alarm &alarm)
+template<typename T>
+QDataStream &operator>>(QDataStream &in, Alarm<T> &alarm)
 {
 	QVariant a, b;
 	in >> a >> b;
@@ -209,7 +355,23 @@ QDataStream &operator>>(QDataStream &in, Alarm &alarm)
 	return in;
 }
 
-bool cmp(const Alarm &a, const Alarm &b)
+template<typename T>
+bool cmp(const Alarm<T> &a, const Alarm<T> &b)
 {
 	return a.getSeconds() < b.getSeconds();
+}
+
+
+void AlarmSignalsSlots::timeout()
+{
+	Alarm<UnitItem> *unit = dynamic_cast<Alarm<UnitItem> *>(this);
+	Alarm<ColItem> *col = dynamic_cast<Alarm<ColItem> *>(this);
+
+	if (unit && unit->checkDay()) {
+		emit releaseTimeout(unit);
+	}
+
+	if (col && col->checkDay()) {
+		emit releaseTimeout(col);
+	}
 }

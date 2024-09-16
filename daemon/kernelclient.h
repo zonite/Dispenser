@@ -121,10 +121,7 @@ public:
 	//Methods to access kernel
 	void setLight(int on);
 	void setNight(int on);
-	void setRelease(Alarm *alarm); //Bit mask days which to fire. Seconds from 00:00 localtime to release. Num col to release (negative to release unit)
-	void release(__s8 col = -1, __s8 slot = -1, bool force = false, int count = 1); //release now
-	void release(SlotItem *slot, bool force = false); //release now
-	void release(ColItem *col, bool force = false, int count = 1); //release now
+	//void setRelease(Alarm *alarm); //Bit mask days which to fire. Seconds from 00:00 localtime to release. Num col to release (negative to release unit)
 
 	static KernelClient *getKernel() { return m_pClient; }
 signals:
@@ -144,12 +141,21 @@ private slots:
 	void connectSlots(ColItem *col);
 	void moduleAndDaemonInitialized(UnitItem *unit);
 
-protected:
-//	void incomingConnection(qintptr) Q_DECL_OVERRIDE;
-
-private slots:
 	void setUnitStatus();
 	void getColStatus(ColItem *col);
+
+	void connectCol(ColItem *col);
+
+	//Releasing:
+	void release(__s8 col = -1, __s8 slot = -1, bool force = false, int count = 1); //release now
+	void release(SlotItem *slot, bool force = false); //release now
+	void release(ColItem *col, bool force = false, int count = 1); //release now
+
+	void releaseUnit(UnitItem *unit);
+	void releaseCol(ColItem *col);
+
+protected:
+//	void incomingConnection(qintptr) Q_DECL_OVERRIDE;
 
 private:
 
@@ -187,7 +193,7 @@ private:
 	void enableEvents(void);
 
 	/** Dispenser kernel receiver interface */
-	void parse_dispenser_message(Buffer &in); //Receives GENL Dispenser message from kernel
+	void process_dispenser_message(Buffer &in); //Receives GENL Dispenser message from kernel
 	void parse_dispenser_nlattr(Buffer &in, struct nlattr **attrs); //Parse attributes in GENL Dispenser CMD
 	void parse_slot_cmd(struct nlattr *attrs[]); //Parse slot status CMD
 	void parse_col_cmd(struct nlattr *attrs[]); //Parse col status CMD
@@ -196,7 +202,7 @@ private:
 
 	ssize_t process_control_message(Buffer &in);
 	void process_control_newfamily(Buffer &in);
-	void process_dispenser_message(Buffer &in);
+	//void process_dispenser_message(Buffer &in);
 	//ssize_t process_event(KernelStream *in);
 	ssize_t get_nlattr_data(struct nlattr *attr, char **str);
 	ssize_t get_nlattr_data(struct nlattr *attr, QByteArray *str);

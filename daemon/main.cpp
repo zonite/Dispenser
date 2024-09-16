@@ -30,7 +30,9 @@ int main(int argc, char *argv[])
 
     bool fg = parser.isSet(fgOption);
     */
-    qRegisterMetaType<Alarm>();
+
+    //qRegisterMetaType<Alarm<UnitItem>>();
+    //qRegisterMetaType<Alarm<ColItem>>();
 
     KernelClient kernel(&a);
 

@@ -4,6 +4,7 @@
 #include <QObject>
 #include <QVector>
 #include <QTimer>
+#include <QMap>
 
 #include "lib_global.h"
 
@@ -13,7 +14,7 @@
 
 //class SlotItem;
 
-class Alarm;
+template <typename T> class Alarm;
 
 class LIB_EXPORT UnitItem : public QObject
 {
@@ -46,7 +47,7 @@ public:
 	void checkInitialized();
 
 public slots:
-	void releaseTimeout();
+	void releaseTimeout(Alarm<UnitItem> *alarm);
 
 signals:
 	void counterChanged(__u32 counter);
@@ -55,6 +56,7 @@ signals:
 	void chargingChanged(__u8 charging);
 	void nightChanged(__u8 night);
 	void colsChanged(UnitItem *unit);
+	void newCol(ColItem *col);
 	void initialized(UnitItem *unit);
 	void releaseEvent(UnitItem *unit);
 
@@ -69,7 +71,7 @@ private:
 	struct dispenser_mmap_unit m_sUnit = { 0, 0, 0, 0, 0, 0, 0, 0, { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, 0, 0, 0, 0 };
 	QVector<ColItem> m_cCols;
 	bool m_bInitialized = false;
-	QList<Alarm> m_cAlarms; //Release timer!
+	QMap<int, Alarm<UnitItem> *> m_pAlarms; //Release timers!
 	QSettings m_cSettings;
 
 	QTimer nightStartTimer;

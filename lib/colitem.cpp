@@ -19,6 +19,15 @@ ColItem::ColItem(const ColItem &src)
 
 ColItem::~ColItem()
 {
+	saveAlarms();
+
+	for (const Alarm<ColItem> *alarm : m_pAlarms) {
+		delete alarm;
+		alarm = nullptr;
+	}
+
+	m_pAlarms.clear();
+
 	m_cSlots.clear();
 }
 
@@ -36,6 +45,10 @@ void ColItem::setColId(__s8 id)
 		return;
 
 	m_sCol.col_id = id;
+
+	QList<int> alarmList = m_cSettings.value(QString("Col%u").arg(m_sCol.col_id)).value<QList<int>>();
+	Alarm<ColItem>::mapFromIntList(this, m_pAlarms, alarmList);
+
 	//emit idChanged(this);
 }
 
@@ -83,8 +96,10 @@ char ColItem::getId() const
 	return m_sCol.col_id;
 }
 
-void ColItem::releaseTimeout()
+void ColItem::releaseTimeout(Alarm<ColItem> *alarm)
 {
+	Q_UNUSED(alarm);
+
 	emit releaseEvent(this);
 }
 
@@ -94,5 +109,12 @@ void ColItem::initSlots()
 		m_cSlots[i].setParentNid(this, i);
 		//m_cSlots[i].setId(i);
 	}
+}
+
+void ColItem::saveAlarms()
+{
+	m_cSettings.setValue(QString("Col%u").arg(m_sCol.col_id), QVariant::fromValue(Alarm<ColItem>::toIntList(m_pAlarms)));
+
+	m_cSettings.sync();
 }
 

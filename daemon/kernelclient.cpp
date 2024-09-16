@@ -83,6 +83,14 @@ KernelClient::KernelClient(QObject *parent)
         m_pClient = this;
 
         qRegisterMetaType<qintptr>("qintptr");
+
+        connect(&m_cUnit, &UnitItem::releaseEvent, this, &KernelClient::releaseUnit);
+	connect(&m_cUnit, &UnitItem::newCol, this, &KernelClient::connectCol);
+}
+
+void KernelClient::connectCol(ColItem *col)
+{
+	connect(col, &ColItem::releaseEvent, this, &KernelClient::releaseCol);
 }
 
 KernelClient::~KernelClient()
@@ -442,10 +450,10 @@ void KernelClient::enableEvents()
 	}
 }
 
-void KernelClient::parse_dispenser_message(Buffer &in)
+void KernelClient::process_dispenser_message(Buffer &in)
 {
 	struct genlmsghdr *genl = nullptr;
-	struct genl_info genl_info = { 0, 0, 0, 0, 0, 0, { 0, 0 }, 0 };
+	//struct genl_info genl_info = { 0, 0, 0, 0, 0, 0, { 0, 0 }, 0 };
 	struct nlattr *attrs[DISPENSER_GENL_ATTR_COUNT] = { nullptr };
 
 	in >> &genl;
@@ -456,8 +464,8 @@ void KernelClient::parse_dispenser_message(Buffer &in)
 		return;
 	}
 
-	genl_info.attrs = attrs;
-	genl_info.genlhdr = genl;
+	//genl_info.attrs = attrs;
+	//genl_info.genlhdr = genl;
 
 	parse_dispenser_nlattr(in, attrs); //setup attrs struct with dispenser attrs
 
@@ -900,9 +908,9 @@ int KernelClient::resolve_family_id_by_name()
 	// Populate the netlink header
 	//QBuffer msg;
 	//QDataStream toKernel(&msg);
-	struct genl_info info;
-	struct nlattr *attrs[__DISPENSER_GENL_ATTR_MAX];
-	info.attrs = attrs;
+	//struct genl_info info;
+	//struct nlattr *attrs[__DISPENSER_GENL_ATTR_MAX];
+	//info.attrs = attrs;
 	int flags = 0;
 
 	//Make sure we block until we have family id!
@@ -1223,6 +1231,7 @@ void KernelClient::setNight(int on)
 }
 
 //Not implemented
+/*
 void KernelClient::setRelease(Alarm *alarm)
 {
 	KernelStream toKernel;
@@ -1237,6 +1246,7 @@ void KernelClient::setRelease(Alarm *alarm)
 	//nl_attr_put(&toKernel, DISPENSER_GENL_ALARM_DAYS, alarm->getDays());
 	//sendToKernel(&toKernel);
 }
+*/
 
 void KernelClient::release(__s8 col, __s8 slot, bool force, int count)
 {
@@ -1250,7 +1260,7 @@ void KernelClient::release(__s8 col, __s8 slot, bool force, int count)
 	if (col >= 0) {
 		nl_attr_put(&toKernel, DISPENSER_GENL_COL_NUM, col);
 		if (slot >= 0)
-			nl_attr_put(&toKernel, DISPENSER_GENL_COL_NUM, slot);
+			nl_attr_put(&toKernel, DISPENSER_GENL_SLOT_NUM, slot);
 	}
 
 	sendToKernel(&toKernel);
@@ -1266,6 +1276,18 @@ void KernelClient::release(ColItem *col, bool force, int count)
 {
 	if (col)
 		return release(col->getId(), -1, force, count);
+}
+
+void KernelClient::releaseUnit(UnitItem *unit)
+{
+	Q_UNUSED(unit);
+
+	release();
+}
+
+void KernelClient::releaseCol(ColItem *col)
+{
+	release(col, false, 1);
 }
 
 
