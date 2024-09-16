@@ -45,7 +45,7 @@ private:
 	QSettings m_cSettings;
 	QMap<int, Alarm<ColItem> *> m_pAlarms; //Release timer!
 
-	struct dispenser_mmap_column m_sCol = { .col_id = -1, .slot_count = -1 };
+	struct dispenser_mmap_column m_sCol = { .col_id = c-1, .slot_count = c-1 };
 	QVector<SlotItem> m_cSlots;
 	UnitItem *m_pUnit = nullptr;
 	bool m_bInitialized = false;

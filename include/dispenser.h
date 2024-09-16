@@ -215,15 +215,15 @@ struct dispenser_mmap_unit {
 #else
 	volatile struct bme280_calib_data calib_data;
 #endif
-	char night;
-	char ncols;
-	char nslots;
-	char initialized;
+	signed char night;
+	signed char ncols;
+	signed char nslots;
+	signed char initialized;
 };
 
 struct dispenser_mmap_column {
-	char col_id;
-	char slot_count;
+	signed char col_id;
+	signed char slot_count;
 };
 
 struct dispenser_mmap_slot {
