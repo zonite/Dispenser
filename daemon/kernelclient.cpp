@@ -244,7 +244,7 @@ genlmsghdr *KernelClient::genl_hdr_put(KernelStream *out, quint8 cmd, quint8 ver
  * Note: The N and O flag are mutually exclusive.
  */
 
-nlattr *KernelClient::nl_attr_put(KernelStream *out, quint16 type, const QByteArray *str)
+nlattr *KernelClient::nl_attr_put_str(KernelStream *out, quint16 type, const QByteArray *str)
 {
 	QBuffer *buf = dynamic_cast<QBuffer *>(out->device());
 	//Wrong type of stream if nullptr returned.
@@ -970,7 +970,7 @@ int KernelClient::resolve_family_id_by_name()
 
 	QByteArray name = DISPENSER_GENL_NAME;
 	name.truncate(GENL_NAMSIZ - 1); //Family name length can be upto 16 chars including \0
-	nlattr* name_attr = nl_attr_put(&mToKernel, CTRL_ATTR_FAMILY_NAME, &name);
+	nlattr* name_attr = nl_attr_put_str(&mToKernel, CTRL_ATTR_FAMILY_NAME, &name);
 	Q_UNUSED(name_attr);
 
 	//nl_na = (struct nlattr *)GENLMSG_DATA(&nl_request_msg);

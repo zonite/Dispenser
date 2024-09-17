@@ -166,7 +166,7 @@ private:
 	static struct genlmsghdr* genl_hdr_put(KernelStream *out, quint8 cmd, quint8 version = 1);
 	//static struct nl_attr* nl_attr_put(KernelStream *out, quint16 type, const char *str);
 
-	static struct nlattr *nl_attr_put(KernelStream *out, quint16 type, const QByteArray *str);
+	static nlattr *nl_attr_put_str(KernelStream *out, quint16 type, const QByteArray *str);
 	template <typename T> static struct nlattr *nl_attr_put(KernelStream *out, quint16 type, const T data);
 
 	/*
