@@ -348,9 +348,9 @@ ssize_t KernelClient::recvFromKernel(void)
 		return nl_fd;
 
 	int err = ioctl(nl_fd, FIONREAD, &nl_rx_length); //return bytes available in buffer for read. Get the number of bytes in the input buffer.
-	qDaemonLog(QStringLiteral("Buffer has %li bytes.").arg(nl_rx_length), QDaemonLog::NoticeEntry);
+	qDaemonLog(QString("Buffer has %li bytes.").arg(nl_rx_length), QDaemonLog::NoticeEntry);
 	if (!err) {
-		qDaemonLog(QStringLiteral("IOCTL error %li errno %i.").arg(err).arg(errno), QDaemonLog::NoticeEntry);
+		qDaemonLog(QString("IOCTL error %li errno %i.").arg(err).arg(errno), QDaemonLog::NoticeEntry);
 	}
 
 	//int available;
