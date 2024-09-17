@@ -6,11 +6,9 @@
 
 #include "lib_global.h"
 
-#include <dispenser.h>
-
 class ColItem;
 
-class LIB_EXPORT SlotItem : public QObject
+class LIB_EXPORT SlotItem : public Timer
 {
 	Q_OBJECT
 public:

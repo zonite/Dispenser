@@ -19,7 +19,7 @@ SlotItem::SlotItem(ColItem *parent)
 }
 
 SlotItem::SlotItem(const SlotItem &src)
-        : QObject()
+        : Timer()
 {
 	m_pCol = src.m_pCol;
 	m_bFull = src.m_bFull;

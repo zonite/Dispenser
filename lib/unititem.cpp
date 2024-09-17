@@ -5,8 +5,10 @@
 
 #include <localinfo.h>
 
+Q_DECLARE_METATYPE(QList<int>)
+
 UnitItem::UnitItem(QObject *parent)
-        : QObject{parent}
+        : Timer{parent}
 {
 	/*
 	m_sUnit.button;
@@ -69,8 +71,12 @@ UnitItem::UnitItem(QObject *parent)
 
 	//QVariant list = m_cSettings.value("Unit");
 
-	QList<int> alarmList = m_cSettings.value("Unit").value<QList<int>>();
-	Alarm<UnitItem>::mapFromIntList(this, m_pAlarms, alarmList);
+	//QVariant list = m_cSettings.value("Unit").value<QList<QVariant>>();
+	//QList<QVariant> list = m_cSettings.value("Unit").toList();
+
+	//Alarm::mapFromIntList(this, m_pAlarms, alarmList);
+	Alarm::mapFromVariantList(this, m_pAlarms, m_cSettings.value("Unit").toList());
+	//Alarm::mapFromIntList(this, m_pAlarms, alarmList);
 
 	//m_cAlarms = Alarm::fromVariant(m_cSettings.value("Unit"));
 
@@ -79,12 +85,12 @@ UnitItem::UnitItem(QObject *parent)
 		//new_alarm->setDays(EVERYDAY);
 		//new_alarm->setSeconds(8 * 3600); //Alarm at 8.
 		//m_pAlarms.insert(new_alarm->getSeconds(), new_alarm);
-		m_pAlarms.insert(0 * 3600, new Alarm<UnitItem>(this, 8 * 3600, EVERYDAY));
-		m_pAlarms.insert(4 * 3600, new Alarm<UnitItem>(this, 8 * 3600, EVERYDAY));
-		m_pAlarms.insert(8 * 3600, new Alarm<UnitItem>(this, 8 * 3600, EVERYDAY));
-		m_pAlarms.insert(12 * 3600, new Alarm<UnitItem>(this, 8 * 3600, EVERYDAY));
-		m_pAlarms.insert(16 * 3600, new Alarm<UnitItem>(this, 8 * 3600, EVERYDAY));
-		m_pAlarms.insert(20 * 3600, new Alarm<UnitItem>(this, 8 * 3600, EVERYDAY));
+		m_pAlarms.insert(0 * 3600, new Alarm(this, 0 * 3600, EVERYDAY));
+		m_pAlarms.insert(4 * 3600, new Alarm(this, 4 * 3600, EVERYDAY));
+		m_pAlarms.insert(8 * 3600, new Alarm(this, 8 * 3600, EVERYDAY));
+		m_pAlarms.insert(12 * 3600, new Alarm(this, 12 * 3600, EVERYDAY));
+		m_pAlarms.insert(16 * 3600, new Alarm(this, 16 * 3600, EVERYDAY));
+		m_pAlarms.insert(20 * 3600, new Alarm(this, 20 * 3600, EVERYDAY));
 	}
 
 	//Alarm::clean(m_cAlarms);
@@ -94,7 +100,7 @@ UnitItem::~UnitItem()
 {
 	saveAlarms();
 
-	for (const Alarm<UnitItem> *alarm : m_pAlarms) {
+	for (const Alarm *alarm : m_pAlarms) {
 		delete alarm;
 		alarm = nullptr;
 	}
@@ -226,7 +232,7 @@ void UnitItem::checkInitialized()
 	emit initialized(this);
 }
 
-void UnitItem::releaseTimeout(Alarm<UnitItem> *alarm)
+void UnitItem::releaseTimeout(Alarm *alarm)
 {
 	Q_UNUSED(alarm);
 
@@ -255,7 +261,8 @@ void UnitItem::saveAlarms()
 {
 	//m_cSettings.setValue("Unit", QVariant::fromValue(m_cAlarms));
 	//m_cSettings.setValue("Unit", Alarm::toVariant(m_cAlarms));
-	m_cSettings.setValue("Unit", QVariant::fromValue(Alarm<UnitItem>::toIntList(m_pAlarms)));
+	//m_cSettings.setValue("Unit", QVariant::fromValue(Alarm::toIntList(m_pAlarms)));
+	m_cSettings.setValue("Unit", QVariant::fromValue(Alarm::toVariantList(m_pAlarms)));
 
 	m_cSettings.sync();
 }

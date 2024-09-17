@@ -11,4 +11,11 @@
 #  define LIB_EXPORT Q_DECL_IMPORT
 #endif
 
+class Alarm;
+class UnitItem;
+class ColItem;
+class SlotItem;
+
+#include "timer.h"
+
 #endif // LIB_GLOBAL_H

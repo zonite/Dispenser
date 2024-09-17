@@ -11,12 +11,14 @@
 #include "colitem.h"
 #include "slotitem.h"
 #include "alarm.h"
+#include "timer.h"
 
 //class SlotItem;
 
-template <typename T> class Alarm;
+//class Alarm;
+//template <typename T> class Alarm;
 
-class LIB_EXPORT UnitItem : public QObject
+class LIB_EXPORT UnitItem : public Timer
 {
 	Q_OBJECT
 public:
@@ -47,7 +49,8 @@ public:
 	void checkInitialized();
 
 public slots:
-	void releaseTimeout(Alarm<UnitItem> *alarm);
+	void releaseTimeout(Alarm *alarm);
+	//void releaseTimeout(Alarm<UnitItem> *alarm);
 
 signals:
 	void counterChanged(__u32 counter);
@@ -71,7 +74,8 @@ private:
 	struct dispenser_mmap_unit m_sUnit = { 0, 0, 0, 0, 0, 0, 0, 0, { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, 0, 0, 0, 0 };
 	QVector<ColItem> m_cCols;
 	bool m_bInitialized = false;
-	QMap<int, Alarm<UnitItem> *> m_pAlarms; //Release timers!
+	QMap<int, Alarm *> m_pAlarms; //Release timers!
+	//QMap<int, Alarm<UnitItem> *> m_pAlarms; //Release timers!
 	QSettings m_cSettings;
 
 	QTimer nightStartTimer;

@@ -9,10 +9,12 @@
 #include "slotitem.h"
 #include "alarm.h"
 
-class UnitItem;
-template <typename T> class Alarm;
 
-class LIB_EXPORT ColItem : public QObject
+class UnitItem;
+class Alarm;
+//template <typename T> class Alarm;
+
+class LIB_EXPORT ColItem : public Timer
 {
 	Q_OBJECT
 public:
@@ -32,7 +34,8 @@ public:
 	const QVector<SlotItem> *getSlots() const { return &m_cSlots; }
 
 public slots:
-	void releaseTimeout(Alarm<ColItem> *alarm);
+	//void releaseTimeout(Alarm<ColItem> *alarm);
+	void releaseTimeout(Alarm *alarm);
 
 signals:
 	void slotCountChanged(ColItem *col);
@@ -43,7 +46,8 @@ private:
 	void saveAlarms();
 
 	QSettings m_cSettings;
-	QMap<int, Alarm<ColItem> *> m_pAlarms; //Release timer!
+	QMap<int, Alarm *> m_pAlarms; //Release timer!
+	//QMap<int, Alarm<ColItem> *> m_pAlarms; //Release timer!
 
 	struct dispenser_mmap_column m_sCol = { .col_id = -1, .slot_count = -1 };
 	QVector<SlotItem> m_cSlots;

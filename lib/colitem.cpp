@@ -12,7 +12,7 @@ ColItem::ColItem(UnitItem *parent)
 }
 
 ColItem::ColItem(const ColItem &src)
-        : QObject()
+        : Timer()
 {
 	m_pUnit = src.m_pUnit;
 }
@@ -21,7 +21,7 @@ ColItem::~ColItem()
 {
 	saveAlarms();
 
-	for (const Alarm<ColItem> *alarm : m_pAlarms) {
+	for (const Alarm *alarm : m_pAlarms) {
 		delete alarm;
 		alarm = nullptr;
 	}
@@ -46,8 +46,9 @@ void ColItem::setColId(__s8 id)
 
 	m_sCol.col_id = id;
 
-	QList<int> alarmList = m_cSettings.value(QString("Col%u").arg(m_sCol.col_id)).value<QList<int>>();
-	Alarm<ColItem>::mapFromIntList(this, m_pAlarms, alarmList);
+	//QList<int> alarmList = m_cSettings.value(QString("Col%u").arg(m_sCol.col_id)).value<QList<int>>();
+	//Alarm::mapFromIntList(this, m_pAlarms, alarmList);
+	Alarm::mapFromVariantList(this, m_pAlarms, m_cSettings.value(QString("Col%u").arg(m_sCol.col_id)).toList());
 
 	//emit idChanged(this);
 }
@@ -96,7 +97,7 @@ char ColItem::getId() const
 	return m_sCol.col_id;
 }
 
-void ColItem::releaseTimeout(Alarm<ColItem> *alarm)
+void ColItem::releaseTimeout(Alarm *alarm)
 {
 	Q_UNUSED(alarm);
 
@@ -113,7 +114,8 @@ void ColItem::initSlots()
 
 void ColItem::saveAlarms()
 {
-	m_cSettings.setValue(QString("Col%u").arg(m_sCol.col_id), QVariant::fromValue(Alarm<ColItem>::toIntList(m_pAlarms)));
+	//m_cSettings.setValue(QString("Col%u").arg(m_sCol.col_id), QVariant::fromValue(Alarm::toVariantList(m_pAlarms)));
+	m_cSettings.setValue(QString("Col%u").arg(m_sCol.col_id), QVariant::fromValue(Alarm::toVariantList(m_pAlarms)));
 
 	m_cSettings.sync();
 }

@@ -16,6 +16,7 @@ SOURCES += \
 #    dispenser.cpp \
         localinfo.cpp \
     slotitem.cpp \
+        timer.cpp \
     unititem.cpp
 
 HEADERS += \
@@ -25,9 +26,11 @@ HEADERS += \
 #    dispenser.h \
         localinfo.h \
     slotitem.h \
+        timer.h \
     unititem.h
 
 CONFIG += link_pkgconfig
+CONFIG += debug
 
 PKGCONFIG += Qt5Daemon
 
