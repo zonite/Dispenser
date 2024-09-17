@@ -347,8 +347,15 @@ ssize_t KernelClient::recvFromKernel(void)
 	if (nl_fd < 0)
 		return nl_fd;
 
-	ioctl(nl_fd, FIONREAD, &nl_rx_length); //return bytes available in buffer for read. Get the number of bytes in the input buffer.
-	qDaemonLog(QStringLiteral("Buffer has %l bytes.").arg(nl_rx_length), QDaemonLog::NoticeEntry);
+	int err = ioctl(nl_fd, FIONREAD, &nl_rx_length); //return bytes available in buffer for read. Get the number of bytes in the input buffer.
+	qDaemonLog(QStringLiteral("Buffer has %li bytes.").arg(nl_rx_length), QDaemonLog::NoticeEntry);
+	if (!err) {
+		qDaemonLog(QStringLiteral("IOCTL error %li errno %i.").arg(err).arg(errno), QDaemonLog::NoticeEntry);
+	}
+
+	//int available;
+	//socklen_t optlen = sizeof(available);
+	//err = getsockopt(nl_fd, SOL_SOCKET, SO_NREAD, &available, &optlen);
 
 	/*
 	nl_rx_length = fcntl(nl_fd, F_GETFL);
@@ -376,7 +383,7 @@ ssize_t KernelClient::recvFromKernel(void)
 		// type 1 = CTRL_ATTR_FAMILY_ID
 
 		if (nl_rx_length < 0) {
-			qDaemonLog(QStringLiteral("Error receiving from kernel"), QDaemonLog::ErrorEntry);
+			qDaemonLog(QStringLiteral("Error receiving from kernel. Error %i.").arg(errno), QDaemonLog::ErrorEntry);
 			qApp->quit();
 			return nl_rx_length;
 		}
