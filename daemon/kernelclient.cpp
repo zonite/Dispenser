@@ -383,7 +383,7 @@ ssize_t KernelClient::recvFromKernel(void)
 		// type 1 = CTRL_ATTR_FAMILY_ID
 
 		if (nl_rx_length < 0) {
-			qDaemonLog(QStringLiteral("Error receiving from kernel. Error %i.").arg(errno), QDaemonLog::ErrorEntry);
+			qDaemonLog(QStringLiteral("Error receiving from kernel. Error %1.").arg(errno), QDaemonLog::ErrorEntry);
 			qApp->quit();
 			return nl_rx_length;
 		}
