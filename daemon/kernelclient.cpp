@@ -7,6 +7,7 @@
 #include <sys/socket.h>
 #include <sys/ioctl.h>
 #include <sys/fcntl.h>
+#include <linux/sockios.h>
 //#include <sys/user.h>
 #include <unistd.h>
 
@@ -347,11 +348,12 @@ ssize_t KernelClient::recvFromKernel(void)
 	if (nl_fd < 0)
 		return nl_fd;
 
-	int err = ioctl(nl_fd, FIONREAD, &nl_rx_length); //return bytes available in buffer for read. Get the number of bytes in the input buffer.
-	qDaemonLog(QString("Buffer has %1 bytes.").arg(nl_rx_length), QDaemonLog::NoticeEntry);
-	if (!err) {
+	//int err = ioctl(nl_fd, FIONREAD, &nl_rx_length); //return bytes available in buffer for read. Get the number of bytes in the input buffer.
+	int err = ioctl(nl_fd, SIOCINQ, &nl_rx_length); //return bytes available in buffer for read. Get the number of bytes in the input buffer.
+	if (err) {
 		qDaemonLog(QString("IOCTL error %1 errno %2.").arg(err).arg(errno), QDaemonLog::NoticeEntry);
 	}
+	qDaemonLog(QString("Buffer has %1 bytes.").arg(nl_rx_length), QDaemonLog::NoticeEntry);
 
 	//int available;
 	//socklen_t optlen = sizeof(available);
