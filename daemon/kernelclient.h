@@ -74,6 +74,8 @@ private:
 class KernelStream : protected QDataStream
 {
 public:
+	explicit KernelStream();
+
 	QDataStream &operator<<(const char *s) = delete;
 	QDataStream &operator<<(QVariant s) = delete;
 	QDataStream &operator<<(QVariant *s) = delete;
@@ -107,7 +109,7 @@ public:
 	using QDataStream::setDevice;
 
 private:
-
+	QBuffer m_cBuffer;
 };
 
 

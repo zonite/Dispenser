@@ -888,9 +888,10 @@ int KernelClient::open_and_bind_socket()
 
 	m_pKernel = new QSocketNotifier(nl_fd, QSocketNotifier::Read, this);
 
-	mOutBuffer.open(QIODevice::ReadWrite);
+	/** Done internally by KernelStream: **/
+	//mOutBuffer.open(QIODevice::ReadWrite);
 	//mInBuffer.open(QIODevice::ReadWrite);
-	mToKernel.setDevice(&mOutBuffer);
+	//mToKernel.setDevice(&mOutBuffer);
 	//FromKernel.setDevice(&mInBuffer);
 
 	return resolve_family_id_by_name();
@@ -1340,12 +1341,17 @@ int KernelClient::get_unit_status()
 }
 */
 
+KernelStream::KernelStream()
+{
+	m_cBuffer.open(QIODevice::ReadWrite);
+	setDevice(&m_cBuffer);
+}
+
 KernelStream &KernelStream::operator<<(nlmsghdr &s)
 {
 	writeRawData((char *)&s, NLMSG_HDRLEN);
 
 	return this->align();
-
 }
 
 template <typename T>
