@@ -94,6 +94,9 @@ KernelClient::KernelClient(QObject *parent)
 void KernelClient::connectCol(ColItem *col)
 {
 	connect(col, &ColItem::releaseEvent, this, &KernelClient::releaseCol);
+	//connect(col, &ColItem::newSlot, this, &KernelClient::connectSlots);
+
+	//getColStatus(col);
 }
 
 KernelClient::~KernelClient()
@@ -368,6 +371,8 @@ ssize_t KernelClient::recvFromKernel(void)
 	*/
 
 	do {
+		inBuffer.clear();
+
 		nl_rx_length = recv(nl_fd, inBuffer.cur(), inBuffer.capacityLeft(), 0);
 
 		if (nl_rx_length == -1 && (errno == EAGAIN)) {

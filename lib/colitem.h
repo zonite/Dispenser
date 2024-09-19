@@ -25,6 +25,7 @@ public:
 
 	SlotItem *slot(int slot);
 
+	void setParent(UnitItem *unit) { m_pUnit = unit; }
 	void setSlots(int i);
 	void setColId(__s8 id);
 	void addSlot();
@@ -40,6 +41,8 @@ public slots:
 signals:
 	void slotCountChanged(ColItem *col);
 	void releaseEvent(ColItem *col);
+	void newSlot(SlotItem *slot);
+	//void idChanged(ColItem *col);
 
 private:
 	void initSlots();

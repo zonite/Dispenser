@@ -109,6 +109,8 @@ void ColItem::initSlots()
 	for (int i = 0; i < m_cSlots.size(); ++i) {
 		m_cSlots[i].setParentNid(this, i);
 		//m_cSlots[i].setId(i);
+
+		emit newSlot(&m_cSlots[i]);
 	}
 }
 

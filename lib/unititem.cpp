@@ -253,7 +253,8 @@ void UnitItem::initCols()
 		m_cCols[i].setParent(this);
 		m_cCols[i].setColId(i);
 
-		emit newCol(&m_cCols[i]);
+		//emit newCol(&m_cCols[i]);
+
 	}
 }
 

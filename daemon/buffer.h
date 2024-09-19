@@ -28,6 +28,7 @@ public:
 	bool align(unsigned long bits);
 	long spaceLeft() { return m_iSize - m_iIterator; }
 	bool atEnd() { return !(m_iIterator < m_iSize); }
+	void clear() { m_iSize = m_iIterator = 0; }
 
 	Buffer &operator>>(nlmsghdr **s);
 	Buffer &operator>>(genlmsghdr **s);
