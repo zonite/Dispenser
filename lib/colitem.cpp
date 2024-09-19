@@ -46,9 +46,9 @@ void ColItem::setColId(__s8 id)
 
 	m_sCol.col_id = id;
 
-	//QList<int> alarmList = m_cSettings.value(QString("Col%u").arg(m_sCol.col_id)).value<QList<int>>();
+	//QList<int> alarmList = m_cSettings.value(QString("Col%1").arg(m_sCol.col_id)).value<QList<int>>();
 	//Alarm::mapFromIntList(this, m_pAlarms, alarmList);
-	Alarm::mapFromVariantList(this, m_pAlarms, m_cSettings.value(QString("Col%u").arg(m_sCol.col_id)).toList());
+	Alarm::mapFromVariantList(this, m_pAlarms, m_cSettings.value(QString("Col%1").arg(m_sCol.col_id)).toList());
 
 	//emit idChanged(this);
 }
@@ -114,8 +114,8 @@ void ColItem::initSlots()
 
 void ColItem::saveAlarms()
 {
-	//m_cSettings.setValue(QString("Col%u").arg(m_sCol.col_id), QVariant::fromValue(Alarm::toVariantList(m_pAlarms)));
-	m_cSettings.setValue(QString("Col%u").arg(m_sCol.col_id), QVariant::fromValue(Alarm::toVariantList(m_pAlarms)));
+	//m_cSettings.setValue(QString("Col%1").arg(m_sCol.col_id), QVariant::fromValue(Alarm::toVariantList(m_pAlarms)));
+	m_cSettings.setValue(QString("Col%1").arg(m_sCol.col_id), QVariant::fromValue(Alarm::toVariantList(m_pAlarms)));
 
 	m_cSettings.sync();
 }

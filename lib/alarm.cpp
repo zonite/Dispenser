@@ -336,7 +336,7 @@ bool Alarm::checkDay()
 //template<typename T>
 QString Alarm::getTimevalue() const
 {
-	return QString("%i:%i").arg(getSeconds() / 3600 ).arg(getSeconds() / 60 % 60);
+	return QString("%1:%2").arg(getSeconds() / 3600 ).arg(getSeconds() / 60 % 60);
 }
 
 //template<typename T>
