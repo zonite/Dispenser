@@ -33,6 +33,7 @@ public:
 	Buffer &operator>>(nlmsghdr **s);
 	Buffer &operator>>(genlmsghdr **s);
 	Buffer &operator>>(nlattr **s);
+	template <typename T> Buffer &operator>>(T **s);
 
 
 private:

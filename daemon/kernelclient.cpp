@@ -759,9 +759,18 @@ void KernelClient::parse_unit_cmd(nlattr *attrs[])
 ssize_t KernelClient::process_error_message(Buffer &in)
 {
 	struct nlattr *attr = nullptr;
+	struct nlmsghdr *errorhdr = nullptr;
 	__u16 i = __NLMSGERR_ATTR_MAX * 2;
 	QByteArray str;
 	__u32 *val;
+	__s32 *error;
+
+	in >> &error;
+
+	if (error)
+		qDaemonLog(QString("Netlink errno: %1").arg(*error), QDaemonLog::ErrorEntry);
+
+	in >> &errorhdr;
 
 	in >> &attr;
 

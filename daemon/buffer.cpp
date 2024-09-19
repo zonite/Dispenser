@@ -5,31 +5,34 @@
 
 #define ALIGN(len, to) (((len) + (to) - 1) & ~((to) - 1))
 
+template Buffer &Buffer::operator>>(__u32 **s);
+template Buffer &Buffer::operator>>(__s32 **s);
+
 Buffer::Buffer(long initial_size)
 {
-	allocate(initial_size);
+        allocate(initial_size);
 }
 
 Buffer::~Buffer()
 {
-	delete m_pBuffer;
-	m_pBuffer = nullptr;
-	m_iCapacity = 0;
-	m_iIterator = 0;
-	m_iSize = 0;
+        delete m_pBuffer;
+        m_pBuffer = nullptr;
+        m_iCapacity = 0;
+        m_iIterator = 0;
+        m_iSize = 0;
 }
 
 long Buffer::resize(long new_size)
 {
-	long size = new_size;
-	if (new_size < 0)
-		size = 0;
-	if (new_size > m_iCapacity)
-		size = m_iCapacity;
+        long size = new_size;
+        if (new_size < 0)
+                size = 0;
+        if (new_size > m_iCapacity)
+                size = m_iCapacity;
 
-	m_iSize = size;
+        m_iSize = size;
 	if (m_iIterator > m_iSize)
-		m_iIterator = m_iSize;
+	        m_iIterator = m_iSize;
 
 	return m_iSize;
 }
@@ -152,6 +155,26 @@ Buffer &Buffer::operator>>(nlattr **s)
 		*s = cur_pos;
 		align(NLA_ALIGNTO);
 	}
+
+	return *this;
+}
+
+template <typename T>
+Buffer &Buffer::operator>>(T **s)
+{
+	seekSet(NLMSG_ALIGN(m_iIterator));
+
+	if (spaceLeft() <= 0 || (unsigned) spaceLeft() < sizeof(T)) {
+		*s = nullptr;
+		return *this;
+	}
+
+	T *cur_pos = (T *) cur();
+
+	if (seekRel(sizeof(T)) == -1)
+		*s = nullptr;
+	else
+		*s = cur_pos;
 
 	return *this;
 }
