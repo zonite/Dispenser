@@ -349,11 +349,11 @@ ssize_t KernelClient::recvFromKernel(void)
 		return nl_fd;
 
 	//int err = ioctl(nl_fd, FIONREAD, &nl_rx_length); //return bytes available in buffer for read. Get the number of bytes in the input buffer.
-	int err = ioctl(nl_fd, SIOCINQ, &nl_rx_length); //return bytes available in buffer for read. Get the number of bytes in the input buffer.
-	if (err) {
-		qDaemonLog(QString("IOCTL error %1 errno %2.").arg(err).arg(errno), QDaemonLog::NoticeEntry);
-	}
-	qDaemonLog(QString("Buffer has %1 bytes.").arg(nl_rx_length), QDaemonLog::NoticeEntry);
+	//int err = ioctl(nl_fd, SIOCINQ, &nl_rx_length); //return bytes available in buffer for read. Get the number of bytes in the input buffer.
+	//if (err) {
+	//	qDaemonLog(QString("IOCTL error %1 errno %2.").arg(err).arg(errno), QDaemonLog::NoticeEntry);
+	//}
+	//qDaemonLog(QString("Buffer has %1 bytes.").arg(nl_rx_length), QDaemonLog::NoticeEntry);
 
 	//int available;
 	//socklen_t optlen = sizeof(available);
@@ -386,8 +386,9 @@ ssize_t KernelClient::recvFromKernel(void)
 
 		if (nl_rx_length < 0) {
 			qDaemonLog(QStringLiteral("Error receiving from kernel. Error %1.").arg(errno), QDaemonLog::ErrorEntry);
-			qApp->quit();
-			return nl_rx_length;
+			//qApp->quit();
+			break;
+			//return nl_rx_length;
 		}
 
 		inBuffer.resize(nl_rx_length); //Resize to the length of the data in buffer
@@ -396,13 +397,15 @@ ssize_t KernelClient::recvFromKernel(void)
 		if (!nlmsg || !NLMSG_OK((nlmsg), (__u32)nl_rx_length)) {
 			//qDaemonLog(QStringLiteral("Family ID request : invalid message"), QDaemonLog::ErrorEntry);
 			qDaemonLog(QStringLiteral("Error validating Kernel response: invalid length or nullptr"), QDaemonLog::ErrorEntry);
-			qApp->quit();
-			return -1;
+			//qApp->quit();
+			continue;
+			//return -1;
 		}
 
 		if (nl_family_id > 0 && nlmsg->nlmsg_type == nl_family_id) {
 			//Process Dispenser message
 			process_dispenser_message(inBuffer);
+			continue;
 		}
 
 		//Process standard messages
@@ -415,8 +418,8 @@ ssize_t KernelClient::recvFromKernel(void)
 			break;
 		case NLMSG_ERROR:
 			qDaemonLog(QStringLiteral("Error validating Kernel response: receive error"), QDaemonLog::ErrorEntry);
-			qApp->quit();
-			return -1;
+			//qApp->quit();
+			//return -1;
 			break;
 		case GENL_ID_CTRL: //GENL controller requests.
 			//Request GENL ID.
@@ -424,8 +427,8 @@ ssize_t KernelClient::recvFromKernel(void)
 			break;
 		default:
 			qDaemonLog(QStringLiteral("Unknown type from netlink message"), QDaemonLog::ErrorEntry);
-			qApp->quit();
-			return -1;
+			//qApp->quit();
+			//return -1;
 			break;
 		}
 
