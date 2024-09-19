@@ -1220,9 +1220,9 @@ void KernelClient::connectSlots(ColItem *col)
 			//connect(slot, &SlotItem::idChanged, this, &KernelClient::getSlotStatus);
 
 			if (m_cUnit.moduleInitialized())
-				getSlotStatus(slot);
-			else
 				setSlotStatus(slot);
+			else
+				getSlotStatus(slot);
 		}
 	}
 }
