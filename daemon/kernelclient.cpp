@@ -760,6 +760,7 @@ ssize_t KernelClient::process_error_message(Buffer &in)
 {
 	struct nlattr *attr = nullptr;
 	struct nlmsghdr *errorhdr = nullptr;
+	struct genlmsghdr *errorgenlhdr = nullptr;
 	__u16 i = __NLMSGERR_ATTR_MAX * 2;
 	QByteArray str;
 	__u32 *val;
@@ -771,6 +772,8 @@ ssize_t KernelClient::process_error_message(Buffer &in)
 		qDaemonLog(QString("Netlink errno: %1").arg(*error), QDaemonLog::ErrorEntry);
 
 	in >> &errorhdr;
+
+	in >> &errorgenlhdr;
 
 	in >> &attr;
 
@@ -1224,7 +1227,7 @@ void KernelClient::getSlotStatus(SlotItem *slot)
 	sendToKernel(&toKernel);
 }
 
-void KernelClient::setUnitStatus()
+void KernelClient::setUnitStatus() //Fails for some reason...
 {
 	KernelStream toKernel;
 	__u8 status = dispenser_pack_unit_status(m_cUnit.getUnitStatus());

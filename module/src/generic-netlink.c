@@ -98,6 +98,7 @@ static struct nla_policy const dispenser_genl_policy[DISPENSER_GENL_ATTR_COUNT] 
 	[DISPENSER_GENL_HUMIDITY] = { .type = NLA_U32 }, //u32 attr //humidity
 	[DISPENSER_GENL_CALIBRATION0] = { .type = NLA_U64 }, //calibration data u64
 	[DISPENSER_GENL_CALIBRATION1] = { .type = NLA_S16 }, //calibration data s16
+	[DISPENSER_GENL_INITIALIZED] = { .type = NLA_U8 }, //calibration data u8
 //	[DISPENSER_GENL_CALIBRATION] = { .type = NLA_U32 }, //calibration data
 };
 
