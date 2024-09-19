@@ -201,7 +201,7 @@ void UnitItem::setSlots(int i)
 	if (m_sUnit.nslots == i)
 		return;
 
-	m_sUnit.ncols = i;
+	m_sUnit.nslots = i;
 }
 
 void UnitItem::addCol()
