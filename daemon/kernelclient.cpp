@@ -642,6 +642,10 @@ void KernelClient::parse_slot_cmd(nlattr *attrs[])
 			pSlot->setRelease(new_slot_state.release);
 			pSlot->setState(new_slot_state.state);
 
+			qDaemonLog(QString("NL: Slot status full=%1, up=%2, down=%3, release=%4, state=%5.")
+			           .arg(full).arg(new_slot_state.up).arg(new_slot_state.down)
+			           .arg(new_slot_state.release).arg(new_slot_state.state), QDaemonLog::NoticeEntry);
+
 			//if (new_slot_state.state == UNKNOWN) {
 			//	setSlotStatus(pSlot);
 			//}
@@ -705,6 +709,9 @@ void KernelClient::parse_unit_cmd(nlattr *attrs[])
 		m_cUnit.setNight(received_unit_data.night);
 		m_cUnit.setCharging(received_unit_data.charging);
 		m_cUnit.setLight(received_unit_data.light);
+		qDaemonLog(QString("NL: Unit status door=%1, night=%2, charge=%3, light=%4.")
+		           .arg(received_unit_data.door).arg(received_unit_data.night)
+		           .arg(received_unit_data.charging).arg(received_unit_data.light), QDaemonLog::NoticeEntry);
 	}
 
 	if (attrs[DISPENSER_GENL_COL_NUM]) {
