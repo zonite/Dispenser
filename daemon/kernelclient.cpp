@@ -806,6 +806,8 @@ ssize_t KernelClient::process_error_message(Buffer &in)
 			break;
 		}
 
+		in >> &attr;
+		--i;
 	}
 
 	return 0;
