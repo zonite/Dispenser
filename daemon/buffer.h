@@ -19,8 +19,10 @@ public:
 
 	long size() { return m_iSize; }
 	long capacity() { return m_iCapacity; }
+	long capacityLeft() { return m_iCapacity - m_iIterator; }
 	char *begin() { seekSet(0); return cur(); }
-	char *cur() { return atEnd() ? nullptr : m_pBuffer + m_iIterator; }
+	//char *cur() { return atEnd() ? nullptr : m_pBuffer + m_iIterator; }
+	char *cur() { return m_pBuffer + m_iIterator; }
 	long seekSet(long pos);
 	long seekRel(long seek) { return seekSet(seek + m_iIterator); }
 	bool align(unsigned long bits);

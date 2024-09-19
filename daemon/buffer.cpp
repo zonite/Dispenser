@@ -21,7 +21,7 @@ Buffer::~Buffer()
 
 long Buffer::resize(long new_size)
 {
-	long size = 0;
+	long size = new_size;
 	if (new_size < 0)
 		size = 0;
 	if (new_size > m_iCapacity)

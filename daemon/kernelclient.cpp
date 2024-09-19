@@ -368,7 +368,7 @@ ssize_t KernelClient::recvFromKernel(void)
 	*/
 
 	do {
-		nl_rx_length = recv(nl_fd, inBuffer.begin(), inBuffer.capacity(), 0);
+		nl_rx_length = recv(nl_fd, inBuffer.cur(), inBuffer.capacityLeft(), 0);
 
 		if (nl_rx_length == -1 && (errno == EAGAIN)) {
 			qDaemonLog(QStringLiteral("FD has no more data."), QDaemonLog::NoticeEntry);
@@ -393,9 +393,9 @@ ssize_t KernelClient::recvFromKernel(void)
 		inBuffer.resize(nl_rx_length); //Resize to the length of the data in buffer
 		inBuffer >> &nlmsg;
 
-		if (!NLMSG_OK((nlmsg), (__u32)nl_rx_length)) {
+		if (!nlmsg || !NLMSG_OK((nlmsg), (__u32)nl_rx_length)) {
 			//qDaemonLog(QStringLiteral("Family ID request : invalid message"), QDaemonLog::ErrorEntry);
-			qDaemonLog(QStringLiteral("Error validating Kernel response: invalid length"), QDaemonLog::ErrorEntry);
+			qDaemonLog(QStringLiteral("Error validating Kernel response: invalid length or nullptr"), QDaemonLog::ErrorEntry);
 			qApp->quit();
 			return -1;
 		}
