@@ -425,6 +425,7 @@ ssize_t KernelClient::recvFromKernel(void)
 			qDaemonLog(QStringLiteral("Error validating Kernel response: receive error"), QDaemonLog::ErrorEntry);
 			//qApp->quit();
 			//return -1;
+			process_error_message(inBuffer);
 			break;
 		case GENL_ID_CTRL: //GENL controller requests.
 			//Request GENL ID.
@@ -642,8 +643,8 @@ void KernelClient::parse_slot_cmd(nlattr *attrs[])
 			pSlot->setRelease(new_slot_state.release);
 			pSlot->setState(new_slot_state.state);
 
-			qDaemonLog(QString("NL: Slot status full=%1, up=%2, down=%3, release=%4, state=%5.")
-			           .arg(full).arg(new_slot_state.up).arg(new_slot_state.down)
+			qDaemonLog(QString("NL: Slot%1/%2 status full=%3, up=%4, down=%5, release=%6, state=%7.")
+			           .arg(*col).arg(*slot).arg(full).arg(new_slot_state.up).arg(new_slot_state.down)
 			           .arg(new_slot_state.release).arg(new_slot_state.state), QDaemonLog::NoticeEntry);
 
 			//if (new_slot_state.state == UNKNOWN) {
@@ -735,6 +736,67 @@ void KernelClient::parse_unit_cmd(nlattr *attrs[])
 		get_nlattr_data(attrs[DISPENSER_GENL_INITIALIZED], &initialized);
 		m_cUnit.setInitialized(*initialized);
 	}
+}
+
+/**
+ * enum nlmsgerr_attrs - nlmsgerr attributes
+ * @NLMSGERR_ATTR_UNUSED: unused
+ * @NLMSGERR_ATTR_MSG: error message string (string)
+ * @NLMSGERR_ATTR_OFFS: offset of the invalid attribute in the original
+ *	 message, counting from the beginning of the header (u32)
+ * @NLMSGERR_ATTR_COOKIE: arbitrary subsystem specific cookie to
+ *	be used - in the success case - to identify a created
+ *	object or operation or similar (binary)
+ * @NLMSGERR_ATTR_POLICY: policy for a rejected attribute
+ * @NLMSGERR_ATTR_MISS_TYPE: type of a missing required attribute,
+ *	%NLMSGERR_ATTR_MISS_NEST will not be present if the attribute was
+ *	missing at the message level
+ * @NLMSGERR_ATTR_MISS_NEST: offset of the nest where attribute was missing
+ * @__NLMSGERR_ATTR_MAX: number of attributes
+ * @NLMSGERR_ATTR_MAX: highest attribute number
+ */
+
+ssize_t KernelClient::process_error_message(Buffer &in)
+{
+	struct nlattr *attr = nullptr;
+	__u16 i = __NLMSGERR_ATTR_MAX * 2;
+	QByteArray str;
+	__u32 *val;
+
+	in >> &attr;
+
+	while (attr && i) {
+		switch (attr->nla_type) {
+		case NLMSGERR_ATTR_UNUSED:
+			break;
+		case NLMSGERR_ATTR_MSG:
+			get_nlattr_data(attr, &str);
+			qDaemonLog(QString("Netlink error: ")+str, QDaemonLog::ErrorEntry);
+			break;
+		case NLMSGERR_ATTR_OFFS:
+			get_nlattr_data(attr, &val);
+			qDaemonLog(QString("Netlink error attribute offset %1.").arg(*val), QDaemonLog::ErrorEntry);
+			break;
+		case NLMSGERR_ATTR_COOKIE:
+			qDaemonLog(QString("Netlink error binary cookie length = %1.").arg(attr->nla_len), QDaemonLog::ErrorEntry);
+			break;
+		case NLMSGERR_ATTR_POLICY:
+			get_nlattr_data(attr, &val);
+			qDaemonLog(QString("Netlink error policy for rejected %1.").arg(*val), QDaemonLog::ErrorEntry);
+			break;
+		case NLMSGERR_ATTR_MISS_TYPE:
+			get_nlattr_data(attr, &val);
+			qDaemonLog(QString("Netlink error type of missing attribute=%1.").arg(*val), QDaemonLog::ErrorEntry);
+			break;
+		case NLMSGERR_ATTR_MISS_NEST:
+			get_nlattr_data(attr, &val);
+			qDaemonLog(QString("Netlink error offset of the missing attribute=%1.").arg(*val), QDaemonLog::ErrorEntry);
+			break;
+		}
+
+	}
+
+	return 0;
 }
 
 void KernelClient::process_control_newfamily(Buffer &in)

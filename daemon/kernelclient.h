@@ -202,6 +202,7 @@ private:
 	void parse_unit_cmd(struct nlattr *attrs[]); //Parse unit status CMD
 
 
+	ssize_t process_error_message(Buffer &in);
 	ssize_t process_control_message(Buffer &in);
 	void process_control_newfamily(Buffer &in);
 	//void process_dispenser_message(Buffer &in);
