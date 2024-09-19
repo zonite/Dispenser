@@ -733,12 +733,14 @@ void KernelClient::process_control_newfamily(Buffer &in)
 	__u16 lenght = 0; //attr->nla_len;
 	char *name = nullptr;
 	__u16 i = CTRL_ATTR_MAX * 2;
+	__u32 *value = 0;
 
 	in >> &attr;
 
 	while (attr && i) {
 		switch (attr->nla_type) {
 		case CTRL_ATTR_UNSPEC:
+			//qDaemonLog(QStringLiteral("Control attributes end."), QDaemonLog::ErrorEntry);
 			break;
 		case CTRL_ATTR_FAMILY_ID: //u16
 			qDaemonLog(QStringLiteral("Netlink Control received family id."), QDaemonLog::ErrorEntry);
@@ -753,15 +755,17 @@ void KernelClient::process_control_newfamily(Buffer &in)
 				correct_family = true;
 			break;
 		case CTRL_ATTR_VERSION: //u32
-			qDaemonLog(QStringLiteral("Netlink Control received version."), QDaemonLog::ErrorEntry);
+			get_nlattr_data(attr, &value);
+			qDaemonLog(QStringLiteral("Netlink Control received version (%1).").arg(*value), QDaemonLog::ErrorEntry);
 			break;
-		case CTRL_ATTR_HDRSIZE: //u32
-			qDaemonLog(QStringLiteral("Netlink Control received hdrsize."), QDaemonLog::ErrorEntry);
+		case CTRL_ATTR_HDRSIZE: //u32 //Size of user specified header
+			get_nlattr_data(attr, &value);
+			qDaemonLog(QStringLiteral("Netlink Control received hdrsize (%1).").arg(*value), QDaemonLog::ErrorEntry);
 			break;
-		case CTRL_ATTR_MAXATTR: //u32
+		case CTRL_ATTR_MAXATTR: //u32 //Size of attr list (dispenser max attr)
 			qDaemonLog(QStringLiteral("Netlink Control received maxattr."), QDaemonLog::ErrorEntry);
 			break;
-		case CTRL_ATTR_OPS:
+		case CTRL_ATTR_OPS: //supported opeations of dispenser, long list
 			qDaemonLog(QStringLiteral("Netlink Control received ops."), QDaemonLog::ErrorEntry);
 			break;
 		case CTRL_ATTR_MCAST_GROUPS:

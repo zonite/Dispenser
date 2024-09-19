@@ -98,6 +98,12 @@ bool Buffer::align(unsigned long bits)
 Buffer &Buffer::operator>>(nlmsghdr **s)
 {
 	seekSet(NLMSG_ALIGN(m_iIterator));
+
+	if (spaceLeft() <= 0 || (unsigned) spaceLeft() < sizeof(nlmsghdr)) {
+		*s = nullptr;
+		return *this;
+	}
+
 	nlmsghdr *cur_pos = (nlmsghdr *) cur();
 
 	if (seekRel(NLMSG_HDRLEN) == -1)
@@ -111,6 +117,12 @@ Buffer &Buffer::operator>>(nlmsghdr **s)
 Buffer &Buffer::operator>>(genlmsghdr **s)
 {
 	seekSet(NLMSG_ALIGN(m_iIterator));
+
+	if (spaceLeft() <= 0 || (unsigned) spaceLeft() < sizeof(genlmsghdr)) {
+		*s = nullptr;
+		return *this;
+	}
+
 	genlmsghdr *cur_pos = (genlmsghdr *) cur();
 
 	if (seekRel(GENL_HDRLEN) == -1)
@@ -124,7 +136,14 @@ Buffer &Buffer::operator>>(genlmsghdr **s)
 Buffer &Buffer::operator>>(nlattr **s)
 {
 	seekSet(NLA_ALIGN(m_iIterator));
+
 	nlattr *cur_pos = (nlattr *) cur();
+
+	if (spaceLeft() <= 0 || (unsigned) spaceLeft() < sizeof(nlattr) || (unsigned) spaceLeft() < cur_pos->nla_len) {
+		*s = nullptr;
+		return *this;
+	}
+
 
 	//if (seekRel(NLA_HDRLEN) == -1)
 	if (seekRel(cur_pos->nla_len) == -1) {
