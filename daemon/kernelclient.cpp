@@ -546,35 +546,35 @@ ssize_t KernelClient::process_control_message(Buffer &in)
 	case CTRL_CMD_UNSPEC:
 		break;
 	case CTRL_CMD_NEWFAMILY: //Return family ID.
-		qDaemonLog(QStringLiteral("Netlink Control received New family."), QDaemonLog::ErrorEntry);
+		qDaemonLog(QStringLiteral("Netlink Control received New family."), QDaemonLog::NoticeEntry);
 		process_control_newfamily(in);
 		break;
 	case CTRL_CMD_DELFAMILY:
-		qDaemonLog(QStringLiteral("Netlink Control received Del family."), QDaemonLog::ErrorEntry);
+		qDaemonLog(QStringLiteral("Netlink Control received Del family."), QDaemonLog::NoticeEntry);
 		break;
 	case CTRL_CMD_GETFAMILY:
-		qDaemonLog(QStringLiteral("Netlink Control received Get family."), QDaemonLog::ErrorEntry);
+		qDaemonLog(QStringLiteral("Netlink Control received Get family."), QDaemonLog::NoticeEntry);
 		break;
 	case CTRL_CMD_NEWOPS:
-		qDaemonLog(QStringLiteral("Netlink Control received New Ops."), QDaemonLog::ErrorEntry);
+		qDaemonLog(QStringLiteral("Netlink Control received New Ops."), QDaemonLog::NoticeEntry);
 		break;
 	case CTRL_CMD_DELOPS:
-		qDaemonLog(QStringLiteral("Netlink Control received Del Ops."), QDaemonLog::ErrorEntry);
+		qDaemonLog(QStringLiteral("Netlink Control received Del Ops."), QDaemonLog::NoticeEntry);
 		break;
 	case CTRL_CMD_GETOPS:
-		qDaemonLog(QStringLiteral("Netlink Control received Get Ops."), QDaemonLog::ErrorEntry);
+		qDaemonLog(QStringLiteral("Netlink Control received Get Ops."), QDaemonLog::NoticeEntry);
 		break;
 	case CTRL_CMD_NEWMCAST_GRP:
-		qDaemonLog(QStringLiteral("Netlink Control received New Mcast."), QDaemonLog::ErrorEntry);
+		qDaemonLog(QStringLiteral("Netlink Control received New Mcast."), QDaemonLog::NoticeEntry);
 		break;
 	case CTRL_CMD_DELMCAST_GRP:
-		qDaemonLog(QStringLiteral("Netlink Control received Del Mcast."), QDaemonLog::ErrorEntry);
+		qDaemonLog(QStringLiteral("Netlink Control received Del Mcast."), QDaemonLog::NoticeEntry);
 		break;
 	case CTRL_CMD_GETMCAST_GRP: /* unused */
-		qDaemonLog(QStringLiteral("Netlink Control received Get Mcast."), QDaemonLog::ErrorEntry);
+		qDaemonLog(QStringLiteral("Netlink Control received Get Mcast."), QDaemonLog::NoticeEntry);
 		break;
 	case CTRL_CMD_GETPOLICY:
-		qDaemonLog(QStringLiteral("Netlink Control received Get Policy."), QDaemonLog::ErrorEntry);
+		qDaemonLog(QStringLiteral("Netlink Control received Get Policy."), QDaemonLog::NoticeEntry);
 		break;
 	}
 
@@ -821,7 +821,7 @@ void KernelClient::process_control_newfamily(Buffer &in)
 	__u16 lenght = 0; //attr->nla_len;
 	char *name = nullptr;
 	__u16 i = CTRL_ATTR_MAX * 2;
-	__u32 *value = 0;
+	__u32 *value = 0, *max_attr = 0;
 
 	in >> &attr;
 
@@ -831,36 +831,45 @@ void KernelClient::process_control_newfamily(Buffer &in)
 			//qDaemonLog(QStringLiteral("Control attributes end."), QDaemonLog::ErrorEntry);
 			break;
 		case CTRL_ATTR_FAMILY_ID: //u16
-			qDaemonLog(QStringLiteral("Netlink Control received family id."), QDaemonLog::ErrorEntry);
 			get_nlattr_data(attr, &family_id);
+			qDaemonLog(QString("Netlink Control received family id %1.").arg(*family_id), QDaemonLog::NoticeEntry);
 			break;
 		case CTRL_ATTR_FAMILY_NAME: //string
-			qDaemonLog(QStringLiteral("Netlink Control received family name."), QDaemonLog::ErrorEntry);
 			lenght = get_nlattr_data(attr, &name);
 			if (lenght > GENL_NAMSIZ)
 				lenght = GENL_NAMSIZ;
-			if (!strncmp(name, DISPENSER_GENL_NAME, lenght))
+			if (!strncmp(name, DISPENSER_GENL_NAME, lenght)) {
 				correct_family = true;
+				qDaemonLog(QString("Netlink Control received CORRECT family name = %1.").arg(name), QDaemonLog::NoticeEntry);
+			} else {
+				qDaemonLog(QString("Netlink Control received WRONG family name = %1.").arg(name), QDaemonLog::ErrorEntry);
+			}
 			break;
 		case CTRL_ATTR_VERSION: //u32
 			get_nlattr_data(attr, &value);
-			qDaemonLog(QStringLiteral("Netlink Control received version (%1).").arg(*value), QDaemonLog::ErrorEntry);
+			qDaemonLog(QStringLiteral("Netlink Control received version (%1).").arg(*value), QDaemonLog::NoticeEntry);
 			break;
 		case CTRL_ATTR_HDRSIZE: //u32 //Size of user specified header
 			get_nlattr_data(attr, &value);
-			qDaemonLog(QStringLiteral("Netlink Control received hdrsize (%1).").arg(*value), QDaemonLog::ErrorEntry);
+			qDaemonLog(QStringLiteral("Netlink Control received hdrsize (%1).").arg(*value), QDaemonLog::NoticeEntry);
 			break;
 		case CTRL_ATTR_MAXATTR: //u32 //Size of attr list (dispenser max attr)
-			qDaemonLog(QStringLiteral("Netlink Control received maxattr."), QDaemonLog::ErrorEntry);
+			get_nlattr_data(attr, &max_attr);
+			if (*max_attr == DISPENSER_GENL_ATTR_MAX) {
+				qDaemonLog(QStringLiteral("Netlink Control received CORRECT maxattr=%1 == %2.").arg(*max_attr).arg(DISPENSER_GENL_ATTR_MAX), QDaemonLog::NoticeEntry);
+			} else {
+				qDaemonLog(QStringLiteral("Netlink Control received WRONG maxattr=%1 == %2.").arg(*max_attr).arg(DISPENSER_GENL_ATTR_MAX), QDaemonLog::ErrorEntry);
+			}
 			break;
 		case CTRL_ATTR_OPS: //supported opeations of dispenser, long list
-			qDaemonLog(QStringLiteral("Netlink Control received ops."), QDaemonLog::ErrorEntry);
+			get_nlattr_data(attr, &value);
+			qDaemonLog(QString("Netlink Control received ops == %1.").arg(*value), QDaemonLog::NoticeEntry);
 			break;
 		case CTRL_ATTR_MCAST_GROUPS:
-			qDaemonLog(QStringLiteral("Netlink Control received groups."), QDaemonLog::ErrorEntry);
+			qDaemonLog(QStringLiteral("Netlink Control received groups."), QDaemonLog::NoticeEntry);
 			break;
 		case CTRL_ATTR_POLICY:
-			qDaemonLog(QStringLiteral("Netlink Control received policy."), QDaemonLog::ErrorEntry);
+			qDaemonLog(QStringLiteral("Netlink Control received policy."), QDaemonLog::NoticeEntry);
 			break;
 		case CTRL_ATTR_OP_POLICY:
 			qDaemonLog(QStringLiteral("Netlink Control received op policy."), QDaemonLog::ErrorEntry);
@@ -1229,7 +1238,7 @@ void KernelClient::getSlotStatus(SlotItem *slot)
 	sendToKernel(&toKernel);
 }
 
-void KernelClient::setUnitStatus() //Fails for some reason...
+void KernelClient::setUnitStatus()
 {
 	KernelStream toKernel;
 	__u8 status = dispenser_pack_unit_status(m_cUnit.getUnitStatus());
