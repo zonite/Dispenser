@@ -25,15 +25,16 @@ static void dispenser_door_event(struct dispenser_gpiod* dev, char closed)
 
 	if (closed) {
 		//Door closed!
-		printk("Door event: Closed %i -> %i\n", !closed, closed);
+		printk("Door event: Closed %i -> %i. GPIO value = %i\n", !closed, closed, *dev->value);
 		dispenser_gpiod_set_tmout(cDispenser.p_sLed, 0, 0);
 		if (jiffies > msecs_to_jiffies(opened + FILL_TIMEOUT))
 			dispenser_unit_filled();
 	} else {
 		//Door opened!
-		printk("Door event: Opened %i -> %i\n", !closed, closed);
+		printk("Door event: Opened %i -> %i. GPIO value = %i\n", !closed, closed, *dev->value);
 		opened = jiffies;
 		dispenser_gpiod_set_tmout(cDispenser.p_sLed, 1, cDispenser.p_sDoor->timeout);
+
 	}
 	dispenser_post_event(DOOR, "Door event", &pDispenser_mmap->unit.door);
 }
@@ -46,14 +47,14 @@ static void dispenser_button_event(struct dispenser_gpiod* dev, char pressed)
 
     if (pressed) {
 	//button pressed
-	printk("Button event: Pressed = %i.\n", pressed);
+	printk("Button event: Pressed = %i. GPIO value = %i.\n", pressed, *dev->value);
 
 	dispenser_gpiod_set(cDispenser.p_sLed, !(*cDispenser.p_sLed->value));
 
 	dispenser_post_event(BUTTON, "Button pressed", &pDispenser_mmap->unit.button);
     } else {
 	//button depressed
-	printk("Button event: Unressed, %i.\n", pressed);
+	printk("Button event: Unressed, %i. GPIO value = %i.\n", pressed, *dev->value);
     }
 }
 
