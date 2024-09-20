@@ -75,9 +75,9 @@ struct dispenser_col_list {
 };
 
 struct dispenser_slot_list {
-	unsigned char slot_id; //
+	unsigned char slot_id; //order num of slot in column
 	unsigned char slot_name;
-	unsigned char slot_num; //
+	unsigned char slot_num; //order num of slot in the list of all slots
 	unsigned char release_delayed; //if set, release when previous opened
 	unsigned char full;
 	//unsigned char col;

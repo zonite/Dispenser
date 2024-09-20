@@ -158,7 +158,7 @@ static int dispenser_unit_init(struct device *dev) {
 		//slot_list[n].col = cols[n];
 		slot_list[n].slot_name = slots[n];
 		slot_list[n].column = col_iterator;
-		slot_list[n].slot_num = n;
+		slot_list[n].slot_num = n; //slot_num is the number of the slot in the list of all slots!
 		if (slot_list[n].slot_num != slot_list[n].slot_id) {
 			printk("Col %u: Slot_num = %u is not slot_id = %u",
 			       col_iterator->col_id, slot_list[n].slot_num, slot_list[n].slot_id);
@@ -246,10 +246,14 @@ static void dispenser_unit_mmap_set(void)
 	dispenser_gpiod_set_pointer(cDispenser.p_sCharge, &pDispenser_mmap->unit.charging);
 	dispenser_gpiod_set_pointer(cDispenser.p_sButton, &pDispenser_mmap->unit.button);
 
+	printk("Unit mmap area %p.", &pDispenser_mmap->unit);
+
 	//daemon expects an UNKNOWN state is uninitialize driver!
 	while (c) {
 		struct dispenser_slot_list *s = c->first;
 		struct dispenser_mmap_column *col_mmap = &pDispenser_mmap[MMAP_COL(c->col_id)].column;
+
+		printk("Col %i mmap area %p.", c->col_id, col_mmap);
 
 		col_mmap->col_id = c->col_id;
 		col_mmap->slot_count = c->slot_count;
@@ -259,6 +263,7 @@ static void dispenser_unit_mmap_set(void)
 			//s->up->value = &s->state->up;
 			//s->down->value = &s->state->down;
 			//s->release->value = &s->state->release;
+			printk("Slot %i/%i mmap area %p.", c->col_id, s->slot_id, s->state);
 			dispenser_gpiod_set_pointer(s->up, &s->state->up);
 			dispenser_gpiod_set_pointer(s->down, &s->state->down);
 			dispenser_gpiod_set_pointer(s->release, &s->state->release);
