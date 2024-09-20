@@ -16,7 +16,7 @@ static struct dispenser_gpiod *dispenser_gpiod_open_index(struct device *dev, co
 	int irq;
 
 	if (IS_ERR(p)) {
-		printk("Dispenser: GPIO allocation failed for '%s', pointer '0x%pX', \n", name, p);
+		printk("Dispenser: GPIO allocation failed for '%s', pointer '0x%px', \n", name, p);
 		return (struct dispenser_gpiod *)NULL;
 	}
 
@@ -66,7 +66,7 @@ static struct dispenser_gpiod *dispenser_gpiod_open_index(struct device *dev, co
 		timer_setup(&out->timer, dispenser_gpiod_tmr_callback, 0);
 
 		irq = gpiod_to_irq(out->gpiod);
-		printk("Setting irq_handler %i, %s, 0x%pX\n", irq, name, out);
+		printk("Setting irq_handler %i, %s, 0x%px\n", irq, name, out);
 		if (request_irq(irq, dispenser_gpiod_irq_handler, IRQF_TRIGGER_RISING | IRQF_TRIGGER_FALLING, name, out) == 0 ){
 			//if (request_irq(irq, irq_handler, IRQF_TRIGGER_HIGH | IRQF_TRIGGER_LOW, name, out) == 0 ){
 			printk("Dispenser: Mapped IRQ nr. %d to gpiod %ld, %s\n", irq, p->flags, p->name);
@@ -99,7 +99,7 @@ static struct dispenser_gpiod *dispenser_gpiod_open_index(struct device *dev, co
 
 static void dispenser_gpiod_close(struct dispenser_gpiod *pgpiod)
 {
-	printk("Close %s GPIO 0x%pX\n", pgpiod->gpiod->name, pgpiod);
+	printk("Close %s GPIO 0x%px\n", pgpiod->gpiod->name, pgpiod);
 	if (timer_pending(&pgpiod->timer)) {
 		printk("Deleting pending timer!\n");
 		del_timer(&pgpiod->timer);
@@ -129,16 +129,16 @@ static void dispenser_gpiod_set(struct dispenser_gpiod *pgpiod, char value)
     if (pgpiod)
 	dispenser_gpiod_set_tmout(pgpiod, value, pgpiod->timeout);
     else
-	printk("GPIO set failed: GPIO NULL 0x%pX\n", pgpiod);
+	printk("GPIO set failed: GPIO NULL 0x%px\n", pgpiod);
 }
 
 static void dispenser_gpiod_set_tmout(struct dispenser_gpiod *pgpiod, char value, unsigned int tmout)
 {
     if (!pgpiod) {
-	printk("GPIO set failed: GPIO NULL 0x%pX\n", pgpiod);
+	printk("GPIO set failed: GPIO NULL 0x%px\n", pgpiod);
 	return;
     }
-    printk("gpio_device_set_tmout 0x%pX, %hhi, %i\n", pgpiod, value, tmout);
+    printk("gpio_device_set_tmout 0x%px, %hhi, %i\n", pgpiod, value, tmout);
 
     gpiod_set_value(pgpiod->gpiod, value);
     *pgpiod->value = value;
@@ -150,17 +150,17 @@ static void dispenser_gpiod_set_tmout(struct dispenser_gpiod *pgpiod, char value
 static void dispenser_gpiod_reset_timer(struct dispenser_gpiod *pgpiod, unsigned int tmout)
 {
     if (!pgpiod) {
-	printk("GPIO set failed: GPIO NULL 0x%pX\n", pgpiod);
+	printk("GPIO set failed: GPIO NULL 0x%px\n", pgpiod);
 	return;
     }
 
     if (tmout) {
 	//callback;
-	printk("Setup timeout %d to 0x%pX.\n", tmout, pgpiod);
+	printk("Setup timeout %d to 0x%px.\n", tmout, pgpiod);
 
 	mod_timer(&pgpiod->timer, jiffies + msecs_to_jiffies(tmout));
     } else if (timer_pending(&pgpiod->timer)) {
-	printk("Delete timer 0x%pX.\n", pgpiod);
+	printk("Delete timer 0x%px.\n", pgpiod);
 	del_timer(&pgpiod->timer);
     }
 }
@@ -171,7 +171,7 @@ static char dispenser_gpiod_get(struct dispenser_gpiod *pgpiod)
     char new_val;
 
     if (!pgpiod || !pgpiod->gpiod || !pgpiod->value) {
-	printk("GPIO set failed: GPIO NULL 0x%pX\n", pgpiod);
+	printk("GPIO set failed: GPIO NULL 0x%px\n", pgpiod);
 	return -1;
     }
 
@@ -191,7 +191,7 @@ static char dispenser_gpiod_get(struct dispenser_gpiod *pgpiod)
 static char dispenser_gpiod_get_debounce(struct dispenser_gpiod *pgpiod)
 {
     if (!pgpiod || !pgpiod->gpiod) {
-	printk("GPIO set failed: GPIO NULL 0x%pX\n", pgpiod);
+	printk("GPIO set failed: GPIO NULL 0x%px\n", pgpiod);
 	return -1;
     }
     mod_timer(&pgpiod->timer, jiffies + msecs_to_jiffies(INT_DEBOUNCE));
@@ -203,7 +203,7 @@ static char dispenser_gpiod_get_debounce(struct dispenser_gpiod *pgpiod)
 static void dispenser_gpiod_out_tmr_callback(struct timer_list *timer)
 {
     struct dispenser_gpiod *pgpiod = from_timer(pgpiod, timer, timer);
-    printk("Timer callback on 0x%pX.\n", pgpiod);
+    printk("Timer callback on 0x%px.\n", pgpiod);
 
     if (pgpiod->value) {
 	dispenser_gpiod_event(pgpiod, 0);
@@ -214,7 +214,7 @@ static void dispenser_gpiod_out_tmr_callback(struct timer_list *timer)
 static void dispenser_gpiod_tmr_callback(struct timer_list *timer)
 {
 	struct dispenser_gpiod *pgpiod = from_timer(pgpiod, timer, timer);
-	printk("Timer callback on 0x%pX.\n", pgpiod);
+	printk("Timer callback on 0x%px.\n", pgpiod);
 
 	if (pgpiod->last + msecs_to_jiffies(INT_DEBOUNCE) > jiffies) {
 		printk("Door: GPIO debounce too early\n");
@@ -245,7 +245,7 @@ static void dispenser_gpiod_set_pointer(struct dispenser_gpiod *pgpiod, volatile
 	*pgpiod->value = gpiod_get_value(pgpiod->gpiod);
 
 	if (*old != *pgpiod->value)
-		printk("GPIOparent %pX value changed during value pointer update %u => %u.", pgpiod->parent, *old, *pgpiod->value);
+		printk("GPIOparent %px value changed during value pointer update %u => %u.", pgpiod->parent, *old, *pgpiod->value);
 }
 
 /*
@@ -254,7 +254,7 @@ static void gpio_timer_door(struct timer_list *timer)
     char old_door, new_door;
     struct dispenser_gpiod *pgpiod = from_timer(pgpiod, timer, timer);
 
-    printk("Door timer callback on 0x%pX.\n", pgpiod);
+    printk("Door timer callback on 0x%px.\n", pgpiod);
 
     old_door = *pgpiod->value;
     new_door = dispenser_gpiod_get(pgpiod);

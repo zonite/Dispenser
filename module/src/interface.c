@@ -32,10 +32,10 @@ static int dispenser_alloc_mmap(void)
 	mem = vmalloc(size);
 
 	pDispenser_mmap = mem;
-	printk("Allocated size(%li) %pX for dispenser mmap.", size, mem);
-	printk("Unit should be %pX", pDispenser_mmap);
-	printk("Cols should be %pX", pDispenser_mmap + 1);
-	printk("Slots should be %pX", pDispenser_mmap + 1 + cDispenser.col_count);
+	printk("Allocated size(%li) %px for dispenser mmap.", size, mem);
+	printk("Unit should be %px", pDispenser_mmap);
+	printk("Cols should be %px", pDispenser_mmap + 1);
+	printk("Slots should be %px", pDispenser_mmap + 1 + cDispenser.col_count);
 
 	if (!pDispenser_mmap) {
 		return -ENOMEM;

@@ -187,7 +187,7 @@ static int dispenser_genl_slot_status(struct sk_buff *sender_buffer, struct  gen
 	attrs = info->attrs;
 
 	if (!attrs[DISPENSER_GENL_COL_NUM] || !attrs[DISPENSER_GENL_SLOT_NUM] ) {
-		printk("Error: no column => %pX or slot => %pX\n", attrs[DISPENSER_GENL_COL_NUM], attrs[DISPENSER_GENL_SLOT_NUM]);
+		printk("Error: no column => %px or slot => %px\n", attrs[DISPENSER_GENL_COL_NUM], attrs[DISPENSER_GENL_SLOT_NUM]);
 		return -EINVAL;
 	}
 
@@ -237,12 +237,12 @@ static int __dispenser_genl_post_slot_status(struct dispenser_slot_list *slot, s
 	u8 col;
 
 	if (!slot) {
-		printk("Invalid slot %pX\n", slot);
+		printk("Invalid slot %px\n", slot);
 		return -EINVAL;
 	}
 
 	if (!slot->column) {
-		printk("Invalid col %pX\n", slot->column);
+		printk("Invalid col %px\n", slot->column);
 		return -EINVAL;
 	}
 
@@ -362,7 +362,7 @@ static int __dispenser_genl_post_col_status(struct dispenser_col_list *col, stru
 	int ret;
 
 	if (!col) {
-		printk("Invalid column %pX\n", col);
+		printk("Invalid column %px\n", col);
 		return -EINVAL;
 	}
 

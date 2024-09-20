@@ -9,7 +9,7 @@ static int dispenser_post_event(enum eventtype type, const char *name, volatile 
 
 static void dispenser_gpiod_event(struct dispenser_gpiod* dev, char new_val)
 {
-	printk("GPIOD Event: set %pX, %i => %i.", dev->value, *dev->value, new_val);
+	printk("GPIOD Event: set %px, %i => %i.", dev->value, *dev->value, new_val);
 	*dev->value = new_val;
 	dev->event_handler(dev, new_val);
 	//post_event
@@ -21,7 +21,7 @@ static void dispenser_door_event(struct dispenser_gpiod* dev, char closed)
 	static unsigned long opened = -1;
 
 	if (dev != cDispenser.p_sDoor) {
-		printk("Dispenser: Door event, GPIOD != p_sDoor, 0x%pX != 0x%pX\n", dev, cDispenser.p_sDoor);
+		printk("Dispenser: Door event, GPIOD != p_sDoor, 0x%px != 0x%px\n", dev, cDispenser.p_sDoor);
 	}
 
 	if (closed) {
@@ -44,7 +44,7 @@ static void dispenser_door_event(struct dispenser_gpiod* dev, char closed)
 static void dispenser_button_event(struct dispenser_gpiod* dev, char pressed)
 {
     if (dev != cDispenser.p_sButton) {
-	printk("Dispenser: Button event, GPIOD != p_sButton, 0x%pX != 0x%pX\n", dev, cDispenser.p_sButton);
+	printk("Dispenser: Button event, GPIOD != p_sButton, 0x%px != 0x%px\n", dev, cDispenser.p_sButton);
     }
 
     if (pressed) {
@@ -64,7 +64,7 @@ static void dispenser_button_event(struct dispenser_gpiod* dev, char pressed)
 static void dispenser_charge_event(struct dispenser_gpiod* dev, char charging)
 {
     if (dev != cDispenser.p_sCharge) {
-	printk("Dispenser: Charge event, GPIOD != p_sCharge, 0x%pX != 0x%pX\n", dev, cDispenser.p_sCharge);
+	printk("Dispenser: Charge event, GPIOD != p_sCharge, 0x%px != 0x%px\n", dev, cDispenser.p_sCharge);
     }
 
     if (charging) {
@@ -84,7 +84,7 @@ static void dispenser_charge_event(struct dispenser_gpiod* dev, char charging)
 static void dispenser_light_event(struct dispenser_gpiod* dev, char on)
 {
     if (dev != cDispenser.p_sLed) {
-	printk("Dispenser: Light event, GPIOD != p_sLed, 0x%pX != 0x%pX\n", dev, cDispenser.p_sLed);
+	printk("Dispenser: Light event, GPIOD != p_sLed, 0x%px != 0x%px\n", dev, cDispenser.p_sLed);
     }
 
     if (on) {
