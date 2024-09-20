@@ -141,7 +141,7 @@ void UnitItem::setCounter(__u8 i)
 
 void UnitItem::setDoor(char state)
 {
-	qDaemonLog(QString("Set door = %1").arg(state), QDaemonLog::NoticeEntry);
+	qDaemonLog(QString("Set door = %1").arg(QString::number(state)), QDaemonLog::NoticeEntry);
 	if (state == m_sUnit.door)
 		return;
 
@@ -151,7 +151,7 @@ void UnitItem::setDoor(char state)
 
 void UnitItem::setNight(char state)
 {
-	qDaemonLog(QString("Set night = %1").arg(state), QDaemonLog::NoticeEntry);
+	qDaemonLog(QString("Set night = %1").arg(QString::number(state)), QDaemonLog::NoticeEntry);
 	if (state == m_sUnit.night)
 		return;
 
@@ -161,7 +161,7 @@ void UnitItem::setNight(char state)
 
 void UnitItem::setLight(char state)
 {
-	qDaemonLog(QString("Set light = %1").arg(state), QDaemonLog::NoticeEntry);
+	qDaemonLog(QString("Set light = %1").arg(QString::number(state)), QDaemonLog::NoticeEntry);
 	if (state == m_sUnit.light)
 		return;
 
@@ -171,7 +171,7 @@ void UnitItem::setLight(char state)
 
 void UnitItem::setCharging(char state)
 {
-	qDaemonLog(QString("Set charging = %1").arg(state), QDaemonLog::NoticeEntry);
+	qDaemonLog(QString("Set charging = %1").arg(QString::number(state)), QDaemonLog::NoticeEntry);
 	if (state == m_sUnit.charging)
 		return;
 

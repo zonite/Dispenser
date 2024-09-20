@@ -710,7 +710,11 @@ void KernelClient::parse_unit_cmd(nlattr *attrs[])
 		m_cUnit.setNight(received_unit_data.night);
 		m_cUnit.setCharging(received_unit_data.charging);
 		m_cUnit.setLight(received_unit_data.light);
-		qDaemonLog(QString("NL: Unit status door=%1, night=%2, charge=%3, light=%4.").arg((char)received_unit_data.door).arg(received_unit_data.night).arg(received_unit_data.charging).arg(received_unit_data.light), QDaemonLog::NoticeEntry);
+		qDaemonLog(QString("NL: Unit status door=%1, night=%2, charge=%3, light=%4.")
+		           .arg(QString::number(received_unit_data.door))
+		           .arg(QString::number(received_unit_data.night))
+		           .arg(QString::number(received_unit_data.charging))
+		           .arg(QString::number(received_unit_data.light)), QDaemonLog::NoticeEntry);
 	}
 
 	if (attrs[DISPENSER_GENL_COL_NUM]) {
