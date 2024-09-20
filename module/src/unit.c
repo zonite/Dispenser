@@ -272,7 +272,7 @@ static void dispenser_unit_mmap_set(void)
 			else
 				s->state->state = CLOSING;
 
-			if (s->state->state == OPEN)
+			if (s->state->state == CLOSED)
 				s->full = 1;
 
 			s = s->next;
