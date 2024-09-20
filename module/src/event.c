@@ -9,7 +9,7 @@ static int dispenser_post_event(enum eventtype type, const char *name, volatile 
 
 static void dispenser_gpiod_event(struct dispenser_gpiod* dev, char new_val)
 {
-	printk("GPIOD Event: set %p, %i => %i.", dev->value, *dev->value, new_val);
+	printk("GPIOD Event: set %pX, %i => %i.", dev->value, *dev->value, new_val);
 	*dev->value = new_val;
 	dev->event_handler(dev, new_val);
 	//post_event
@@ -21,7 +21,7 @@ static void dispenser_door_event(struct dispenser_gpiod* dev, char closed)
 	static unsigned long opened = -1;
 
 	if (dev != cDispenser.p_sDoor) {
-		printk("Dispenser: Door event, GPIOD != p_sDoor, 0x%p != 0x%p\n", dev, cDispenser.p_sDoor);
+		printk("Dispenser: Door event, GPIOD != p_sDoor, 0x%pX != 0x%pX\n", dev, cDispenser.p_sDoor);
 	}
 
 	if (closed) {
@@ -37,13 +37,14 @@ static void dispenser_door_event(struct dispenser_gpiod* dev, char closed)
 		dispenser_gpiod_set_tmout(cDispenser.p_sLed, 1, cDispenser.p_sDoor->timeout);
 
 	}
+	if (cDispenser.initialized) __dispenser_genl_post_unit_status(NULL);
 	dispenser_post_event(DOOR, "Door event", &pDispenser_mmap->unit.door);
 }
 
 static void dispenser_button_event(struct dispenser_gpiod* dev, char pressed)
 {
     if (dev != cDispenser.p_sButton) {
-	printk("Dispenser: Button event, GPIOD != p_sButton, 0x%p != 0x%p\n", dev, cDispenser.p_sButton);
+	printk("Dispenser: Button event, GPIOD != p_sButton, 0x%pX != 0x%pX\n", dev, cDispenser.p_sButton);
     }
 
     if (pressed) {
@@ -57,12 +58,13 @@ static void dispenser_button_event(struct dispenser_gpiod* dev, char pressed)
 	//button depressed
 	printk("Button event: Unressed, %i. GPIO value = %i.\n", pressed, *dev->value);
     }
+    if (cDispenser.initialized) __dispenser_genl_post_unit_status(NULL);
 }
 
 static void dispenser_charge_event(struct dispenser_gpiod* dev, char charging)
 {
     if (dev != cDispenser.p_sCharge) {
-	printk("Dispenser: Charge event, GPIOD != p_sCharge, 0x%p != 0x%p\n", dev, cDispenser.p_sCharge);
+	printk("Dispenser: Charge event, GPIOD != p_sCharge, 0x%pX != 0x%pX\n", dev, cDispenser.p_sCharge);
     }
 
     if (charging) {
@@ -76,12 +78,13 @@ static void dispenser_charge_event(struct dispenser_gpiod* dev, char charging)
 
 	dispenser_post_event(CHARGE, "Dispenser not charging", &pDispenser_mmap->unit.charging);
     }
+    if (cDispenser.initialized) __dispenser_genl_post_unit_status(NULL);
 }
 
 static void dispenser_light_event(struct dispenser_gpiod* dev, char on)
 {
     if (dev != cDispenser.p_sLed) {
-	printk("Dispenser: Light event, GPIOD != p_sLed, 0x%p != 0x%p\n", dev, cDispenser.p_sLed);
+	printk("Dispenser: Light event, GPIOD != p_sLed, 0x%pX != 0x%pX\n", dev, cDispenser.p_sLed);
     }
 
     if (on) {
@@ -93,6 +96,7 @@ static void dispenser_light_event(struct dispenser_gpiod* dev, char on)
 	dispenser_gpiod_set_tmout(cDispenser.p_sLed, 0, 0);
 	dispenser_post_event(LED, "Light off.\n", &pDispenser_mmap->unit.light);
     }
+    if (cDispenser.initialized) __dispenser_genl_post_unit_status(NULL);
 }
 
 static void dispenser_up_event(struct dispenser_gpiod* dev, char new_val)
@@ -125,6 +129,7 @@ static void dispenser_up_event(struct dispenser_gpiod* dev, char new_val)
 			printk("Dispenser: %s failed up release: up = %i, down = %i, release = %i\n", dev->gpiod->name, slot->state->up, slot->state->down, slot->state->release);
 		}
 	}
+	if (slot->initialized) __dispenser_genl_post_slot_status(slot, NULL);
 }
 
 static void dispenser_down_event(struct dispenser_gpiod* dev, char new_val)
@@ -160,6 +165,7 @@ static void dispenser_down_event(struct dispenser_gpiod* dev, char new_val)
 			printk("Dispenser: %s failed closing: up = %i, down = %i, release = %i\n", dev->gpiod->name, slot->state->up, slot->state->down, slot->state->release);
 		}
 	}
+	if (slot->initialized) __dispenser_genl_post_slot_status(slot, NULL);
 }
 
 static void dispenser_release_event(struct dispenser_gpiod* dev, char new_val)
@@ -196,6 +202,7 @@ static void dispenser_release_event(struct dispenser_gpiod* dev, char new_val)
 	}
 	dispenser_gpiod_set_tmout(dev, 0, 0);
 	printk("Dispenser: Release %s success.\n", dev->gpiod->name);
+	if (slot->initialized) __dispenser_genl_post_slot_status(slot, NULL);
     }
 }
 

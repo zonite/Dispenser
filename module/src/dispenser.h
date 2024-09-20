@@ -15,6 +15,8 @@
 #include <linux/timer.h>
 #include <linux/jiffies.h>
 
+#include <net/genetlink.h>
+
 #include <dispenser.h>
 
 #include "dt-bindings/dispenser.h"
@@ -63,6 +65,7 @@ struct dispenser_private {
 	unsigned long mmap_size;
 	unsigned char col_count;
 	unsigned char slot_count;
+	unsigned char initialized;
 };
 
 struct dispenser_col_list {
@@ -80,6 +83,7 @@ struct dispenser_slot_list {
 	unsigned char slot_num; //order num of slot in the list of all slots
 	unsigned char release_delayed; //if set, release when previous opened
 	unsigned char full;
+	unsigned char initialized;
 	//unsigned char col;
 	struct dispenser_mmap_slot *state;
 	struct dispenser_gpiod *up;
@@ -216,6 +220,9 @@ static void dispenser_release_event(struct dispenser_gpiod* dev, char new_val);
 /* Netlink Generic */
 static int dispenser_genl_init(void);
 static void dispenser_genl_exit(void);
+//send events to userspace.
+static int __dispenser_genl_post_unit_status(struct genl_info *info);
+static int __dispenser_genl_post_slot_status(struct dispenser_slot_list *slot, struct  genl_info *info);
 
 
 /* Env */

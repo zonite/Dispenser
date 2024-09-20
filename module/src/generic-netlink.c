@@ -187,7 +187,7 @@ static int dispenser_genl_slot_status(struct sk_buff *sender_buffer, struct  gen
 	attrs = info->attrs;
 
 	if (!attrs[DISPENSER_GENL_COL_NUM] || !attrs[DISPENSER_GENL_SLOT_NUM] ) {
-		printk("Error: no column => %p or slot => %p\n", attrs[DISPENSER_GENL_COL_NUM], attrs[DISPENSER_GENL_SLOT_NUM]);
+		printk("Error: no column => %pX or slot => %pX\n", attrs[DISPENSER_GENL_COL_NUM], attrs[DISPENSER_GENL_SLOT_NUM]);
 		return -EINVAL;
 	}
 
@@ -209,6 +209,7 @@ static int dispenser_genl_slot_status(struct sk_buff *sender_buffer, struct  gen
 		dispenser_unpack_slot_status(status, &new_state, &full);
 		dispenser_unit_set_slot_state(slot, &new_state, &full);
 		//dispenser_unpack_slot_status(status, slot->state, &slot->full);
+		slot->initialized = true;
 	}
 
 	if (attrs[DISPENSER_GENL_SLOT_FAILED_UP]) {
@@ -236,12 +237,12 @@ static int __dispenser_genl_post_slot_status(struct dispenser_slot_list *slot, s
 	u8 col;
 
 	if (!slot) {
-		printk("Invalid slot %p\n", slot);
+		printk("Invalid slot %pX\n", slot);
 		return -EINVAL;
 	}
 
 	if (!slot->column) {
-		printk("Invalid col %p\n", slot->column);
+		printk("Invalid col %pX\n", slot->column);
 		return -EINVAL;
 	}
 
@@ -361,7 +362,7 @@ static int __dispenser_genl_post_col_status(struct dispenser_col_list *col, stru
 	int ret;
 
 	if (!col) {
-		printk("Invalid column %p\n", col);
+		printk("Invalid column %pX\n", col);
 		return -EINVAL;
 	}
 
@@ -449,6 +450,7 @@ static int dispenser_genl_unit_status(struct sk_buff *sender_buffer, struct  gen
 	if (attrs[DISPENSER_GENL_INITIALIZED]) {
 		ret = nla_get_u8(attrs[DISPENSER_GENL_INITIALIZED]);
 		unit->initialized = ret;
+		cDispenser.initialized = ret;
 	}
 
 	return __dispenser_genl_post_unit_status(info);

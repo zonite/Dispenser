@@ -89,6 +89,7 @@ KernelClient::KernelClient(QObject *parent)
 
         connect(&m_cUnit, &UnitItem::releaseEvent, this, &KernelClient::releaseUnit);
 	connect(&m_cUnit, &UnitItem::newCol, this, &KernelClient::connectCol);
+	connect(&m_cUnit, &UnitItem::initialized, this, &KernelClient::setUnitStatus);
 }
 
 void KernelClient::connectCol(ColItem *col)
@@ -129,6 +130,9 @@ void KernelClient::start(const QStringList &arguments)
 	}
 
 	qDebug() << "Dispenser Kernel Daemon started. NL family id" << nl_family_id;
+
+	if (nl_family_id == -1)
+		qApp->quit();
 
 	if (!m_pServer)
 		m_pServer = new WebSocketServer(port, this);
@@ -413,6 +417,8 @@ ssize_t KernelClient::recvFromKernel(void)
 			continue;
 		}
 
+		enableEvents();
+
 		//Process standard messages
 		switch (nlmsg->nlmsg_type) {
 		case NLMSG_NOOP: //No-op. skip message.
@@ -456,7 +462,11 @@ ssize_t KernelClient::recvFromKernel(void)
 
 void KernelClient::enableEvents()
 {
+	static bool enabled = false;
 	int flags = 0;
+
+	if (enabled)
+		return;
 
 	if (m_pKernel) {
 		//m_pKernel = new QSocketNotifier(nl_fd, QSocketNotifier::Read, this);
@@ -467,6 +477,7 @@ void KernelClient::enableEvents()
 		fcntl(nl_fd, F_SETFL, flags | O_NONBLOCK);
 
 		m_pKernel->setEnabled(true);
+		enabled = true;
 	}
 }
 
@@ -1252,7 +1263,7 @@ void KernelClient::setUnitStatus()
 
 	initRequest(&toKernel, DISPENSER_GENL_CMD_UNIT_STATUS);
 	nl_attr_put(&toKernel, DISPENSER_GENL_UNIT_STATUS, status);
-	nl_attr_put(&toKernel, DISPENSER_GENL_INITIALIZED, true);
+	nl_attr_put(&toKernel, DISPENSER_GENL_INITIALIZED, m_cUnit.daemonInitialized());
 	sendToKernel(&toKernel);
 }
 

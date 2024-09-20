@@ -66,7 +66,7 @@ static int dispenser_unit_init(struct device *dev) {
 		kfree(slots);
 		return FAIL;
 	}
-	printk("0 column 0x%p\n", col_list);
+	printk("0 column 0x%pX\n", col_list);
 
 	cols = (unsigned char *)kzalloc(sizeof(unsigned char) * i, GFP_KERNEL);
 	if (!cols) {
@@ -120,7 +120,7 @@ static int dispenser_unit_init(struct device *dev) {
 						return FAIL;
 					}
 
-					printk("%i column 0x%p\n", col_iterator->col_id + 1, col_iterator->next);
+					printk("%i column 0x%pX\n", col_iterator->col_id + 1, col_iterator->next);
 
 					col_iterator->next->col_name = cols[n];
 					col_iterator->next->col_id = col_iterator->col_id + 1;
@@ -140,7 +140,7 @@ static int dispenser_unit_init(struct device *dev) {
 			while (s->next) {
 				s = s->next;
 				if (s == s->next) {
-					printk("Error: ring linking! 0x%p\n", s);
+					printk("Error: ring linking! 0x%pX\n", s);
 					s->next = NULL;
 				}
 			}
@@ -207,7 +207,7 @@ static int dispenser_unit_init(struct device *dev) {
 		//}
 		//slot_list[n].
 		s = &slot_list[n];
-		printk("New slot[%i] pos %i%i (0x%p): name = %i, id = %i, slot_num = %i, prev 0x%p, next 0x%p\n", n, s->column->col_id, s->slot_id, s, s->slot_name, s->slot_id, s->slot_num, s->prev, s->next);
+		printk("New slot[%i] pos %i%i (0x%pX): name = %i, id = %i, slot_num = %i, prev 0x%pX, next 0x%pX\n", n, s->column->col_id, s->slot_id, s, s->slot_name, s->slot_id, s->slot_num, s->prev, s->next);
 	}
 
 	slot_list[0].prev = NULL;
@@ -218,7 +218,7 @@ static int dispenser_unit_init(struct device *dev) {
 	kfree(slots);
 	kfree(cols);
 
-	printk("Unit Finished: col 0 = 0x%p, col 1 = 0x%p, prev = 0x%p, col_ite 0x%p (%i, %i), col_ite_prev 0x%p, col_ite_next 0x%p\n", cDispenser.cols, cDispenser.cols->next, cDispenser.cols->prev, col_iterator, col_iterator->col_id, col_iterator->col_name, col_iterator->prev, col_iterator->next);
+	printk("Unit Finished: col 0 = 0x%pX, col 1 = 0x%pX, prev = 0x%pX, col_ite 0x%pX (%i, %i), col_ite_prev 0x%pX, col_ite_next 0x%pX\n", cDispenser.cols, cDispenser.cols->next, cDispenser.cols->prev, col_iterator, col_iterator->col_id, col_iterator->col_name, col_iterator->prev, col_iterator->next);
 
 	return SUCCESS;
 }
@@ -246,14 +246,14 @@ static void dispenser_unit_mmap_set(void)
 	dispenser_gpiod_set_pointer(cDispenser.p_sCharge, &pDispenser_mmap->unit.charging);
 	dispenser_gpiod_set_pointer(cDispenser.p_sButton, &pDispenser_mmap->unit.button);
 
-	printk("Unit mmap area %p.", &pDispenser_mmap->unit);
+	printk("Unit mmap area %pX.", &pDispenser_mmap->unit);
 
 	//daemon expects an UNKNOWN state is uninitialize driver!
 	while (c) {
 		struct dispenser_slot_list *s = c->first;
 		struct dispenser_mmap_column *col_mmap = &pDispenser_mmap[MMAP_COL(c->col_id)].column;
 
-		printk("Col %i mmap area %p.", c->col_id, col_mmap);
+		printk("Col %i mmap area %pX.", c->col_id, col_mmap);
 
 		col_mmap->col_id = c->col_id;
 		col_mmap->slot_count = c->slot_count;
@@ -263,7 +263,7 @@ static void dispenser_unit_mmap_set(void)
 			//s->up->value = &s->state->up;
 			//s->down->value = &s->state->down;
 			//s->release->value = &s->state->release;
-			printk("Slot %i/%i mmap area %p.", c->col_id, s->slot_id, s->state);
+			printk("Slot %i/%i mmap area %pX.", c->col_id, s->slot_id, s->state);
 			dispenser_gpiod_set_pointer(s->up, &s->state->up);
 			dispenser_gpiod_set_pointer(s->down, &s->state->down);
 			dispenser_gpiod_set_pointer(s->release, &s->state->release);
@@ -532,7 +532,7 @@ static void dispenser_unit_release_column(struct dispenser_col_list *col, char s
 	struct dispenser_slot_list *slot = col->first;
 
 	if (!col || !slot) {
-		printk("Dispenser: Error release NULL, col = 0x%p, slot = 0x%p\n", col, slot);
+		printk("Dispenser: Error release NULL, col = 0x%pX, slot = 0x%pX\n", col, slot);
 		return;
 	}
 
@@ -681,7 +681,7 @@ static void dispenser_unit_set_slot_down_failed(struct dispenser_slot_list *slot
 	    const int *colnum;
 	    struct device_node *slot = NULL;
 
-	    printk("Processing child 0x%p in unit 0x%p\n", col, unit);
+	    printk("Processing child 0x%pX in unit 0x%pX\n", col, unit);
 
 	    if (!col) {
 		printk("Error, NULL col child pointer\n");
@@ -689,7 +689,7 @@ static void dispenser_unit_set_slot_down_failed(struct dispenser_slot_list *slot
 	    }
 
 	    if (++i > 100) {
-		printk("Iteration limit reached! i == %i, col = 0x%p\n", i, col);
+		printk("Iteration limit reached! i == %i, col = 0x%pX\n", i, col);
 		break;
 	    }
 
@@ -706,7 +706,7 @@ static void dispenser_unit_set_slot_down_failed(struct dispenser_slot_list *slot
 		struct gpio_desc *gpio;
 //                unsigned long lookupflags = GPIO_LOOKUP_FLAGS_DEFAULT;
 
-		printk("Processing slot 0x%p in col 0x%p\n", slot, col);
+		printk("Processing slot 0x%pX in col 0x%pX\n", slot, col);
 
 		if (!slot) {
 		    printk("Error, NULL slot child pointer\n");
@@ -714,7 +714,7 @@ static void dispenser_unit_set_slot_down_failed(struct dispenser_slot_list *slot
 		}
 
 		if (++i > 100) {
-		    printk("Iteration limit reached! i == %i, col = 0x%p, slot == 0x%p\n", i, col, slot);
+		    printk("Iteration limit reached! i == %i, col = 0x%pX, slot == 0x%pX\n", i, col, slot);
 		    break;
 		}
 
@@ -731,21 +731,21 @@ static void dispenser_unit_set_slot_down_failed(struct dispenser_slot_list *slot
 		    printk("GPIO allocation failed! gpio == %li.\n", (long)gpio);
 		    printk("Dispenser found %d slot in column %d\n", slotnum ? be32_to_cpu(*slotnum) : -1, colnum ? be32_to_cpu(*colnum) : -1);
 		} else {
-		    printk("Dispenser found %d slot in column %d, up = %p, hw_num = %d\n", slotnum ? be32_to_cpu(*slotnum) : -1, colnum ? be32_to_cpu(*colnum) : -1, gpio, desc_to_gpio(gpio));
+		    printk("Dispenser found %d slot in column %d, up = %pX, hw_num = %d\n", slotnum ? be32_to_cpu(*slotnum) : -1, colnum ? be32_to_cpu(*colnum) : -1, gpio, desc_to_gpio(gpio));
 		    gpiod_put(gpio);
 		}
 		gpio = gpiod_get_index(dev, "up", k, GPIOD_IN);
 		if (IS_ERR(gpio)) {
 		    printk("Error gettin gpio %li, k = %i", (long)gpio, k);
 		} else {
-		    printk("Got gpio at index k = %i, 0x%p, hw = %i", k, gpio, desc_to_gpio(gpio));
+		    printk("Got gpio at index k = %i, 0x%pX, hw = %i", k, gpio, desc_to_gpio(gpio));
 		    gpiod_put(gpio);
 		}
 		gpio = gpiod_get_index(NULL, "up", ++k, GPIOD_IN);
 		if (IS_ERR(gpio)) {
 		    printk("Error gettin gpio %li, k = %i", (long)gpio, k);
 		} else {
-		    printk("Got gpio at index k = %i, 0x%p, hw = %i", k, gpio, desc_to_gpio(gpio));
+		    printk("Got gpio at index k = %i, 0x%pX, hw = %i", k, gpio, desc_to_gpio(gpio));
 		    gpiod_put(gpio);
 		}
 
@@ -753,7 +753,7 @@ static void dispenser_unit_set_slot_down_failed(struct dispenser_slot_list *slot
 		if (IS_ERR(gpio)) {
 		    printk("Error gettin gpio %li, k = %i", (long)gpio, k);
 		} else {
-		    printk("Got gpio at index k = %i, 0x%p, hw = %i", k, gpio, desc_to_gpio(gpio));
+		    printk("Got gpio at index k = %i, 0x%pX, hw = %i", k, gpio, desc_to_gpio(gpio));
 		    gpiod_put(gpio);
 		}
 
@@ -797,10 +797,10 @@ static void dispenser_unit_set_slot_down_failed(struct dispenser_slot_list *slot
 	slot_dev = of_platform_device_create(slot, "", dev);
     }
 
-    printk("Found unit device_node 0x%p and unit device 0x%p, by path 0x%p, by struct 0x%p\n", unit, test, unit2, unit3);
-    printk("Name unit3 %s, col %s, unit4 0x%p = %s\n", unit3->name, col->name, unit4, unit4->name);
+    printk("Found unit device_node 0x%pX and unit device 0x%pX, by path 0x%pX, by struct 0x%pX\n", unit, test, unit2, unit3);
+    printk("Name unit3 %s, col %s, unit4 0x%pX = %s\n", unit3->name, col->name, unit4, unit4->name);
 
-    printk("Slot 0x%p %s, device 0x%p", slot, slot->name, slot_dev);
+    printk("Slot 0x%pX %s, device 0x%pX", slot, slot->name, slot_dev);
 
     if (slot_dev && !device_property_present(&slot_dev->dev, "up-gpio")) {
 	printk("Dispenser - probe error! up-gpio not found\n");

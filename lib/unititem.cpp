@@ -217,6 +217,9 @@ void UnitItem::addCol()
 
 void UnitItem::checkInitialized()
 {
+	if (m_bInitialized)
+		return;
+
 	for (int i = 0; i < m_cCols.size(); ++i) {
 		const ColItem *col = &m_cCols.at(i);
 		const QVector<SlotItem> *Slots = col->getSlots();
