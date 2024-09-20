@@ -120,7 +120,7 @@ static int dispenser_unit_init(struct device *dev) {
 						return FAIL;
 					}
 
-					printk("%i column 0x%pX\n", col_iterator->col_id + 1, col_iterator->next);
+					printk("%i column pX 0x%pX px 0x%px 0x%lx\n", col_iterator->col_id + 1, col_iterator->next, col_iterator->next, col_iterator->next);
 
 					col_iterator->next->col_name = cols[n];
 					col_iterator->next->col_id = col_iterator->col_id + 1;
