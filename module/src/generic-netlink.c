@@ -186,8 +186,8 @@ static int dispenser_genl_slot_status(struct sk_buff *sender_buffer, struct  gen
 
 	attrs = info->attrs;
 
-	if (!attrs[DISPENSER_GENL_COL_NUM] || attrs[DISPENSER_GENL_SLOT_NUM] ) {
-		printk("Error: no column or slot\n");
+	if (!attrs[DISPENSER_GENL_COL_NUM] || !attrs[DISPENSER_GENL_SLOT_NUM] ) {
+		printk("Error: no column => %u or slot => %u\n", attrs[DISPENSER_GENL_COL_NUM], attrs[DISPENSER_GENL_SLOT_NUM]);
 		return -EINVAL;
 	}
 
