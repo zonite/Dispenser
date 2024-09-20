@@ -233,11 +233,19 @@ static int __dispenser_genl_post_slot_status(struct dispenser_slot_list *slot, s
 	u8 status = 0;
 	static u32 seq = 0;
 	int ret;
+	u8 col;
 
 	if (!slot) {
 		printk("Invalid slot %p\n", slot);
 		return -EINVAL;
 	}
+
+	if (!slot->column) {
+		printk("Invalid col %p\n", slot->column);
+		return -EINVAL;
+	}
+
+	col = slot->column->col_id;
 
 	// Send the status:
 
@@ -260,6 +268,18 @@ static int __dispenser_genl_post_slot_status(struct dispenser_slot_list *slot, s
 	if (reply_header == NULL) {
 		printk("Header memory error.\n");
 		return -ENOMEM;
+	}
+
+	ret = nla_put_u8(reply_buffer, DISPENSER_GENL_COL_NUM, col);
+	if (ret) {
+		printk("Error adding col num to message.\n");
+		return -ret;
+	}
+
+	ret = nla_put_u8(reply_buffer, DISPENSER_GENL_SLOT_NUM, slot->slot_id);
+	if (ret) {
+		printk("Error adding col num to message.\n");
+		return -ret;
 	}
 
 	ret = nla_put_u8(reply_buffer, DISPENSER_GENL_SLOT_STATUS, status);

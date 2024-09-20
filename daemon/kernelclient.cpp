@@ -504,7 +504,7 @@ void KernelClient::process_dispenser_message(Buffer &in)
 		break;
 
 	case DISPENSER_GENL_CMD_COL_STATUS: //u8 col, u8 slot, u32 counter
-		qDaemonLog(QStringLiteral("Slot Status Info"), QDaemonLog::NoticeEntry);
+		qDaemonLog(QStringLiteral("Col Status Info"), QDaemonLog::NoticeEntry);
 		parse_col_cmd(attrs);
 		break;
 

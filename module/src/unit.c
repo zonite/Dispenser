@@ -11,210 +11,216 @@ static char UP_TEXT[] = "Dispenser[  ].up";
 static char DOWN_TEXT[] = "Dispenser[  ].down";
 static char RELEASE_TEXT[] = "Dispenser[  ].release";
 
+//FIX FIX FIX
+
 static int dispenser_unit_init(struct device *dev) {
-    int i = 0, n = 0;
-    //, k = -1;
-    //unsigned char col = 0;
-    //struct device_node *unit = of_get_child_by_name(dev->of_node, DEVICE_UNIT);
-    struct dispenser_slot_list *slot_list = NULL, *s = NULL;
-    struct dispenser_col_list *col_list = NULL, *col_iterator;
-    unsigned char *slots = NULL, *cols = NULL;
-    //struct gpio_descs *up = NULL, *down = NULL, *release = NULL;
+	int i = 0, n = 0;
+	//, k = -1;
+	//unsigned char col = 0;
+	//struct device_node *unit = of_get_child_by_name(dev->of_node, DEVICE_UNIT);
+	struct dispenser_slot_list *slot_list = NULL, *s = NULL;
+	struct dispenser_col_list *col_list = NULL, *col_iterator;
+	unsigned char *slots = NULL, *cols = NULL;
+	//struct gpio_descs *up = NULL, *down = NULL, *release = NULL;
 
-    i = device_property_count_u8(dev, "cols");
-    if (device_property_count_u8(dev, "slots") != i) {
-	printk("Dispenser: Incorrect count slots\n");
-	return FAIL;
-    }
+	i = device_property_count_u8(dev, "cols");
+	if (device_property_count_u8(dev, "slots") != i) {
+		printk("Dispenser: Incorrect count slots\n");
+		return FAIL;
+	}
 
-    //i = i * 3; //gpios have 3 per property
+	//i = i * 3; //gpios have 3 per property
 
-    if (device_property_count_u32(dev, "up-gpio") != i * 3) {
-	printk("Dispenser: Incorrect count up-gpio %i != %i\n", device_property_count_u32(dev, "up-gpio"), i);
-	return FAIL;
-    }
+	if (device_property_count_u32(dev, "up-gpio") != i * 3) {
+		printk("Dispenser: Incorrect count up-gpio %i != %i\n", device_property_count_u32(dev, "up-gpio"), i);
+		return FAIL;
+	}
 
-    if (device_property_count_u32(dev, "down-gpio") != i * 3) {
-	printk("Dispenser: Incorrect count down-gpio\n");
-	return FAIL;
-    }
+	if (device_property_count_u32(dev, "down-gpio") != i * 3) {
+		printk("Dispenser: Incorrect count down-gpio\n");
+		return FAIL;
+	}
 
-    if (device_property_count_u32(dev, "release-gpio") != i * 3) {
-	printk("Dispenser: Incorrect count release-gpio\n");
-	return FAIL;
-    }
+	if (device_property_count_u32(dev, "release-gpio") != i * 3) {
+		printk("Dispenser: Incorrect count release-gpio\n");
+		return FAIL;
+	}
 
-    slot_list = (struct dispenser_slot_list *)kzalloc(sizeof(struct dispenser_slot_list) * i, GFP_KERNEL);
-    if (!slot_list) {
-	printk("Mem allocation failed: slot_list.\n");
-	return FAIL;
-    }
+	slot_list = (struct dispenser_slot_list *)kzalloc(sizeof(struct dispenser_slot_list) * i, GFP_KERNEL);
+	if (!slot_list) {
+		printk("Mem allocation failed: slot_list.\n");
+		return FAIL;
+	}
 
-    slots = (unsigned char *)kmalloc(sizeof(unsigned char) * i, GFP_KERNEL);
-    if (!slots) {
-	printk("Mem allocation failed: slots.\n");
-	kfree(slot_list);
-	return FAIL;
-    }
+	slots = (unsigned char *)kmalloc(sizeof(unsigned char) * i, GFP_KERNEL);
+	if (!slots) {
+		printk("Mem allocation failed: slots.\n");
+		kfree(slot_list);
+		return FAIL;
+	}
 
-    col_list = (struct dispenser_col_list *)kzalloc(sizeof(struct dispenser_col_list), GFP_KERNEL);
-    if (!col_list) {
-	printk("Mem allocation failed: slot_list.\n");
-	kfree(slot_list);
-	kfree(slots);
-	return FAIL;
-    }
-    printk("0 column 0x%p\n", col_list);
+	col_list = (struct dispenser_col_list *)kzalloc(sizeof(struct dispenser_col_list), GFP_KERNEL);
+	if (!col_list) {
+		printk("Mem allocation failed: slot_list.\n");
+		kfree(slot_list);
+		kfree(slots);
+		return FAIL;
+	}
+	printk("0 column 0x%p\n", col_list);
 
-    cols = (unsigned char *)kzalloc(sizeof(unsigned char) * i, GFP_KERNEL);
-    if (!cols) {
-	printk("Mem allocation failed: slots.\n");
-	kfree(col_list);
-	kfree(slot_list);
-	kfree(slots);
-	return FAIL;
-    }
+	cols = (unsigned char *)kzalloc(sizeof(unsigned char) * i, GFP_KERNEL);
+	if (!cols) {
+		printk("Mem allocation failed: slots.\n");
+		kfree(col_list);
+		kfree(slot_list);
+		kfree(slots);
+		return FAIL;
+	}
 
-    if (device_property_read_u8_array(dev, "slots", slots, i)) {
-	printk("Array read failed: slots.\n");
-	kfree(col_list);
-	kfree(slot_list);
-	kfree(slots);
-	kfree(cols);
-	return FAIL;
-    }
+	if (device_property_read_u8_array(dev, "slots", slots, i)) {
+		printk("Array read failed: slots.\n");
+		kfree(col_list);
+		kfree(slot_list);
+		kfree(slots);
+		kfree(cols);
+		return FAIL;
+	}
 
-    if (device_property_read_u8_array(dev, "cols", cols, i)) {
-	printk("Array read failed: cols.\n");
-	kfree(col_list);
-	kfree(slot_list);
-	kfree(slots);
-	kfree(cols);
-	return FAIL;
-    }
+	if (device_property_read_u8_array(dev, "cols", cols, i)) {
+		printk("Array read failed: cols.\n");
+		kfree(col_list);
+		kfree(slot_list);
+		kfree(slots);
+		kfree(cols);
+		return FAIL;
+	}
 
-    col_list->col_name = cols[0];
-    //col_list->first = slot_list;
-    col_iterator = col_list;
-    cDispenser.col_count = 1;
-    cDispenser.cols = col_list;
+	col_list->col_name = cols[0];
+	//col_list->first = slot_list;
+	col_iterator = col_list;
+	cDispenser.col_count = 1;
+	cDispenser.cols = col_list;
 
-    for (n = 0; n < i; ++n ) {
-	//slots[n].up = gpiod_get_index(dev, "up", n, GPIOD_IN);
-	if (col_iterator->col_name != cols[n]) {
-		//Different column:
-		printk("Different column, name = %i != cols[%i] = %i, id = %i, slots = %i\n", col_iterator->col_name, n, cols[n], col_iterator->col_id, col_iterator->slot_count);
-	    col_iterator = col_list; //Reset to first column
-	    do { //Iterate columns
-		if (!col_iterator->next) { //col_iterator == NULL : no column found! End of list!
-			col_iterator->next = (struct dispenser_col_list *)kzalloc(sizeof(struct dispenser_col_list), GFP_KERNEL);
-		    col_iterator->next->prev = col_iterator; //Double linking
+	for (n = 0; n < i; ++n ) {
+		//slots[n].up = gpiod_get_index(dev, "up", n, GPIOD_IN);
+		if (col_iterator->col_name != cols[n]) {
+			//Different column:
+			printk("Different column, name = %i != cols[%i] = %i, id = %i, slots = %i\n", col_iterator->col_name, n, cols[n], col_iterator->col_id, col_iterator->slot_count);
+			col_iterator = col_list; //Reset to first column
+			do { //Iterate columns
+				if (!col_iterator->next) { //col_iterator == NULL : no column found! End of list!
+					col_iterator->next = (struct dispenser_col_list *)kzalloc(sizeof(struct dispenser_col_list), GFP_KERNEL);
+					col_iterator->next->prev = col_iterator; //Double linking
 
-		    if (!col_iterator->next) {
-			printk("Mem allocation failed: slot_list.\n");
+					if (!col_iterator->next) {
+						printk("Mem allocation failed: slot_list.\n");
+						dispenser_unit_close();
+						kfree(slots);
+						kfree(cols);
+						return FAIL;
+					}
+
+					printk("%i column 0x%p\n", col_iterator->col_id + 1, col_iterator->next);
+
+					col_iterator->next->col_name = cols[n];
+					col_iterator->next->col_id = col_iterator->col_id + 1;
+					++cDispenser.col_count;
+
+					printk("Finished column name = %i, id = %i, slots = %i\n", col_iterator->col_name, col_iterator->col_id, col_iterator->slot_count);
+				}
+				col_iterator = col_iterator->next;
+				printk("New column name = %i, id = %i, slots = %i\n", col_iterator->col_name, col_iterator->col_id, col_iterator->slot_count);
+			} while (col_iterator->col_name != cols[n]);
+		}
+
+		//Slot list linking:
+		if (col_iterator->first) {
+			s = col_iterator->first;
+
+			while (s->next) {
+				s = s->next;
+				if (s == s->next) {
+					printk("Error: ring linking! 0x%p\n", s);
+					s->next = NULL;
+				}
+			}
+
+			//s points to last slot.
+			s->next = &slot_list[n];
+			slot_list[n].prev = s;
+			slot_list[n].slot_id = s->slot_id + 1;
+		} else {
+			col_iterator->first = &slot_list[n];
+		}
+
+		++col_iterator->slot_count;
+
+		//slot_list[n].col = cols[n];
+		slot_list[n].slot_name = slots[n];
+		slot_list[n].column = col_iterator;
+		slot_list[n].slot_num = n;
+		if (slot_list[n].slot_num != slot_list[n].slot_id) {
+			printk("Col %u: Slot_num = %u is not slot_id = %u",
+			       col_iterator->col_id, slot_list[n].slot_num, slot_list[n].slot_id);
+		}
+
+		UP_TEXT[10] = '0' + col_iterator->col_id;
+		UP_TEXT[11] = '0' + slot_list[n].slot_id;
+		DOWN_TEXT[10] = '0' + col_iterator->col_id;
+		DOWN_TEXT[11] = '0' + slot_list[n].slot_id;
+		RELEASE_TEXT[10] = '0' + col_iterator->col_id;
+		RELEASE_TEXT[11] = '0' + slot_list[n].slot_id;
+
+		slot_list[n].up = dispenser_gpiod_open_index(dev, "up", n, GPIOD_IN);
+		slot_list[n].down = dispenser_gpiod_open_index(dev, "down", n, GPIOD_IN);
+		slot_list[n].release = dispenser_gpiod_open_index(dev, "release", n, GPIOD_OUT_LOW);
+
+		if (!slot_list[n].up || !slot_list[n].down || !slot_list[n].release) {
+			printk("GPIOD allocation failed.\n");
+
 			dispenser_unit_close();
 			kfree(slots);
 			kfree(cols);
+
 			return FAIL;
-		    }
-
-		    printk("%i column 0x%p\n", col_iterator->col_id + 1, col_iterator->next);
-
-		    col_iterator->next->col_name = cols[n];
-		    col_iterator->next->col_id = col_iterator->col_id + 1;
-		    ++cDispenser.col_count;
-
-		    printk("Finished column name = %i, id = %i, slots = %i\n", col_iterator->col_name, col_iterator->col_id, col_iterator->slot_count);
 		}
-		col_iterator = col_iterator->next;
-		printk("New column name = %i, id = %i, slots = %i\n", col_iterator->col_name, col_iterator->col_id, col_iterator->slot_count);
-	    } while (col_iterator->col_name != cols[n]);
+
+		slot_list[n].up->timeout = cDispenser.iFailTimeout;
+		slot_list[n].up->event_handler = dispenser_up_event;
+		slot_list[n].up->parent = &slot_list[n];
+
+		slot_list[n].down->timeout = cDispenser.iFailTimeout;
+		slot_list[n].down->event_handler = dispenser_down_event;
+		slot_list[n].down->parent = &slot_list[n];
+
+		slot_list[n].release->timeout = cDispenser.iFailTimeout;
+		slot_list[n].release->event_handler = dispenser_release_event;
+		slot_list[n].release->parent = &slot_list[n];
+
+		dispenser_gpiod_rename(slot_list[n].up, UP_TEXT);
+		dispenser_gpiod_rename(slot_list[n].down, DOWN_TEXT);
+		dispenser_gpiod_rename(slot_list[n].release, RELEASE_TEXT);
+
+		//if (cols[n] == cols[(n + 1) % n]) {
+		//    slot_list[n].next = &slot_list[n + 1];
+		//    slot_list[n + 1].prev = &slot_list[n];
+		//}
+		//slot_list[n].
+		s = &slot_list[n];
+		printk("New slot[%i] pos %i%i (0x%p): name = %i, id = %i, slot_num = %i, prev 0x%p, next 0x%p\n", n, s->column->col_id, s->slot_id, s, s->slot_name, s->slot_id, s->slot_num, s->prev, s->next);
 	}
 
-	//Slot list linking:
-	if (col_iterator->first) {
-		s = col_iterator->first;
+	slot_list[0].prev = NULL;
+	slot_list[i - 1].next = NULL;
 
-	    while (s->next) {
-		s = s->next;
-		if (s == s->next) {
-			printk("Error: ring linking! 0x%p\n", s);
-		    s->next = NULL;
-		}
-	    }
+	cDispenser.slot_count = i;
 
-	    //s points to last slot.
-	    s->next = &slot_list[n];
-	    slot_list[n].prev = s;
-	    slot_list[n].slot_id = s->slot_id + 1;
-	} else {
-		col_iterator->first = &slot_list[n];
-	}
+	kfree(slots);
+	kfree(cols);
 
-	++col_iterator->slot_count;
+	printk("Unit Finished: col 0 = 0x%p, col 1 = 0x%p, prev = 0x%p, col_ite 0x%p (%i, %i), col_ite_prev 0x%p, col_ite_next 0x%p\n", cDispenser.cols, cDispenser.cols->next, cDispenser.cols->prev, col_iterator, col_iterator->col_id, col_iterator->col_name, col_iterator->prev, col_iterator->next);
 
-	//slot_list[n].col = cols[n];
-	slot_list[n].slot_name = slots[n];
-	slot_list[n].column = col_iterator;
-	slot_list[n].slot_num = n;
-
-	UP_TEXT[10] = '0' + col_iterator->col_id;
-	UP_TEXT[11] = '0' + slot_list[n].slot_id;
-	DOWN_TEXT[10] = '0' + col_iterator->col_id;
-	DOWN_TEXT[11] = '0' + slot_list[n].slot_id;
-	RELEASE_TEXT[10] = '0' + col_iterator->col_id;
-	RELEASE_TEXT[11] = '0' + slot_list[n].slot_id;
-
-	slot_list[n].up = dispenser_gpiod_open_index(dev, "up", n, GPIOD_IN);
-	slot_list[n].down = dispenser_gpiod_open_index(dev, "down", n, GPIOD_IN);
-	slot_list[n].release = dispenser_gpiod_open_index(dev, "release", n, GPIOD_OUT_LOW);
-
-	if (!slot_list[n].up || !slot_list[n].down || !slot_list[n].release) {
-		printk("GPIOD allocation failed.\n");
-
-	    dispenser_unit_close();
-	    kfree(slots);
-	    kfree(cols);
-
-	    return FAIL;
-	}
-
-	slot_list[n].up->timeout = cDispenser.iFailTimeout;
-	slot_list[n].up->event_handler = dispenser_up_event;
-	slot_list[n].up->parent = &slot_list[n];
-
-	slot_list[n].down->timeout = cDispenser.iFailTimeout;
-	slot_list[n].down->event_handler = dispenser_down_event;
-	slot_list[n].down->parent = &slot_list[n];
-
-	slot_list[n].release->timeout = cDispenser.iFailTimeout;
-	slot_list[n].release->event_handler = dispenser_release_event;
-	slot_list[n].release->parent = &slot_list[n];
-
-	dispenser_gpiod_rename(slot_list[n].up, UP_TEXT);
-	dispenser_gpiod_rename(slot_list[n].down, DOWN_TEXT);
-	dispenser_gpiod_rename(slot_list[n].release, RELEASE_TEXT);
-
-	//if (cols[n] == cols[(n + 1) % n]) {
-	//    slot_list[n].next = &slot_list[n + 1];
-	//    slot_list[n + 1].prev = &slot_list[n];
-	//}
-	//slot_list[n].
-	s = &slot_list[n];
-	printk("New slot[%i] pos %i%i (0x%p): name = %i, id = %i, slot_num = %i, prev 0x%p, next 0x%p\n", n, s->column->col_id, s->slot_id, s, s->slot_name, s->slot_id, s->slot_num, s->prev, s->next);
-    }
-
-    slot_list[0].prev = NULL;
-    slot_list[i - 1].next = NULL;
-
-    cDispenser.slot_count = i;
-
-    kfree(slots);
-    kfree(cols);
-
-    printk("Unit Finished: col 0 = 0x%p, col 1 = 0x%p, prev = 0x%p, col_ite 0x%p (%i, %i), col_ite_prev 0x%p, col_ite_next 0x%p\n", cDispenser.cols, cDispenser.cols->next, cDispenser.cols->prev, col_iterator, col_iterator->col_id, col_iterator->col_name, col_iterator->prev, col_iterator->next);
-
-    return SUCCESS;
+	return SUCCESS;
 }
 
 static void dispenser_unit_mmap_set(void)
