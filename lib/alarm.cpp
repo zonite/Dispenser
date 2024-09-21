@@ -409,7 +409,7 @@ bool cmp(const Alarm &a, const Alarm &b)
 }
 
 void Alarm::timeout() {
-	qDaemonLog(QString("Alarm timed out at %1.").arg(QTime::currentTime().toString("%h:%s")), QDaemonLog::NoticeEntry);
+	qDaemonLog(QString("Alarm timed out at %1.").arg(QTime::currentTime().toString("hh:ss")), QDaemonLog::NoticeEntry);
 	if (checkDay())
 		emit releaseTimeout(this);
 }
