@@ -201,7 +201,10 @@ static void dispenser_release_event(struct dispenser_gpiod* dev, char new_val)
 		return;
 	}
 	dispenser_gpiod_set_tmout(dev, 0, 0);
-	printk("Dispenser: Release %s success.\n", dev->gpiod->name);
+	if (slot->pendingRelease) {
+		printk("Dispenser: Release %s success.\n", dev->gpiod->name);
+	}
+	slot->pendingRelease = 0;
 	if (slot->initialized) __dispenser_genl_post_slot_status(slot, NULL);
     }
 }

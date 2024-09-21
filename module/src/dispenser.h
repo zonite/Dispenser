@@ -82,7 +82,8 @@ struct dispenser_slot_list {
 	unsigned char slot_name;
 	unsigned char slot_num; //order num of slot in the list of all slots
 	unsigned char release_delayed; //if set, release when previous opened
-	unsigned char full;
+	unsigned char full; //becomes full when closed
+	unsigned char pendingRelease; //1 when full and pending a release (not counted full when calculating for new release)
 	unsigned char initialized;
 	//unsigned char col;
 	struct dispenser_mmap_slot *state;

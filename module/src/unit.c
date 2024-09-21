@@ -378,22 +378,32 @@ static void dispenser_unit_close()
 static char dispenser_unit_get_full(void)
 {
 	struct dispenser_col_list *c = cDispenser.cols;
-	char count = 0;
+	char count = 0, i = 0;
 
-	while (c) {
+	while (c && i < cDispenser.col_count) {
 		count += dispenser_unit_get_full_column(c);
+		c = c->next;
+		++i;
 	}
+
+	printk("Dispenser has %i units to release.", count);
 
 	return count;
 }
 
 static char dispenser_unit_get_full_column(struct dispenser_col_list *c)
 {
-	struct dispenser_slot_list *s = c->first;
-	char count = 0;
+	struct dispenser_slot_list *s = NULL;
+	char count = 0, i = 0;
 
-	while (s) {
+	if (c) {
+		s = c->first;
+	}
+
+	while (s && i < c->slot_count) {
 		count += s->full;
+		s = s->next;
+		++i;
 	}
 
 	return count;
@@ -401,50 +411,43 @@ static char dispenser_unit_get_full_column(struct dispenser_col_list *c)
 
 static void dispenser_unit_release_count(char count, char force)
 {
-	struct dispenser_col_list **c = NULL, *ci = NULL;
-	struct dispenser_slot_list **s = NULL;
-	char count_avail = 0, *col_count = NULL;
-	int i = 0;
+	char count_avail = 0, cur_count = 0;
+	struct dispenser_col_list *col = NULL, *target = NULL;
+	int i = 0, j = 0;
 
 	count_avail = dispenser_unit_get_full();
 
-	if (count >= count_avail)
-		return dispenser_unit_release_all(force);
-
-	count_avail = 0;
-
-	c = kzalloc(sizeof(c) * cDispenser.col_count, GFP_KERNEL);
-	s = kzalloc(sizeof(s) * cDispenser.col_count, GFP_KERNEL);
-	col_count = kzalloc(sizeof(char) * cDispenser.col_count, GFP_KERNEL);
-
-	ci = cDispenser.cols;
-
-	while (ci && i < cDispenser.col_count) {
-		c[i] = ci;
-		s[i] = ci->first;
-		ci = ci->next;
-		++i;
+	if (count_avail == 0) {
+		printk("Dispenser is empty! No release...");
+		//Todo emit error!
+		return;
 	}
 
-	do {
-		ci = NULL;
-		for (i = 0; i < cDispenser.col_count; ++i) {
-			if (s[i]) {
-				col_count[i] += s[i]->full;
-				count_avail += s[i]->full;
-				s[i] = s[i]->next;
-				ci = c[i];
+	if (!cDispenser.cols) {
+		printk("col pointer invalid");
+		return;
+	}
+
+	for (i = 0; i < count; ++i) {
+		col = cDispenser.cols;
+		target = col;
+		count_avail = dispenser_unit_get_full_column(col);
+
+		j = cDispenser.col_count;
+		while (col->next && j) {
+			col = col->next;
+			cur_count = dispenser_unit_get_full_column(col);
+			if (cur_count > count_avail) {
+				count_avail = cur_count;
+				target = col;
 			}
+			--j;
 		}
-	} while (count_avail < count && ci);
-
-	for (i = 0; i < cDispenser.col_count; ++i) {
-		dispenser_unit_release_column(c[i], col_count[i], force);
+		printk("Release from col %px", target);
+		dispenser_unit_release_column(target, 1, force);
 	}
 
-	kfree(c);
-	kfree(s);
-	kfree(col_count);
+	return;
 }
 
 static int dispenser_unit_release(char column, char slot)
@@ -544,16 +547,26 @@ static void dispenser_unit_release_slot(struct dispenser_slot_list *slot, char c
 	//dispenser_gpiod_set(slot->release, 1);
 	unsigned char prev_full = 0, next_count = count;
 
+	if (!slot) {
+		printk("Slot = nullptr dispenser_unit_release_slot");
+		return;
+	}
+
 	if (slot->prev && !force)
 		prev_full = slot->prev->full;
 
-	if (slot->full)
+	if (slot->full) {
 		--next_count;
+		slot->full = 0;
+		slot->pendingRelease = 1;
+		//Todo FIX me emit release!
+	}
 
 	if (prev_full) { //Delayed release
 		printk("Delayed release %i/%i.\n", slot->column->col_id, slot->slot_id);
 		slot->release_delayed = 1;
 		force = 0;
+		dispenser_release_event(slot->release, 1);
 	} else { //Immediate release
 		printk("Immediate release %i/%i.\n", slot->column->col_id, slot->slot_id);
 		slot->release_delayed = 0;
