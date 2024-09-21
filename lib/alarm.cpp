@@ -1,6 +1,7 @@
 #include "alarm.h"
 
 #include <QTime>
+#include<QDaemonLog>
 
 //qRegisterMetaTypeStreamOperators<QList<Alarm>>("Alarm");
 
@@ -53,10 +54,12 @@ void Alarm::setParent(const Timer *parent)
 
 		if (unit) {
 			connect(this, &Alarm::releaseTimeout, unit, &UnitItem::releaseTimeout);
+			qDaemonLog(QString("Alarms connected to unit."), QDaemonLog::NoticeEntry);
 		}
 
 		if (col) {
 			connect(this, &Alarm::releaseTimeout, col, &ColItem::releaseTimeout);
+			qDaemonLog(QString("Alarms connected to col."), QDaemonLog::NoticeEntry);
 		}
 
 		connectTimer();
@@ -301,7 +304,13 @@ void Alarm::setSeconds(qint32 seconds)
 {
 	m_iSeconds = seconds % 86400;
 
+	connectTimer();
 	startTimer();
+	qDaemonLog(QString("Alarm started. Currect time is %1. Alarm is at %2:%3. To go %4s.")
+	           .arg(QTime::currentTime().toString("%h:%s"))
+	           .arg(m_iSeconds / 3600).arg((m_iSeconds / 60) % 60)
+	           .arg(m_cTimer.remainingTime() / 60000)
+	           , QDaemonLog::NoticeEntry);
 }
 
 //template<typename T>
@@ -398,6 +407,7 @@ bool cmp(const Alarm &a, const Alarm &b)
 }
 
 void Alarm::timeout() {
+	qDaemonLog(QString("Alarm timed out at %1.").arg(QTime::currentTime().toString("%h:%s")), QDaemonLog::NoticeEntry);
 	if (checkDay())
 		emit releaseTimeout(this);
 }
