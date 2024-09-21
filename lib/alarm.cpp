@@ -307,7 +307,7 @@ void Alarm::setSeconds(qint32 seconds)
 	connectTimer();
 	startTimer();
 	qDaemonLog(QString("Alarm started. Currect time is %1. Alarm is at %2:%3. To go %4min.")
-	           .arg(QTime::currentTime().toString("hh:ss"))
+	           .arg(QTime::currentTime().toString("hh:mm"))
 	           .arg(m_iSeconds / 3600).arg((m_iSeconds / 60) % 60)
 	           .arg(m_cTimer.remainingTime() / 60000)
 	           , QDaemonLog::NoticeEntry);
@@ -409,7 +409,7 @@ bool cmp(const Alarm &a, const Alarm &b)
 }
 
 void Alarm::timeout() {
-	qDaemonLog(QString("Alarm timed out at %1.").arg(QTime::currentTime().toString("hh:ss")), QDaemonLog::NoticeEntry);
+	qDaemonLog(QString("Alarm timed out at %1.").arg(QTime::currentTime().toString("hh:mm")), QDaemonLog::NoticeEntry);
 	if (checkDay())
 		emit releaseTimeout(this);
 }

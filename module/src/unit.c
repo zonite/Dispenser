@@ -551,9 +551,11 @@ static void dispenser_unit_release_slot(struct dispenser_slot_list *slot, char c
 		--next_count;
 
 	if (prev_full) { //Delayed release
+		printk("Delayed release %i/%i.\n", slot->column->col_id, slot->slot_id);
 		slot->release_delayed = 1;
 		force = 0;
 	} else { //Immediate release
+		printk("Immediate release %i/%i.\n", slot->column->col_id, slot->slot_id);
 		slot->release_delayed = 0;
 		dispenser_release_event(slot->release, 1);
 	}

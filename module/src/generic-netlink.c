@@ -160,13 +160,16 @@ static int dispenser_genl_release(struct sk_buff *sender_buffer, struct  genl_in
 
 		if (attrs[DISPENSER_GENL_SLOT_NUM]) {
 			s = nla_get_u8(attrs[DISPENSER_GENL_SLOT_NUM]);
+			printk("Genetlink: release from col/slot %i/%i.\n", c, s);
 			return dispenser_unit_release(c, s); //release specific slot
 		}
 
+		printk("Genetlink: release from col %i.\n", c);
 		dispenser_unit_release_column(col, count, force); //release from column
 		return 0;
-	}
 
+	}
+	printk("Genetlink: release from unit.\n", c);
 	dispenser_unit_release_count(count, force); //release from unit
 
 	return 0;
