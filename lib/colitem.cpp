@@ -1,5 +1,6 @@
 #include "colitem.h"
 
+#include <QTime>
 #include <QDaemonLog>
 
 #include "unititem.h"
@@ -100,6 +101,12 @@ char ColItem::getId() const
 void ColItem::releaseTimeout(Alarm *alarm)
 {
 	Q_UNUSED(alarm);
+
+	qDaemonLog(QString("Col %4: Release timeout at %1. Is active %2, next in %3s")
+	           .arg(QTime::currentTime().toString("hh:mm:ss"))
+	           .arg(alarm->isActive())
+	           .arg(alarm->getRemaining() / 1000)
+	           .arg(m_sCol.col_id), QDaemonLog::NoticeEntry);
 
 	emit releaseEvent(this);
 }
