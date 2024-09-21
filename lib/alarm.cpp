@@ -53,12 +53,12 @@ void Alarm::setParent(const Timer *parent)
 		const ColItem *col = dynamic_cast<const ColItem *>(m_pParent);
 
 		if (unit) {
-			connect(this, &Alarm::releaseTimeout, unit, &UnitItem::releaseTimeout);
+			connect(this, &Alarm::releaseTimeout, unit, &UnitItem::releaseTimeout, Qt::QueuedConnection);
 			qDaemonLog(QString("Alarms connected to unit."), QDaemonLog::NoticeEntry);
 		}
 
 		if (col) {
-			connect(this, &Alarm::releaseTimeout, col, &ColItem::releaseTimeout);
+			connect(this, &Alarm::releaseTimeout, col, &ColItem::releaseTimeout, Qt::QueuedConnection);
 			qDaemonLog(QString("Alarms connected to col."), QDaemonLog::NoticeEntry);
 		}
 
@@ -346,6 +346,16 @@ bool Alarm::checkDay()
 QString Alarm::getTimevalue() const
 {
 	return QString("%1:%2").arg(getSeconds() / 3600 ).arg(getSeconds() / 60 % 60);
+}
+
+int Alarm::getRemaining()
+{
+	return m_cTimer.remainingTime();
+}
+
+bool Alarm::isRunning()
+{
+	return m_cTimer.isActive();
 }
 
 //template<typename T>

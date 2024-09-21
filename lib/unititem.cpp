@@ -248,6 +248,11 @@ void UnitItem::releaseTimeout(Alarm *alarm)
 
 	emit releaseEvent(this);
 
+	qDaemonLog(QString("Unit: Release timeout at %1. Is active %2, next in %3s")
+	           .arg(QTime::currentTime().toString("hh:mm:ss"))
+	           .arg(alarm->isActive())
+	           .arg(alarm->getRemaining() / 1000), QDaemonLog::NoticeEntry);
+
 	/*
 	int weekday = QDate::currentDate().dayOfWeek();
 

@@ -98,6 +98,8 @@ public:
 	qint32 getSeconds() const { return m_iSeconds; }
 	QString getTimevalue() const;
 	enum weekdays getDays() const { return m_iActive; }
+	int getRemaining();
+	bool isActive();
 
 public slots:
 	void timeout();
