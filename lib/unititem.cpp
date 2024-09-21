@@ -93,6 +93,8 @@ UnitItem::UnitItem(QObject *parent)
 		m_pAlarms.insert(20 * 3600, new Alarm(this, 20 * 3600, EVERYDAY));
 	}
 
+	saveAlarms();
+
 	qDaemonLog(QString("Alarms are set. Count = %1").arg(m_pAlarms.count()), QDaemonLog::NoticeEntry);
 
 	//Alarm::clean(m_cAlarms);
