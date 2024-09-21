@@ -149,9 +149,9 @@ private slots:
 	void connectCol(ColItem *col);
 
 	//Releasing:
-	void release(__s8 col = -1, __s8 slot = -1, bool force = false, int count = 1); //release now
+	void release(__s8 col = -1, __s8 slot = -1, bool force = false, __u8 count = 1); //release now
 	void release(SlotItem *slot, bool force = false); //release now
-	void release(ColItem *col, bool force = false, int count = 1); //release now
+	void release(ColItem *col, bool force = false, __u8 count = 1); //release now
 
 	void releaseUnit(UnitItem *unit);
 	void releaseCol(ColItem *col);

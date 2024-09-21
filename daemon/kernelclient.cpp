@@ -1382,7 +1382,7 @@ void KernelClient::setRelease(Alarm *alarm)
 }
 */
 
-void KernelClient::release(__s8 col, __s8 slot, bool force, int count)
+void KernelClient::release(__s8 col, __s8 slot, bool force, __u8 count)
 {
 	KernelStream toKernel;
 	if (count > 0 && force)
@@ -1406,7 +1406,7 @@ void KernelClient::release(SlotItem *slot, bool force)
 		return release(slot->getCol()->getId(), slot->getId(), force);
 }
 
-void KernelClient::release(ColItem *col, bool force, int count)
+void KernelClient::release(ColItem *col, bool force, __u8 count)
 {
 	if (col)
 		return release(col->getId(), -1, force, count);
