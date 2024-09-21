@@ -42,6 +42,18 @@ Alarm::Alarm(const Timer *parent, const int *i)
 //void Alarm<T>::setParent(const QObject *parent)
 void Alarm::setParent(const Timer *parent)
 {
+	if (m_pParent == parent) {
+		qDaemonLog(QString("Parent set two times!"), QDaemonLog::NoticeEntry);
+		return;
+	}
+
+	if (m_pParent) {
+		qDaemonLog(QString("Parent already set!"), QDaemonLog::NoticeEntry);
+		return;
+	}
+
+	connectTimer();
+
 	m_pParent = parent;
 
 	if (m_pParent) {
@@ -62,7 +74,7 @@ void Alarm::setParent(const Timer *parent)
 			qDaemonLog(QString("Alarms connected to col.").arg(QString::number((long long int)this)), QDaemonLog::NoticeEntry);
 		}
 
-		connectTimer();
+		//connectTimer();
 	}
 }
 
@@ -304,7 +316,6 @@ void Alarm::setSeconds(qint32 seconds)
 {
 	m_iSeconds = seconds % 86400;
 
-	connectTimer();
 	startTimer();
 	qDaemonLog(QString("Alarm started. Currect time is %1. Alarm is at %2:%3. To go %4min.")
 	           .arg(QTime::currentTime().toString("hh:mm"))
@@ -376,13 +387,14 @@ void Alarm::startTimer()
 //template<typename T>
 void Alarm::connectTimer()
 {
+	connect(&m_cTimer, &QTimer::timeout, this, &Alarm::timeout);
+
 	m_cTimer.setTimerType(Qt::VeryCoarseTimer);
 	m_cTimer.setInterval(24 * 3600 * 1000);
 
 	//QObject::connect(&m_cTimer, &QTimer::timeout, this, &Alarm::timeout);
 	//connect(&m_cTimer, &QTimer::timeout, this, &Alarm<T>::timeout);
 	//connect(&m_cTimer, &QTimer::timeout, this, &AlarmSignalsSlots::timeout);
-	connect(&m_cTimer, &QTimer::timeout, this, &Alarm::timeout);
 }
 
 //template<typename T>
@@ -420,7 +432,7 @@ bool cmp(const Alarm &a, const Alarm &b)
 }
 
 void Alarm::timeout() {
-	qDaemonLog(QString("Alarm timed out at %1.").arg(QTime::currentTime().toString("hh:mm")), QDaemonLog::NoticeEntry);
+	qDaemonLog(QString("Alarm timed out at %1.").arg(QTime::currentTime().toString("hh:mm:ss")), QDaemonLog::NoticeEntry);
 	if (checkDay())
 		emit releaseTimeout(this);
 }
