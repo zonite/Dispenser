@@ -1008,6 +1008,7 @@ int KernelClient::open_and_bind_socket()
 	memset(&nl_address, 0, sizeof(nl_address));
 	// tell the socket (nl_address) that we use NETLINK address family
 	nl_address.nl_family = AF_NETLINK;
+	nl_address.nl_groups = DISPENSER_GENL_MCGROUP_MASK; //nl group mask
 
 	if (bind(nl_fd, (struct sockaddr *)&nl_address, sizeof(nl_address)) < 0) {
 		//close(nl_fd);

@@ -28,6 +28,7 @@
 
 #define DISPENSER_GENL_NAME "dispenser_genl"
 #define DISPENSER_GENL_GROUP 1
+#define DISPENSER_GENL_MCGROUP_MASK (1 << (DISPENSER_GENL_GROUP - 1))
 
 /**
  * Dispenser Daemon config

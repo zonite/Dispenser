@@ -40,6 +40,7 @@ SlotItem::~SlotItem()
 	m_cSettings.setValue("failed_down", m_sSlot.down_failed);
 	m_cSettings.endGroup();
 
+	m_cSettings.sync();
 }
 
 void SlotItem::setState(__u8 state)
@@ -51,6 +52,7 @@ void SlotItem::setState(__u8 state)
 		bool full;
 		char up, down, release;
 		int failed_up, failed_down;
+
 
 		m_cSettings.beginGroup(QStringLiteral("Col%1Slot%2").arg(col).arg(m_iSlotId));
 		saved_state = (enum slot_state) m_cSettings.value("state", UNKNOWN).toInt();
@@ -90,6 +92,7 @@ void SlotItem::setState(__u8 state)
 	m_bInitialized = true;
 
 	if (state != m_sSlot.state) {
+		m_sSlot.state;
 		emit stateChanged(m_sSlot.state);
 	}
 }

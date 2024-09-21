@@ -317,7 +317,7 @@ static int __dispenser_genl_post_slot_status(struct dispenser_slot_list *slot, s
 	if (info) {
 		return genlmsg_reply(reply_buffer, info);
 	} else {
-		return genlmsg_multicast(&dispenser_genl_family, reply_buffer, 0, DISPENSER_GENL_GROUP, 0);
+		return genlmsg_multicast(&dispenser_genl_family, reply_buffer, 0, DISPENSER_GENL_MCGROUP_MASK, 0);
 	}
 }
 
@@ -417,7 +417,7 @@ static int __dispenser_genl_post_col_status(struct dispenser_col_list *col, stru
 	if (info) {
 		return genlmsg_reply(reply_buffer, info);
 	} else {
-		return genlmsg_multicast(&dispenser_genl_family, reply_buffer, 0, DISPENSER_GENL_GROUP, 0);
+		return genlmsg_multicast(&dispenser_genl_family, reply_buffer, 0, DISPENSER_GENL_MCGROUP_MASK, 0);
 	}
 }
 
@@ -533,7 +533,7 @@ static int __dispenser_genl_post_unit_status(struct genl_info *info)
 	if (info) {
 		return genlmsg_reply(reply_buffer, info);
 	} else {
-		return genlmsg_multicast(&dispenser_genl_family, reply_buffer, 0, DISPENSER_GENL_GROUP, 0);
+		return genlmsg_multicast(&dispenser_genl_family, reply_buffer, 0, DISPENSER_GENL_MCGROUP_MASK, 0);
 	}
 }
 
@@ -610,7 +610,7 @@ static int __dispenser_genl_post_environment(struct  genl_info *info)
 	if (info) {
 		return genlmsg_reply(reply_buffer, info);
 	} else {
-		return genlmsg_multicast(&dispenser_genl_family, reply_buffer, 0, DISPENSER_GENL_GROUP, 0);
+		return genlmsg_multicast(&dispenser_genl_family, reply_buffer, 0, DISPENSER_GENL_MCGROUP_MASK, 0);
 	}
 }
 
