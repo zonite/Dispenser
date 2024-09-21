@@ -353,10 +353,11 @@ int Alarm::getRemaining()
 	return m_cTimer.remainingTime();
 }
 
-bool Alarm::isRunning()
+bool Alarm::isActive()
 {
 	return m_cTimer.isActive();
 }
+
 
 //template<typename T>
 void Alarm::startTimer()
