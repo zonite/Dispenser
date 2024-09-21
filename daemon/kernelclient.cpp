@@ -661,7 +661,7 @@ void KernelClient::parse_slot_cmd(nlattr *attrs[])
 			           .arg(QString::number(new_slot_state.up))
 			           .arg(QString::number(new_slot_state.down))
 			           .arg(QString::number(new_slot_state.release))
-			           .arg(new_slot_state.state), QDaemonLog::NoticeEntry);
+			           .arg(SlotItem::stateToStr(new_slot_state.state)), QDaemonLog::NoticeEntry);
 
 			//if (new_slot_state.state == UNKNOWN) {
 			//	setSlotStatus(pSlot);

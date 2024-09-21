@@ -17,6 +17,8 @@ public:
 	SlotItem(const SlotItem &src);
 	~SlotItem();
 
+	static const char *stateToStr(enum slot_state state);
+
 	//void setParent(ColItem *parent) { m_pCol = parent; }
 	void setState(__u8 state);
 	void setFull(bool full);

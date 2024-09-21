@@ -381,7 +381,7 @@ void Alarm::startTimer()
 
 	//m_cTimer.start(msecToRelease);
 	m_cTimer.setInterval(120000);
-	m_cTimer.start(10000);
+	m_cTimer.start(120000);
 }
 
 //template<typename T>

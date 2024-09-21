@@ -43,6 +43,26 @@ SlotItem::~SlotItem()
 	m_cSettings.sync();
 }
 
+const char *SlotItem::stateToStr(slot_state state)
+{
+	switch (state) {
+	case UNKNOWN:
+		return "Unknown";
+	case FAILED:
+		return "Failed";
+	case CLOSED:
+		return "Closed";
+	case RELEASE:
+		return "Release";
+	case OPENING:
+		return "Opening";
+	case OPEN:
+		return "Open";
+	case CLOSING:
+		return "Closing";
+	}
+}
+
 void SlotItem::setState(__u8 state)
 {
 	enum slot_state saved_state = UNKNOWN;
