@@ -169,7 +169,7 @@ static int dispenser_genl_release(struct sk_buff *sender_buffer, struct  genl_in
 		return 0;
 
 	}
-	printk("Genetlink: release from unit.\n", c);
+	printk("Genetlink: release from unit.\n");
 	dispenser_unit_release_count(count, force); //release from unit
 
 	return 0;
