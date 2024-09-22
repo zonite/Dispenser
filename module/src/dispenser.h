@@ -147,7 +147,7 @@ static char dispenser_unit_get_full_column(struct dispenser_col_list *c);
 static void dispenser_unit_release_count(char count, char force);
 static u32 dispenser_unit_counter(void);
 static void dispenser_unit_set_state(struct dispenser_mmap_unit *new_state);
-static u32 dispenser_unit_set_slot_state(struct dispenser_slot_list *slot, struct dispenser_mmap_slot *new_state, unsigned char *full);
+//static u32 dispenser_unit_set_slot_state(struct dispenser_slot_list *slot, struct dispenser_mmap_slot *new_state, unsigned char *full);
 static void dispenser_unit_set_slot_up_failed(struct dispenser_slot_list *slot, s32 failed_up);
 static void dispenser_unit_set_slot_down_failed(struct dispenser_slot_list *slot, s32 failed_down);
 
