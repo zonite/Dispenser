@@ -30,7 +30,7 @@ SlotItem::~SlotItem()
 {
 	char col = m_pCol->getId();
 
-	m_cSettings.beginGroup(QString("Col%1Slot%2").arg(col).arg(m_iSlotId));
+	m_cSettings.beginGroup(QString("Col%1Slot%2").arg(QString::number(col)).arg(QString::number(m_iSlotId)));
 	m_cSettings.setValue("state", m_sSlot.state);
 	m_cSettings.setValue("full", m_bFull);
 	m_cSettings.setValue("up", m_sSlot.up);
@@ -40,7 +40,7 @@ SlotItem::~SlotItem()
 	m_cSettings.setValue("failed_down", m_sSlot.down_failed);
 	m_cSettings.endGroup();
 
-	qDaemonLog(QString("Slot %1/%2 syncing").arg(col).arg(m_iSlotId), QDaemonLog::NoticeEntry);
+	qDaemonLog(QString("Slot %1/%2 syncing").arg(QString::number(col)).arg(QString::number(m_iSlotId)), QDaemonLog::NoticeEntry);
 	m_cSettings.sync();
 }
 
@@ -76,7 +76,7 @@ void SlotItem::setState(__u8 state)
 		int failed_up, failed_down;
 
 
-		m_cSettings.beginGroup(QStringLiteral("Col%1Slot%2").arg(col).arg(m_iSlotId));
+		m_cSettings.beginGroup(QStringLiteral("Col%1Slot%2").arg(QString::number(col)).arg(QString::number(m_iSlotId)));
 		saved_state = (enum slot_state) m_cSettings.value("state", UNKNOWN).toInt();
 		full = m_cSettings.value("full", 0).toInt();
 		up = m_cSettings.value("up", -1).toInt();
@@ -190,7 +190,7 @@ void SlotItem::setParentNid(ColItem *parent, __s8 i)
 		return;
 	}
 
-	m_cSettings.beginGroup(QStringLiteral("Col%1Slot%2").arg(m_pCol->getId()).arg(m_iSlotId));
+	m_cSettings.beginGroup(QStringLiteral("Col%1Slot%2").arg(QString::number(m_pCol->getId())).arg(QString::number(m_iSlotId)));
 	m_sSlot.state = (enum slot_state) m_cSettings.value("state", UNKNOWN).toInt();
 	setFull(m_cSettings.value("full", 0).toInt());
 	setUp(m_cSettings.value("up", -1).toInt());
