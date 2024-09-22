@@ -631,6 +631,18 @@ static void dispenser_unit_filled(void)
 	}
 }
 
+static void dispenser_unit_locks_on(void)
+{
+	struct dispenser_slot_list *slots = cDispenser.cols->first, *s;
+	int i = 0;
+
+	for (i = 0; i < cDispenser.slot_count; ++i) {
+		s = &slots[i];
+
+		dispenser_gpiod_set_tmout(s->release, 1, 0);
+	}
+}
+
 static void dispenser_unit_slot_failed(struct dispenser_slot_list *s)
 {
 	s->state->state = FAILED;

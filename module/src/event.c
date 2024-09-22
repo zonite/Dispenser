@@ -35,7 +35,7 @@ static void dispenser_door_event(struct dispenser_gpiod* dev, char closed)
 		printk("Door event: Opened %i -> %i. GPIO value = %i\n", !closed, closed, *dev->value);
 		opened = jiffies;
 		dispenser_gpiod_set_tmout(cDispenser.p_sLed, 1, cDispenser.p_sDoor->timeout);
-
+		dispenser_unit_locks_on();
 	}
 	if (cDispenser.initialized) __dispenser_genl_post_unit_status(NULL);
 	dispenser_post_event(DOOR, "Door event", &pDispenser_mmap->unit.door);
@@ -200,7 +200,7 @@ static void dispenser_release_event(struct dispenser_gpiod* dev, char new_val)
 		dispenser_gpiod_set(dev, 1);
 		return;
 	}
-	dispenser_gpiod_set_tmout(dev, 0, 0);
+	dispenser_gpiod_set_tmout(dev, 1, 0);
 	if (slot->pendingRelease) {
 		printk("Dispenser: Release %s success.\n", dev->gpiod->name);
 	}
