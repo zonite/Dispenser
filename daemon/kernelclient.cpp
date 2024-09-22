@@ -723,7 +723,7 @@ void KernelClient::parse_unit_cmd(nlattr *attrs[])
 		get_nlattr_data(attrs[DISPENSER_GENL_UNIT_STATUS], &status);
 		dispenser_unpack_unit_status(*status, &received_unit_data);
 		m_cUnit.setDoor(received_unit_data.door);
-		m_cUnit.setNight(received_unit_data.night);
+		//m_cUnit.setNight(received_unit_data.night); //Night is never set by the module.
 		m_cUnit.setCharging(received_unit_data.charging);
 		m_cUnit.setLight(received_unit_data.light);
 		qDaemonLog(QString("NL: Unit status door=%1, night=%2, charge=%3, light=%4.")
