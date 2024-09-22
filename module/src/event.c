@@ -14,7 +14,7 @@ static void dispenser_gpiod_event(struct dispenser_gpiod* dev, char new_val)
 	if (dir) { //0=output 1=input
 		gpio_val = gpiod_get_value(dev->gpiod);
 	}
-	printk("GPIOD Event: set %px, %i => actual = %i, new_val = %i, dir = %1.", dev->value, *dev->value, gpio_val, new_val, dir);
+	printk("GPIOD Event: set %px, %i => actual = %i, new_val = %i, dir = %i.", dev->value, *dev->value, gpio_val, new_val, dir);
 	*dev->value = gpio_val;
 	dev->event_handler(dev, gpio_val);
 	//post_event
