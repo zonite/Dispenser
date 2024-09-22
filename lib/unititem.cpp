@@ -86,12 +86,13 @@ UnitItem::UnitItem(QObject *parent)
 		//new_alarm->setSeconds(8 * 3600); //Alarm at 8.
 		//m_pAlarms.insert(new_alarm->getSeconds(), new_alarm);
 		m_pAlarms.insert(0 * 3600, new Alarm(this, 0 * 3600, EVERYDAY));
-		m_pAlarms.insert(4 * 3600, new Alarm(this, 4 * 3600, EVERYDAY));
-		m_pAlarms.insert(8 * 3600, new Alarm(this, 8 * 3600, EVERYDAY));
-		m_pAlarms.insert(12 * 3600, new Alarm(this, 12 * 3600, EVERYDAY));
-		m_pAlarms.insert(16 * 3600, new Alarm(this, 16 * 3600, EVERYDAY));
-		m_pAlarms.insert(20 * 3600, new Alarm(this, 20 * 3600, EVERYDAY));
+		//m_pAlarms.insert(4 * 3600, new Alarm(this, 4 * 3600, EVERYDAY));
+		//m_pAlarms.insert(8 * 3600, new Alarm(this, 8 * 3600, EVERYDAY));
+		//m_pAlarms.insert(12 * 3600, new Alarm(this, 12 * 3600, EVERYDAY));
+		//m_pAlarms.insert(16 * 3600, new Alarm(this, 16 * 3600, EVERYDAY));
+		//m_pAlarms.insert(20 * 3600, new Alarm(this, 20 * 3600, EVERYDAY));
 	}
+
 	saveAlarms();
 
 	qDaemonLog(QString("Alarms are set. Count = %1").arg(m_pAlarms.count()), QDaemonLog::NoticeEntry);
