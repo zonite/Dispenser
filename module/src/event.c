@@ -158,6 +158,7 @@ static void dispenser_down_event(struct dispenser_gpiod* dev, char new_val)
 			printk("Dispenser: %s failed down: up = %i, down = %i, release = %i\n", dev->gpiod->name, slot->state->up, slot->state->down, slot->state->release);
 		}
 		//If open next->inittiate
+		dispenser_gpiod_set_tmout(slot->release, 0, 0);
 		if (slot->next && slot->next->release_delayed)
 			dispenser_unit_release_slot(slot->next, 1, 0);
 	} else { //Closing
