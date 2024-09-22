@@ -317,9 +317,9 @@ void Alarm::setSeconds(qint32 seconds)
 	m_iSeconds = seconds % 86400;
 
 	startTimer();
-	qDaemonLog(QString("Alarm started. Currect time is %1. Alarm is at %2:%3. To go %4min.")
+	qDaemonLog(QString("Alarm started. Currect time is %1. Alarm is at %2:%3:%4. To go %5min.")
 	           .arg(QTime::currentTime().toString("hh:mm"))
-	           .arg(m_iSeconds / 3600).arg((m_iSeconds / 60) % 60)
+	           .arg(m_iSeconds / 3600).arg((m_iSeconds / 60) % 60).arg(m_iSeconds % 60)
 	           .arg(m_cTimer.remainingTime() / 60000)
 	           , QDaemonLog::NoticeEntry);
 }
@@ -380,8 +380,8 @@ void Alarm::startTimer()
 		msecToRelease += 86400000;
 
 	//m_cTimer.start(msecToRelease);
-	m_cTimer.setInterval(120000);
-	m_cTimer.start(120000);
+	m_cTimer.setInterval(15000);
+	m_cTimer.start(15000);
 }
 
 //template<typename T>
