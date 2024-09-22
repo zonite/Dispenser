@@ -119,6 +119,7 @@ static struct genl_family dispenser_genl_family = {
 	.netnsok = 0, //Not needed
 	.pre_doit = NULL, //Not needed
 	.post_doit = NULL, //Not needed
+	.n_mcgrps = 1,
 };
 
 /** Release a slot from dispenser **/

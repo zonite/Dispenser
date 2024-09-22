@@ -805,7 +805,7 @@ ssize_t KernelClient::process_error_message(Buffer &in)
 			break;
 		case NLMSGERR_ATTR_OFFS:
 			get_nlattr_data(attr, &val);
-			qDaemonLog(QString("Netlink error attribute offset %1.").arg(*val), QDaemonLog::ErrorEntry);
+			qDaemonLog(QString("Netlink error attribute offset %1.").arg((__s32)*val), QDaemonLog::ErrorEntry);
 			break;
 		case NLMSGERR_ATTR_COOKIE:
 			qDaemonLog(QString("Netlink error binary cookie length = %1.").arg(attr->nla_len), QDaemonLog::ErrorEntry);
