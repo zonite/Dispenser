@@ -213,7 +213,7 @@ static int dispenser_genl_slot_status(struct sk_buff *sender_buffer, struct  gen
 
 		status = nla_get_u8(attrs[DISPENSER_GENL_SLOT_STATUS]);
 		dispenser_unpack_slot_status(status, &new_state, &full);
-		dispenser_unit_set_slot_state(slot, &new_state, &full);
+		//dispenser_unit_set_slot_state(slot, &new_state, &full);
 		//dispenser_unpack_slot_status(status, slot->state, &slot->full);
 	}
 
@@ -260,6 +260,7 @@ static int __dispenser_genl_post_slot_status(struct dispenser_slot_list *slot, s
 
 	//bitfield up,down,release,full,+enum state (4bits) (settable)
 	status = dispenser_pack_slot_status(slot->state, slot->full);
+	printk("Sending Slot %i/%i: up=%i, down=%i, release=%i, full=%i, state=%x", col, slot->slot_id, slot->state->up, slot->state->down, slot->state->release, slot->full, status);
 
 	reply_buffer = genlmsg_new(NLMSG_GOODSIZE, GFP_KERNEL);
 	if (reply_buffer == NULL) {
@@ -500,6 +501,7 @@ static int __dispenser_genl_post_unit_status(struct genl_info *info)
 
 	//bitfield door,power,night,light (night+light settable)
 	status = dispenser_pack_unit_status(unit);
+	printk("Sending Unit: door=%i, power=%i, night=%i, light=%i.", unit->door, unit->power, unit->night, unit->light, status);
 
 	reply_buffer = genlmsg_new(NLMSG_GOODSIZE, GFP_KERNEL);
 	if (reply_buffer == NULL) {
