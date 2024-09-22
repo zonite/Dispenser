@@ -7,137 +7,137 @@
     compatible = "arm,versatile-pb";
     //compatible = "brcm,bcm2711";
     fragment@0 {
-        target-path = "/";
-        __overlay__ {
-            dispenser {
-                //compatible = COMPAT;
-                compatible = "hortensis,dispenser";
-                status = "okay";
-                //pinctrl-names = "default";
-                //pinctrl-0 = <&push_buttons>;
-                label = "Food Dispenser";
-                value = <12>;
-                charge-gpios = <&gpio 8 GPIO_ACTIVE_LOW>;
-                button-gpio = <&gpio 9 GPIO_ACTIVE_LOW>;
-                led-gpio = <&gpio 10 GPIO_ACTIVE_HIGH>;
-                door-gpio = <&gpio 11 GPIO_ACTIVE_LOW>;
+	target-path = "/";
+	__overlay__ {
+		dispenser {
+		//compatible = COMPAT;
+		compatible = "hortensis,dispenser";
+		status = "okay";
+		//pinctrl-names = "default";
+		//pinctrl-0 = <&push_buttons>;
+		label = "Food Dispenser";
+		value = <12>;
+		charge-gpios = <&gpio 8 GPIO_ACTIVE_LOW>;
+		button-gpio = <&gpio 9 GPIO_ACTIVE_LOW>;
+		led-gpio = <&gpio 10 GPIO_ACTIVE_HIGH>;
+		door-gpio = <&gpio 11 GPIO_ACTIVE_LOW>;
 
-                cols =  /bits/ 8 <0 0 0 1 1 1>;
-                slots = /bits/ 8 <0 1 2 0 1 2>;
+		cols =  /bits/ 8 <0 0 0 1 1 1>;
+		slots = /bits/ 8 <0 1 2 0 1 2>;
 
-                up-gpio = <&gpio 22 GPIO_ACTIVE_LOW>,
-                        <&gpio 23 GPIO_ACTIVE_LOW>,
-                        <&gpio 24 GPIO_ACTIVE_LOW>,
-                        <&gpio 18 GPIO_ACTIVE_LOW>,
-                        <&gpio 17 GPIO_ACTIVE_LOW>,
-                        <&gpio 16 GPIO_ACTIVE_LOW>;
+		up-gpio = <&gpio 22 GPIO_ACTIVE_HIGH>,
+		        <&gpio 23 GPIO_ACTIVE_HIGH>,
+		        <&gpio 24 GPIO_ACTIVE_HIGH>,
+		        <&gpio 18 GPIO_ACTIVE_HIGH>,
+		        <&gpio 17 GPIO_ACTIVE_HIGH>,
+		        <&gpio 16 GPIO_ACTIVE_HIGH>;
 
-                down-gpio = <&gpio 25 GPIO_ACTIVE_LOW>,
-                        <&gpio 26 GPIO_ACTIVE_LOW>,
-                        <&gpio 27 GPIO_ACTIVE_LOW>,
-                        <&gpio 21 GPIO_ACTIVE_LOW>,
-                        <&gpio 20 GPIO_ACTIVE_LOW>,
-                        <&gpio 19 GPIO_ACTIVE_LOW>;
+		down-gpio = <&gpio 25 GPIO_ACTIVE_LOW>,
+		        <&gpio 26 GPIO_ACTIVE_LOW>,
+		        <&gpio 27 GPIO_ACTIVE_LOW>,
+		        <&gpio 21 GPIO_ACTIVE_LOW>,
+		        <&gpio 20 GPIO_ACTIVE_LOW>,
+		        <&gpio 19 GPIO_ACTIVE_LOW>;
 
-                release-gpio = <&gpio 5 GPIO_ACTIVE_LOW>,
-                        <&gpio 6 GPIO_ACTIVE_LOW>,
-                        <&gpio 7 GPIO_ACTIVE_LOW>,
-                        <&gpio 4 GPIO_ACTIVE_LOW>,
-                        <&gpio 1 GPIO_ACTIVE_LOW>,
-                        <&gpio 0 GPIO_ACTIVE_LOW>;
+		release-gpio = <&gpio 5 GPIO_ACTIVE_LOW>,
+		        <&gpio 6 GPIO_ACTIVE_LOW>,
+		        <&gpio 7 GPIO_ACTIVE_LOW>,
+		        <&gpio 4 GPIO_ACTIVE_LOW>,
+		        <&gpio 1 GPIO_ACTIVE_LOW>,
+		        <&gpio 0 GPIO_ACTIVE_LOW>;
 
-                /*
-                dispense_unit {
-                    col0 {
-                        compatible = COMPAT_COL;
-                        status = "okay";
-                        num = <68>;
-                        slot0 {
-                            compatible = COMPAT_SLOT;
-                            status = "okay";
-                            num = <0>;
-                            up-gpio = <&gpio 22 GPIO_ACTIVE_LOW>;
-                            down-gpio = <&gpio 25 GPIO_ACTIVE_LOW>;
-                            release-gpio = <&gpio 5 GPIO_ACTIVE_HIGH>;
-                        };
-                        slot1 {
-                            compatible = COMPAT_SLOT;
-                            status = "okay";
-                            num = <1>;
-                            up-gpio = <&gpio 23 GPIO_ACTIVE_LOW>;
-                            down-gpio = <&gpio 26 GPIO_ACTIVE_LOW>;
-                            release-gpio = <&gpio 6 GPIO_ACTIVE_HIGH>;
-                        };
-                        slot2 {
-                            compatible = COMPAT_SLOT;
-                            status = "okay";
-                            num = <2>;
-                            up-gpio = <&gpio 24 GPIO_ACTIVE_LOW>;
-                            down-gpio = <&gpio 27 GPIO_ACTIVE_LOW>;
-                            release-gpio = <&gpio 7 GPIO_ACTIVE_HIGH>;
-                        };
-                    };
-                    col1 {
-                        compatible = COMPAT_COL;
-                        status = "okay";
-                        num = <69>;
-                        slot0 {
-                            compatible = COMPAT_SLOT;
-                            status = "okay";
-                            num = <0>;
-                            up-gpio = <&gpio 18 GPIO_ACTIVE_LOW>;
-                            down-gpio = <&gpio 21 GPIO_ACTIVE_LOW>;
-                            release-gpio = <&gpio 4 GPIO_ACTIVE_HIGH>;
-                        };
-                        slot1 {
-                            compatible = COMPAT_SLOT;
-                            status = "okay";
-                            num = <1>;
-                            up-gpio = <&gpio 17 GPIO_ACTIVE_LOW>;
-                            down-gpio = <&gpio 20 GPIO_ACTIVE_LOW>;
-                            release-gpio = <&gpio 1 GPIO_ACTIVE_HIGH>;
-                        };
-                        slot2 {
-                            compatible = COMPAT_SLOT;
-                            status = "okay";
-                            num = <2>;
-                            up-gpio = <&gpio 16 GPIO_ACTIVE_LOW>;
-                            down-gpio = <&gpio 19 GPIO_ACTIVE_LOW>;
-                            release-gpio = <&gpio 0 GPIO_ACTIVE_HIGH>;
-                        };
-                    };
-                };
-                */
+		/*
+		dispense_unit {
+		    col0 {
+			compatible = COMPAT_COL;
+			status = "okay";
+			num = <68>;
+			slot0 {
+			    compatible = COMPAT_SLOT;
+			    status = "okay";
+			    num = <0>;
+			    up-gpio = <&gpio 22 GPIO_ACTIVE_LOW>;
+			    down-gpio = <&gpio 25 GPIO_ACTIVE_LOW>;
+			    release-gpio = <&gpio 5 GPIO_ACTIVE_HIGH>;
+			};
+			slot1 {
+			    compatible = COMPAT_SLOT;
+			    status = "okay";
+			    num = <1>;
+			    up-gpio = <&gpio 23 GPIO_ACTIVE_LOW>;
+			    down-gpio = <&gpio 26 GPIO_ACTIVE_LOW>;
+			    release-gpio = <&gpio 6 GPIO_ACTIVE_HIGH>;
+			};
+			slot2 {
+			    compatible = COMPAT_SLOT;
+			    status = "okay";
+			    num = <2>;
+			    up-gpio = <&gpio 24 GPIO_ACTIVE_LOW>;
+			    down-gpio = <&gpio 27 GPIO_ACTIVE_LOW>;
+			    release-gpio = <&gpio 7 GPIO_ACTIVE_HIGH>;
+			};
+		    };
+		    col1 {
+			compatible = COMPAT_COL;
+			status = "okay";
+			num = <69>;
+			slot0 {
+			    compatible = COMPAT_SLOT;
+			    status = "okay";
+			    num = <0>;
+			    up-gpio = <&gpio 18 GPIO_ACTIVE_LOW>;
+			    down-gpio = <&gpio 21 GPIO_ACTIVE_LOW>;
+			    release-gpio = <&gpio 4 GPIO_ACTIVE_HIGH>;
+			};
+			slot1 {
+			    compatible = COMPAT_SLOT;
+			    status = "okay";
+			    num = <1>;
+			    up-gpio = <&gpio 17 GPIO_ACTIVE_LOW>;
+			    down-gpio = <&gpio 20 GPIO_ACTIVE_LOW>;
+			    release-gpio = <&gpio 1 GPIO_ACTIVE_HIGH>;
+			};
+			slot2 {
+			    compatible = COMPAT_SLOT;
+			    status = "okay";
+			    num = <2>;
+			    up-gpio = <&gpio 16 GPIO_ACTIVE_LOW>;
+			    down-gpio = <&gpio 19 GPIO_ACTIVE_LOW>;
+			    release-gpio = <&gpio 0 GPIO_ACTIVE_HIGH>;
+			};
+		    };
+		};
+		*/
 
-                //push_buttons: push_buttons {
-                //    brcm,pins = <22>;
-                //    brcm,function = <0>; /* in */
-                //    brcm,pull = <0>;
-                //};
-            };
-        };
+		//push_buttons: push_buttons {
+		//    brcm,pins = <22>;
+		//    brcm,function = <0>; /* in */
+		//    brcm,pull = <0>;
+		//};
+	    };
+	};
     };
 
     /*
     fragment@1 {
-        target = <&leds>;
-        __overlay__ {
-            pinctrl-names = "default";
-            pinctrl-0 = <&push_buttons>;
-        };
+	target = <&leds>;
+	__overlay__ {
+	    pinctrl-names = "default";
+	    pinctrl-0 = <&push_buttons>;
+	};
     };
     */
 
     /*
     fragment@2 {
-        target = <&gpio>;
-        __overlay__ {
-            push_buttons: push_buttons {
-                brcm,pins = <22>;
-                brcm,function = <0>; // in
-                brcm,pull = <0>;
-            };
-        };
+	target = <&gpio>;
+	__overlay__ {
+	    push_buttons: push_buttons {
+		brcm,pins = <22>;
+		brcm,function = <0>; // in
+		brcm,pull = <0>;
+	    };
+	};
     };
     */
 
