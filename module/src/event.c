@@ -51,6 +51,10 @@ static void dispenser_button_event(struct dispenser_gpiod* dev, char pressed)
 	//button pressed
 	printk("Button event: Pressed = %i. GPIO value = %i.\n", pressed, *dev->value);
 
+	if (*cDispenser.p_sLed->value) {
+		dispenser_unit_filled();
+	}
+
 	dispenser_gpiod_set(cDispenser.p_sLed, !(*cDispenser.p_sLed->value));
 
 	dispenser_post_event(BUTTON, "Button pressed", &pDispenser_mmap->unit.button);

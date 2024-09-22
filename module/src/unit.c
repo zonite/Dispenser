@@ -613,6 +613,8 @@ static void dispenser_unit_filled(void)
 	struct dispenser_slot_list *slots = cDispenser.cols->first, *s;
 	int i = 0;
 
+	printk("Filling unit\n");
+
 	for (i = 0; i < cDispenser.slot_count; ++i) {
 		s = &slots[i];
 
