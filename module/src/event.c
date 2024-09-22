@@ -9,8 +9,9 @@ static int dispenser_post_event(enum eventtype type, const char *name, volatile 
 
 static void dispenser_gpiod_event(struct dispenser_gpiod* dev, char new_val)
 {
-	printk("GPIOD Event: set %px, %i => %i, actual = %i.", dev->value, *dev->value, new_val, gpiod_get_value(dev->gpiod));
-	*dev->value = new_val;
+	int gpio_val = gpiod_get_value(dev->gpiod);
+	printk("GPIOD Event: set %px, %i => actual = %i, new_val = %i.", dev->value, *dev->value, gpio_val, new_val);
+	*dev->value = gpio_val;
 	dev->event_handler(dev, new_val);
 	//post_event
 	//dispenser_post_event()
