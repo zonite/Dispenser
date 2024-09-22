@@ -291,13 +291,13 @@ static void dispenser_unit_mmap_set(void)
 
 
 
-			if (s->up->value && s->down->value) {
+			if (*s->up->value && *s->down->value) {
 				printk("Slot %i/%i state = FAILED.", c->col_id, s->slot_id);
 				s->state->state = FAILED;
-			} else if (s->up->value) {
+			} else if (*s->up->value) {
 				printk("Slot %i/%i state = CLOSED.", c->col_id, s->slot_id);
 				s->state->state = CLOSED;
-			} else if (s->down->value) {
+			} else if (*s->down->value) {
 				printk("Slot %i/%i state = OPEN.", c->col_id, s->slot_id);
 				s->state->state = OPEN;
 			} else {
