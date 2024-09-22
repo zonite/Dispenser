@@ -277,7 +277,7 @@ static int __dispenser_genl_post_slot_status(struct dispenser_slot_list *slot, s
 		//reply_header = genlmsg_put(reply_buffer, 0, seq++, &dispenser_genl_family, 0, DISPENSER_GENL_CMD_SLOT_STATUS);
 
 		//unicast
-		reply_header = genlmsg_put(reply_buffer, sender_portid, seq++, &dispenser_genl_family, 0, DISPENSER_GENL_CMD_UNIT_STATUS);
+		reply_header = genlmsg_put(reply_buffer, sender_portid, seq++, &dispenser_genl_family, 0, DISPENSER_GENL_CMD_SLOT_STATUS);
 	}
 	if (reply_header == NULL) {
 		printk("Header memory error.\n");
@@ -396,7 +396,7 @@ static int __dispenser_genl_post_col_status(struct dispenser_col_list *col, stru
 		//reply_header = genlmsg_put(reply_buffer, 0, seq++, &dispenser_genl_family, 0, DISPENSER_GENL_CMD_COL_STATUS);
 
 		//unicast
-		reply_header = genlmsg_put(reply_buffer, sender_portid, seq++, &dispenser_genl_family, 0, DISPENSER_GENL_CMD_UNIT_STATUS);
+		reply_header = genlmsg_put(reply_buffer, sender_portid, seq++, &dispenser_genl_family, 0, DISPENSER_GENL_CMD_COL_STATUS);
 	}
 	if (reply_header == NULL) {
 		printk("Header memory error.\n");
@@ -605,7 +605,7 @@ static int __dispenser_genl_post_environment(struct  genl_info *info)
 		//reply_header = genlmsg_put(reply_buffer, info->snd_portid, info->snd_seq + 1, &dispenser_genl_family, 0, DISPENSER_GENL_CMD_ENVIRONMENT);
 
 		//unicast
-		reply_header = genlmsg_put(reply_buffer, sender_portid, seq++, &dispenser_genl_family, 0, DISPENSER_GENL_CMD_UNIT_STATUS);
+		reply_header = genlmsg_put(reply_buffer, sender_portid, seq++, &dispenser_genl_family, 0, DISPENSER_GENL_CMD_ENVIRONMENT);
 	}
 
 	if (reply_header == NULL) {
