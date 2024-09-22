@@ -49,6 +49,7 @@ static struct dispenser_gpiod *dispenser_gpiod_open_index(struct device *dev, co
 		timer_setup(&out->timer, dispenser_gpiod_out_tmr_callback, 0);
 
 		out->irq_num = -1;
+		*out->value = gpiod_get_value(p);
 	} else {
 		//Input
 		printk("Dispenser GPIOD input %d\n", flags);

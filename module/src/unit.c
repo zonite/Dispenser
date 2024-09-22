@@ -241,12 +241,24 @@ static void dispenser_unit_mmap_set(void)
 		cDispenser.p_sButton->value = &pDispenser_mmap->unit.button;
 	*/
 
+	printk("Unit mmap area %px.", &pDispenser_mmap->unit);
+
+	if (cDispenser.p_sLed->value)
+		printk("Setup light %i.", *cDispenser.p_sLed->value);
 	dispenser_gpiod_set_pointer(cDispenser.p_sLed, &pDispenser_mmap->unit.light);
+
+	if (cDispenser.p_sDoor->value)
+		printk("Setup door %i.", *cDispenser.p_sDoor->value);
 	dispenser_gpiod_set_pointer(cDispenser.p_sDoor, &pDispenser_mmap->unit.door);
+
+	if (cDispenser.p_sCharge->value)
+		printk("Setup charge %i.", *cDispenser.p_sCharge->value);
 	dispenser_gpiod_set_pointer(cDispenser.p_sCharge, &pDispenser_mmap->unit.charging);
+
+	if (cDispenser.p_sButton->value)
+		printk("Setup button %i.", *cDispenser.p_sButton->value);
 	dispenser_gpiod_set_pointer(cDispenser.p_sButton, &pDispenser_mmap->unit.button);
 
-	printk("Unit mmap area %px.", &pDispenser_mmap->unit);
 
 	//daemon expects an UNKNOWN state is uninitialize driver!
 	while (c) {
@@ -264,18 +276,34 @@ static void dispenser_unit_mmap_set(void)
 			//s->down->value = &s->state->down;
 			//s->release->value = &s->state->release;
 			printk("Slot %i/%i mmap area %px.", c->col_id, s->slot_id, s->state);
+
+			if (s->up->value)
+				printk("Slot %i/%i up = %i.", c->col_id, s->slot_id, *s->up->value);
 			dispenser_gpiod_set_pointer(s->up, &s->state->up);
+
+			if (s->down->value)
+				printk("Slot %i/%i down = %i.", c->col_id, s->slot_id, *s->down->value);
 			dispenser_gpiod_set_pointer(s->down, &s->state->down);
+
+			if (s->release->value)
+				printk("Slot %i/%i release = %i.", c->col_id, s->slot_id, *s->release->value);
 			dispenser_gpiod_set_pointer(s->release, &s->state->release);
 
-			if (s->up->value && s->down->value)
+
+
+			if (s->up->value && s->down->value) {
+				printk("Slot %i/%i state = FAILED.", c->col_id, s->slot_id);
 				s->state->state = FAILED;
-			else if (s->up->value)
+			} else if (s->up->value) {
+				printk("Slot %i/%i state = CLOSED.", c->col_id, s->slot_id);
 				s->state->state = CLOSED;
-			else if (s->down->value)
+			} else if (s->down->value) {
+				printk("Slot %i/%i state = OPEN.", c->col_id, s->slot_id);
 				s->state->state = OPEN;
-			else
+			} else {
+				printk("Slot %i/%i state = CLOSING.", c->col_id, s->slot_id);
 				s->state->state = CLOSING;
+			}
 
 			if (s->state->state == CLOSED)
 				s->full = 1;
