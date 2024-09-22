@@ -141,6 +141,7 @@ static void dispenser_unit_slot_failed(struct dispenser_slot_list *s);
 static void dispenser_unit_mmap_set(void);
 static void dispenser_unit_mmap_reset(void);
 static void dispenser_unit_filled(void);
+static void dispenser_unit_locks_on(void);
 static char dispenser_unit_get_full(void);
 static char dispenser_unit_get_full_column(struct dispenser_col_list *c);
 static void dispenser_unit_release_count(char count, char force);
