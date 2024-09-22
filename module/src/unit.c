@@ -297,9 +297,11 @@ static void dispenser_unit_mmap_set(void)
 			} else if (*s->up->value) {
 				printk("Slot %i/%i state = CLOSED.", c->col_id, s->slot_id);
 				s->state->state = CLOSED;
+				s->initialized = true;
 			} else if (*s->down->value) {
 				printk("Slot %i/%i state = OPEN.", c->col_id, s->slot_id);
 				s->state->state = OPEN;
+				s->initialized = true;
 			} else {
 				printk("Slot %i/%i state = CLOSING.", c->col_id, s->slot_id);
 				s->state->state = CLOSING;
@@ -308,7 +310,7 @@ static void dispenser_unit_mmap_set(void)
 			if (s->state->state == CLOSED)
 				s->full = 1;
 
-			printk("Slot %i/%i full = %i.", c->col_id, s->slot_id, s->full);
+			printk("Slot %i/%i full = %i. initialized = %i", c->col_id, s->slot_id, s->full, s->initialized);
 
 			s = s->next;
 		}
