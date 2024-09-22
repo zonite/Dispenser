@@ -61,6 +61,7 @@ const char *SlotItem::stateToStr(slot_state state)
 	case CLOSING:
 		return "Closing";
 	}
+	return "Invalid";
 }
 
 void SlotItem::setState(__u8 state)
