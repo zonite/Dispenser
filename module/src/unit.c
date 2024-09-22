@@ -308,6 +308,8 @@ static void dispenser_unit_mmap_set(void)
 			if (s->state->state == CLOSED)
 				s->full = 1;
 
+			printk("Slot %i/%i full = %i.", c->col_id, s->slot_id, s->full);
+
 			s = s->next;
 		}
 

@@ -25,6 +25,8 @@ static int __dispenser_genl_post_col_status(struct dispenser_col_list *col, stru
 static int __dispenser_genl_post_unit_status(struct  genl_info *info);
 static int __dispenser_genl_post_environment(struct  genl_info *info);
 
+static struct net *sender_net = &init_net;
+static unsigned int sender_portid = 0;
 
 //static const struct genl_ops dispenser_genl_ops[DISPENSER_GENL_CMD_MAX] = {
 static const struct genl_ops dispenser_genl_ops[] = {
@@ -268,7 +270,12 @@ static int __dispenser_genl_post_slot_status(struct dispenser_slot_list *slot, s
 	} else {
 		//info == NULL --> broadcast!
 		//reply_header = genlmsg_put(reply_buffer, info->snd_portid, info->snd_seq + 1, &dispenser_genl_family, 0, DISPENSER_GENL_CMD_UNIT_STATUS);
-		reply_header = genlmsg_put(reply_buffer, 0, seq++, &dispenser_genl_family, 0, DISPENSER_GENL_CMD_SLOT_STATUS);
+
+		//multicast
+		//reply_header = genlmsg_put(reply_buffer, 0, seq++, &dispenser_genl_family, 0, DISPENSER_GENL_CMD_SLOT_STATUS);
+
+		//unicast
+		reply_header = genlmsg_put(reply_buffer, sender_portid, seq++, &dispenser_genl_family, 0, DISPENSER_GENL_CMD_UNIT_STATUS);
 	}
 	if (reply_header == NULL) {
 		printk("Header memory error.\n");
@@ -318,7 +325,8 @@ static int __dispenser_genl_post_slot_status(struct dispenser_slot_list *slot, s
 	if (info) {
 		return genlmsg_reply(reply_buffer, info);
 	} else {
-		return genlmsg_multicast(&dispenser_genl_family, reply_buffer, 0, DISPENSER_GENL_MCGROUP_MASK, 0);
+		//return genlmsg_multicast(&dispenser_genl_family, reply_buffer, 0, DISPENSER_GENL_MCGROUP_MASK, 0);
+		return genlmsg_unicast(sender_net, reply_buffer, sender_portid);
 	}
 }
 
@@ -381,7 +389,12 @@ static int __dispenser_genl_post_col_status(struct dispenser_col_list *col, stru
 	} else {
 		//info == NULL --> broadcast!
 		//reply_header = genlmsg_put(reply_buffer, info->snd_portid, info->snd_seq + 1, &dispenser_genl_family, 0, DISPENSER_GENL_CMD_UNIT_STATUS);
-		reply_header = genlmsg_put(reply_buffer, 0, seq++, &dispenser_genl_family, 0, DISPENSER_GENL_CMD_COL_STATUS);
+
+		//multicast
+		//reply_header = genlmsg_put(reply_buffer, 0, seq++, &dispenser_genl_family, 0, DISPENSER_GENL_CMD_COL_STATUS);
+
+		//unicast
+		reply_header = genlmsg_put(reply_buffer, sender_portid, seq++, &dispenser_genl_family, 0, DISPENSER_GENL_CMD_UNIT_STATUS);
 	}
 	if (reply_header == NULL) {
 		printk("Header memory error.\n");
@@ -418,7 +431,8 @@ static int __dispenser_genl_post_col_status(struct dispenser_col_list *col, stru
 	if (info) {
 		return genlmsg_reply(reply_buffer, info);
 	} else {
-		return genlmsg_multicast(&dispenser_genl_family, reply_buffer, 0, DISPENSER_GENL_MCGROUP_MASK, 0);
+		//return genlmsg_multicast(&dispenser_genl_family, reply_buffer, 0, DISPENSER_GENL_MCGROUP_MASK, 0);
+		return genlmsg_unicast(sender_net, reply_buffer, sender_portid);
 	}
 }
 
@@ -438,6 +452,10 @@ static int dispenser_genl_unit_status(struct sk_buff *sender_buffer, struct  gen
 		return -EINVAL;
 	}
 	unit = &pDispenser_mmap->unit;
+
+	//set destination for unicast
+	sender_net = genl_info_net(info);
+	sender_portid = info->snd_portid;
 
 	attrs = info->attrs;
 
@@ -492,7 +510,12 @@ static int __dispenser_genl_post_unit_status(struct genl_info *info)
 	} else {
 		//info == NULL --> broadcast!
 		//reply_header = genlmsg_put(reply_buffer, info->snd_portid, info->snd_seq + 1, &dispenser_genl_family, 0, DISPENSER_GENL_CMD_UNIT_STATUS);
-		reply_header = genlmsg_put(reply_buffer, 0, seq++, &dispenser_genl_family, 0, DISPENSER_GENL_CMD_UNIT_STATUS);
+
+		//multicast
+		//reply_header = genlmsg_put(reply_buffer, 0, seq++, &dispenser_genl_family, 0, DISPENSER_GENL_CMD_UNIT_STATUS);
+
+		//unicast
+		reply_header = genlmsg_put(reply_buffer, sender_portid, seq++, &dispenser_genl_family, 0, DISPENSER_GENL_CMD_UNIT_STATUS);
 	}
 	if (reply_header == NULL) {
 		printk("Header memory error.\n");
@@ -534,7 +557,8 @@ static int __dispenser_genl_post_unit_status(struct genl_info *info)
 	if (info) {
 		return genlmsg_reply(reply_buffer, info);
 	} else {
-		return genlmsg_multicast(&dispenser_genl_family, reply_buffer, 0, DISPENSER_GENL_MCGROUP_MASK, 0);
+		//return genlmsg_multicast(&dispenser_genl_family, reply_buffer, 0, DISPENSER_GENL_MCGROUP_MASK, 0);
+		return genlmsg_unicast(sender_net, reply_buffer, sender_portid);
 	}
 }
 
@@ -573,8 +597,13 @@ static int __dispenser_genl_post_environment(struct  genl_info *info)
 		reply_header = genlmsg_put(reply_buffer, info->snd_portid, info->snd_seq + 1, &dispenser_genl_family, 0, DISPENSER_GENL_CMD_ENVIRONMENT);
 	} else {
 		//info == NULL --> broadcast!
-		reply_header = genlmsg_put(reply_buffer, 0, seq++, &dispenser_genl_family, 0, DISPENSER_GENL_CMD_ENVIRONMENT);
+		//reply_header = genlmsg_put(reply_buffer, 0, seq++, &dispenser_genl_family, 0, DISPENSER_GENL_CMD_ENVIRONMENT);
+
+		//multicast
 		//reply_header = genlmsg_put(reply_buffer, info->snd_portid, info->snd_seq + 1, &dispenser_genl_family, 0, DISPENSER_GENL_CMD_ENVIRONMENT);
+
+		//unicast
+		reply_header = genlmsg_put(reply_buffer, sender_portid, seq++, &dispenser_genl_family, 0, DISPENSER_GENL_CMD_UNIT_STATUS);
 	}
 
 	if (reply_header == NULL) {
@@ -611,7 +640,8 @@ static int __dispenser_genl_post_environment(struct  genl_info *info)
 	if (info) {
 		return genlmsg_reply(reply_buffer, info);
 	} else {
-		return genlmsg_multicast(&dispenser_genl_family, reply_buffer, 0, DISPENSER_GENL_MCGROUP_MASK, 0);
+		//return genlmsg_multicast(&dispenser_genl_family, reply_buffer, 0, DISPENSER_GENL_MCGROUP_MASK, 0);
+		return genlmsg_unicast(sender_net, reply_buffer, sender_portid);
 	}
 }
 
