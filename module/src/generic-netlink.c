@@ -501,7 +501,7 @@ static int __dispenser_genl_post_unit_status(struct genl_info *info)
 
 	//bitfield door,power,night,light (night+light settable)
 	status = dispenser_pack_unit_status(unit);
-	printk("Sending Unit: door=%i, power=%i, night=%i, light=%i.", unit->door, unit->power, unit->night, unit->light, status);
+	printk("Sending Unit: door=%i, power=%i, night=%i, light=%i.", unit->door, unit->charging, unit->night, unit->light, status);
 
 	reply_buffer = genlmsg_new(NLMSG_GOODSIZE, GFP_KERNEL);
 	if (reply_buffer == NULL) {
