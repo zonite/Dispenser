@@ -453,7 +453,7 @@ static void dispenser_unit_release_count(char count, char force)
 		printk("Dispenser is empty! No release...");
 		//Todo emit error!
 		for (i = 0; i < cDispenser.col_count; ++i) {
-			dispenset_unit_release_column(cDispenser.cols[i], 1, force);
+			dispenser_unit_release_column(&cDispenser.cols[i], 1, force);
 		}
 		return;
 	}
