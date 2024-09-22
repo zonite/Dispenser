@@ -215,7 +215,6 @@ static int dispenser_genl_slot_status(struct sk_buff *sender_buffer, struct  gen
 		dispenser_unpack_slot_status(status, &new_state, &full);
 		dispenser_unit_set_slot_state(slot, &new_state, &full);
 		//dispenser_unpack_slot_status(status, slot->state, &slot->full);
-		slot->initialized = true;
 	}
 
 	if (attrs[DISPENSER_GENL_SLOT_FAILED_UP]) {
@@ -227,6 +226,9 @@ static int dispenser_genl_slot_status(struct sk_buff *sender_buffer, struct  gen
 		dispenser_unit_set_slot_down_failed(slot, nla_get_s32(attrs[DISPENSER_GENL_SLOT_FAILED_DOWN]));
 		//slot->state->down_failed = nla_get_s32(attrs[DISPENSER_GENL_SLOT_FAILED_DOWN]);
 	}
+
+	printk("Slot %u/%u initialized!", c, s);
+	slot->initialized = true;
 
 	return __dispenser_genl_post_slot_status(slot, info);
 }
