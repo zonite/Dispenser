@@ -452,6 +452,9 @@ static void dispenser_unit_release_count(char count, char force)
 	if (count_avail == 0) {
 		printk("Dispenser is empty! No release...");
 		//Todo emit error!
+		for (i = 0; i < cDispenser.col_count; ++i) {
+			dispenset_unit_release_column(cDispenser.cols[i], 1, force);
+		}
 		return;
 	}
 
@@ -471,7 +474,7 @@ static void dispenser_unit_release_count(char count, char force)
 			col = col->next;
 			cur_count = dispenser_unit_get_full_column(col);
 			printk("Col %i full count = %i.", target->col_id, count_avail);
-			if (cur_count > count_avail) {
+			if (cur_count >= count_avail) { //Release from highest number column!
 				count_avail = cur_count;
 				target = col;
 			}
