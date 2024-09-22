@@ -59,6 +59,8 @@ void ColItem::setSlots(int i)
 	//QVector<QObject> lista;
 	//lista.resize(10);
 
+	qDaemonLog(QStringLiteral("ColItem slot count has changed %1 -> %2.").arg(m_cSlots.size()).arg(i), QDaemonLog::ErrorEntry);
+
 	if (i == m_cSlots.size())
 		return;
 

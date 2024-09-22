@@ -193,6 +193,8 @@ void UnitItem::setCols(int i)
 	if (m_cCols.size() == i)
 		return;
 
+	qDaemonLog(QString("Unit: cols changed %1 -> %2").arg(m_cCols.size()).arg(i), QDaemonLog::NoticeEntry);
+
 	if (m_cCols.size() != 0)
 		m_cCols.clear();
 
