@@ -197,6 +197,10 @@ static void dispenser_release_event(struct dispenser_gpiod* dev, char new_val)
 	} else if (slot->state->state == FAILED && slot->state->up == 0 && slot->state->down == 1) {
 		//Failed, but now open
 		slot->state->state = OPEN;
+	} else if (slot->state->state == OPENING) {
+		//Down failed or door stuck in middle position.
+		printk("Dispenser: Release %s OPENING, did not reach down in TMOUT.\n", dev->gpiod->name);
+		++slot->state->down_failed;
 	} else {
 		//Failed
 		slot->state->state = FAILED;
@@ -204,7 +208,7 @@ static void dispenser_release_event(struct dispenser_gpiod* dev, char new_val)
 		dispenser_gpiod_set(dev, 1);
 		return;
 	}
-	dispenser_gpiod_set_tmout(dev, 1, 0);
+	dispenser_gpiod_set_tmout(dev, 0, 0);
 	if (slot->pendingRelease) {
 		printk("Dispenser: Release %s success.\n", dev->gpiod->name);
 	}
