@@ -30,7 +30,7 @@ SlotItem::~SlotItem()
 {
 	char col = m_pCol->getId();
 
-	m_cSettings.beginGroup(QStringLiteral("Col%1Slot%2").arg(col).arg(m_iSlotId));
+	m_cSettings.beginGroup(QString("Col%1Slot%2").arg(col).arg(m_iSlotId));
 	m_cSettings.setValue("state", m_sSlot.state);
 	m_cSettings.setValue("full", m_bFull);
 	m_cSettings.setValue("up", m_sSlot.up);
@@ -40,6 +40,7 @@ SlotItem::~SlotItem()
 	m_cSettings.setValue("failed_down", m_sSlot.down_failed);
 	m_cSettings.endGroup();
 
+	qDaemonLog(QString("Slot %1/%2 syncing").arg(col).arg(m_iSlotId), QDaemonLog::NoticeEntry);
 	m_cSettings.sync();
 }
 
