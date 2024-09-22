@@ -645,6 +645,7 @@ static void dispenser_unit_locks_on(void)
 	for (i = 0; i < cDispenser.slot_count; ++i) {
 		s = &slots[i];
 
+		printk("Door opened -> Locks on!");
 		dispenser_gpiod_set_tmout(s->release, 1, 0);
 	}
 }
