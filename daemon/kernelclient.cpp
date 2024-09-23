@@ -1398,7 +1398,9 @@ void KernelClient::release(__s8 col, __s8 slot, bool force, __u8 count)
 			nl_attr_put(&toKernel, DISPENSER_GENL_SLOT_NUM, slot);
 	}
 
-	sendToKernel(&toKernel);
+
+	qDaemonLog(QStringLiteral("Release command inhibit for debugging!"), QDaemonLog::NoticeEntry);
+	//sendToKernel(&toKernel);
 }
 
 void KernelClient::release(SlotItem *slot, bool force)
