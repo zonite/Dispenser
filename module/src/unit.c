@@ -691,6 +691,7 @@ static void dispenser_unit_set_state(struct dispenser_mmap_unit *new_state)
 		++pDispenser_mmap->unit.counter;
 }
 
+/*
 static u32 dispenser_unit_set_slot_state(struct dispenser_slot_list *slot, struct dispenser_mmap_slot *new_state, unsigned char *full)
 {
 	if (!slot)
@@ -708,6 +709,7 @@ static u32 dispenser_unit_set_slot_state(struct dispenser_slot_list *slot, struc
 
 	return pDispenser_mmap->unit.counter;
 }
+*/
 
 static void dispenser_unit_set_slot_up_failed(struct dispenser_slot_list *slot, s32 failed_up)
 {
