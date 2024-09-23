@@ -682,10 +682,10 @@ static void dispenser_unit_set_state(struct dispenser_mmap_unit *new_state)
 		pDispenser_mmap->unit.night = new_state->night;
 	}
 
-	if (pDispenser_mmap->unit.light != new_state->light) {
-		increment = 0;
-
-	}
+	//if (pDispenser_mmap->unit.light != new_state->light) {
+	//	increment = 0;
+	//
+	//}
 
 	if (increment)
 		++pDispenser_mmap->unit.counter;

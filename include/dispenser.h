@@ -254,17 +254,21 @@ union dispenser_mmap {
 inline unsigned char dispenser_pack_unit_status(const struct dispenser_mmap_unit *unit)
 {
 	unsigned char status = 0;
-	status |= (unit->door & 1) << 3;
-	status |= (unit->charging & 1) << 2;
-	status |= (unit->night & 1) << 1;
-	status |= (unit->light & 1);
 
+	if (unit) {
+		status |= (unit->door & 1) << 3;
+		status |= (unit->charging & 1) << 2;
+		status |= (unit->night & 1) << 1;
+		status |= (unit->light & 1);
+	}
 	return status;
 }
 
 inline void dispenser_unpack_unit_status(unsigned char status, struct dispenser_mmap_unit *unit)
 {
 	if (unit) {
+		unit->door = (status >> 3) & 1;
+		unit->charging = (status >> 2) & 1;
 		unit->night = (status >> 1) & 1;
 		unit->light = status & 1;
 	}
@@ -274,11 +278,14 @@ inline void dispenser_unpack_unit_status(unsigned char status, struct dispenser_
 inline unsigned char dispenser_pack_slot_status(const struct dispenser_mmap_slot *state, unsigned char full)
 {
 	unsigned char status = 0;
-	status |= (state->up & 1) << 7;
-	status |= (state->down & 1) << 6;
-	status |= (state->release & 1) << 5;
-	status |= (full & 1) << 4;
-	status |= (state->state & 0xf);
+
+	if (state) {
+		status |= (state->up & 1) << 7;
+		status |= (state->down & 1) << 6;
+		status |= (state->release & 1) << 5;
+		status |= (full & 1) << 4;
+		status |= (state->state & 0xf);
+	}
 
 	return status;
 }
@@ -287,11 +294,11 @@ inline void dispenser_unpack_slot_status(unsigned char status, struct dispenser_
 {
 	if (state) {
 		state->state = (enum slot_state) (status & 0xf);
-#ifndef __KERNEL__
+//#ifndef __KERNEL__
 		state->up = (status >> 7) & 1;
 		state->down = (status >> 6) & 1;
 		state->release = (status >> 5) & 1;
-#endif
+//#endif
 	}
 	if (full) {
 		*full = (status >> 4) & 1;
