@@ -47,3 +47,9 @@ HEADERS += \
 
 RESOURCES += \
         daemon.qrc
+
+DISTFILES += \
+        http/HLSnginx.conf \
+        http/RPInginx.conf \
+        http/player.html \
+        skripts/rpistream.sh

@@ -15,6 +15,7 @@ SOURCES += \
     colitem.cpp \
 #    dispenser.cpp \
         localinfo.cpp \
+        monitor.cpp \
     slotitem.cpp \
         timer.cpp \
     unititem.cpp
@@ -25,6 +26,7 @@ HEADERS += \
     lib_global.h \
 #    dispenser.h \
         localinfo.h \
+        monitor.h \
     slotitem.h \
         timer.h \
     unititem.h
