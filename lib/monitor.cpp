@@ -207,6 +207,8 @@ void Monitor::aboutToRelease()
 void Monitor::encoderReady()
 {
 	//m_cSendTimer.start(m_iSendTime);
+	qDaemonLog(QStringLiteral("ENCODE ready!"), QDaemonLog::NoticeEntry);
+
 	if (m_cSendTimer.isActive()) {
 		qDaemonLog(QStringLiteral("Send timer active after ENCODE ready. Waiting..."), QDaemonLog::NoticeEntry);
 		return;
@@ -254,10 +256,13 @@ void Monitor::startReleaseTimer(UnitItem *unit)
 void Monitor::send()
 {
 	QTemporaryFile message;
+	QFile video(QStringLiteral("/tmp/send.mov"));
 	//QString message = QDir::tempPath() + QStringLiteral("/message");
 	message.open();
 
-	if (m_iEvents & REENCODE) {
+	qDaemonLog(QStringLiteral("Send report. Video exists %1").arg(video.exists()), QDaemonLog::NoticeEntry);
+
+	if (m_iEvents & REENCODE || video.exists()) {
 		QTemporaryFile body;
 		QProcess pack;
 		QStringList args;
@@ -277,7 +282,7 @@ void Monitor::send()
 		body.fileName();
 
 
-		QFile video(QStringLiteral("/tmp/send.mov"));
+		//QFile video(QStringLiteral("/tmp/send.mov"));
 		video.rename(QDir::tempPath() + QStringLiteral("/send-") + QDateTime::currentDateTime().toString("yyyy-MM-dd_HH.mm") + QStringLiteral(".mov"));
 		args << QStringLiteral("Dispenser Release Event")
 		     << body.fileName()
