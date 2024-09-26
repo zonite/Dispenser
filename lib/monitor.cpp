@@ -277,6 +277,8 @@ void Monitor::send()
 		     << QDir::tempPath() + message.fileName();
 
 		pack.start(m_cReportScript, args);
+		pack.waitForFinished();
+		pack.readAll();
 	} else {
 		QStringList content;
 		content << QStringLiteral("From: dispenser@nykyri.eu")
@@ -342,7 +344,7 @@ void Monitor::generateMessage(QStringList &lines)
 	lines << m_pUnit->toStatusStr()
 	      << QStringLiteral("");
 
-	lines << tr("End of raport");
+	lines << tr("End of report");
 
 	lines << QStringLiteral("")
 	      << QStringLiteral("")
@@ -376,22 +378,25 @@ void ReEncoder::doReEncode()
 	}
 
 	QProcess encode;
-	QString prog = m_pMonitor->getStartRec();
+	QString startSh = m_pMonitor->getStartRec();
+	QString stopSh = m_pMonitor->getStopRec();
 	QStringList args;
 
-	encode.start(prog, args);
+	encode.start(stopSh, args);
+	encode.waitForFinished();
+	encode.readAll();
+
+	encode.start(startSh, args);
 	encode.waitForFinished();
 	encode.readAll();
 
 	QThread::sleep(m_pMonitor->getDuration()); //sleep the wanted duration and sleep
 
-	prog = m_pMonitor->getStopRec();
-
-	encode.start(prog, args);
+	encode.start(stopSh, args);
 	encode.waitForFinished();
 	encode.readAll();
 
-	prog = m_pMonitor->getReencode();
+	QString prog = m_pMonitor->getReencode();
 	args.clear();
 	args << m_pMonitor->getRecLocation();
 

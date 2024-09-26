@@ -290,8 +290,9 @@ const QStringList UnitItem::toStatusStr()
 			slotRows = cur_slots;
 	}
 
-	for (int i = 0; i < slotRows; ++i) {
+	for (int i = slotRows - 1; i >= 0; --i) {
 		QString line;
+		line = QStringLiteral("%1\t").arg(QString::number(i));
 		for (int k = 0; k < numCols(); ++k) {
 			SlotItem *slot = col(k)->slot(i);
 			if (slot)

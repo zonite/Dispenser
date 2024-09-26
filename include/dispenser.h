@@ -34,7 +34,7 @@
  * Dispenser Daemon config
  */
 
-#define DISPENSER_TCP_PORT 80
+#define DISPENSER_TCP_PORT 8080
 
 struct __bme280_calib_data
 {
