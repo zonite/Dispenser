@@ -115,7 +115,8 @@ void SlotItem::setState(__u8 state)
 
 	if (state != m_sSlot.state) {
 		m_sSlot.state;
-		emit stateChanged(m_sSlot.state);
+		emit stateChanged(this);
+		//emit stateChanged(m_sSlot.state);
 	}
 }
 
@@ -124,7 +125,8 @@ void SlotItem::setFull(bool full)
 	if (full != m_bFull) {
 		m_bFull = full;
 
-		emit fullChanged(m_bFull);
+		emit fullChanged(this);
+		//emit fullChanged(m_bFull);
 	}
 }
 
@@ -133,7 +135,8 @@ void SlotItem::setUp(__u8 up)
 	if (up != m_sSlot.up) {
 		m_sSlot.up = up;
 
-		emit upChanged(m_sSlot.up);
+		emit upChanged(this);
+		//emit upChanged(m_sSlot.up);
 	}
 }
 
@@ -142,7 +145,8 @@ void SlotItem::setDown(__u8 down)
 	if (down != m_sSlot.down) {
 		m_sSlot.down = down;
 
-		emit downChanged(m_sSlot.down);
+		emit downChanged(this);
+		//emit downChanged(m_sSlot.down);
 	}
 
 }
@@ -152,7 +156,8 @@ void SlotItem::setRelease(__u8 release)
 	if (release != m_sSlot.release) {
 		m_sSlot.release = release;
 
-		emit releaseChanged(m_sSlot.release);
+		emit releaseChanged(this);
+		//emit releaseChanged(m_sSlot.release);
 	}
 }
 
