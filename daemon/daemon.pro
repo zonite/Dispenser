@@ -52,6 +52,7 @@ DISTFILES += \
         http/HLSnginx.conf \
         http/RPInginx.conf \
         http/player.html \
+        skripts/camerastream.service \
         skripts/captureCamera.sh \
         skripts/createReport.sh \
         skripts/reencode.sh \

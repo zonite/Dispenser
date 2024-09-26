@@ -1,0 +1,15 @@
+[Unit]
+Description=Capture USB camera and stream
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/captureCamera.sh restream dispenser128
+
+[Install]
+WantedBy=multi-user.target
+
+#/etc/systemd/system
+#systemctl enable camerastream.service
+#systemctl enable --now camerastream.service
+#systemctl daemon-reload
+#systemctl start camerastream.service
