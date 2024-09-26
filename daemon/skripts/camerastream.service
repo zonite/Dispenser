@@ -1,5 +1,6 @@
 [Unit]
 Description=Capture USB camera and stream
+Requires=nginx.service
 
 [Service]
 Type=simple
