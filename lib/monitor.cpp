@@ -206,13 +206,21 @@ void Monitor::aboutToRelease()
 
 void Monitor::encoderReady()
 {
-	m_cSendTimer.start(m_iSendTime);
+	//m_cSendTimer.start(m_iSendTime);
+	if (m_cSendTimer.isActive()) {
+		qDaemonLog(QStringLiteral("Send timer active after ENCODE ready. Waiting..."), QDaemonLog::NoticeEntry);
+		return;
+	}
 }
 
 void Monitor::sendMail()
 {
-	if (reencodeThread.isRunning())
+	qDaemonLog(QStringLiteral("Send timer expired."), QDaemonLog::NoticeEntry);
+
+	if (reencodeThread.isRunning()) {
+		qDaemonLog(QStringLiteral("Send timer: encoder running -> return."), QDaemonLog::NoticeEntry);
 		return;
+	}
 
 	send();
 }
