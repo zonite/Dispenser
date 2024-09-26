@@ -68,8 +68,8 @@ Monitor::Monitor(UnitItem *unit)
 	connect(&m_cSendTimer, &QTimer::timeout, this, &Monitor::sendMail);
 	connect(&m_cInhibitTimer, &QTimer::timeout, this, &Monitor::forceSend);
 
-	connect(m_pUnit, &UnitItem::alarmsChanged, this, &Monitor::startReleaseTimer);
 	connect(m_pUnit, &UnitItem::newCol, this, &Monitor::newCol);
+	connect(m_pUnit, &UnitItem::alarmsChanged, this, &Monitor::startReleaseTimer);
 	connect(m_pUnit, &UnitItem::releaseEvent, this, &Monitor::unitReleaseEvent);
 	connect(m_pUnit, &UnitItem::chargingChanged, this, &Monitor::chargingChanged);
 
@@ -112,6 +112,7 @@ void Monitor::newCol(ColItem *col)
 {
 	connect(col, &ColItem::newSlot, this, &Monitor::newSlot);
 	connect(col, &ColItem::releaseEvent, this, &Monitor::colReleaseEvent);
+	connect(col, &ColItem::alarmsChanged, this, &Monitor::startReleaseTimer);
 }
 
 void Monitor::releaseSlot(SlotItem *slot)
@@ -165,6 +166,7 @@ void Monitor::unitReleaseEvent(UnitItem *unit)
 	                .arg(QTime::currentTime().toString());
 
 	add(RELEASE);
+	startReleaseTimer(m_pUnit);
 }
 
 void Monitor::colReleaseEvent(ColItem *col)
@@ -174,6 +176,7 @@ void Monitor::colReleaseEvent(ColItem *col)
 	                .arg(col->getId());
 
 	add(RELEASE);
+	startReleaseTimer(m_pUnit);
 }
 
 void Monitor::chargingChanged(UnitItem *unit)
@@ -198,7 +201,7 @@ void Monitor::aboutToRelease()
 
 	qDaemonLog(QStringLiteral("Release about to happen -> start record"), QDaemonLog::NoticeEntry);
 
-
+	startReleaseTimer(m_pUnit);
 }
 
 void Monitor::encoderReady()
@@ -236,8 +239,8 @@ void Monitor::startReleaseTimer(UnitItem *unit)
 	m_cReleaseTimer.start(msec - m_iReleaseLeadTime);
 
 	qDaemonLog(QStringLiteral("Next release in %1. Wake up in %2")
-	           .arg(QString::number(msec)
-	                .arg(QString::number(msec - m_iReleaseLeadTime))), QDaemonLog::NoticeEntry);
+	           .arg(QString::number(msec))
+	           .arg(QString::number(msec - m_iReleaseLeadTime)), QDaemonLog::NoticeEntry);
 }
 
 void Monitor::send()
