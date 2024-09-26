@@ -305,7 +305,8 @@ void Monitor::send()
 			QStringList args;
 			args << QStringLiteral("dispenser@nykyri.eu")
 			     << rcpt.email
-			     << QDir::tempPath() + message.fileName();
+			     << message.fileName();
+			     //<< QDir::tempPath() + message.fileName();
 
 			send.start(prog, args);
 			send.waitForFinished();
