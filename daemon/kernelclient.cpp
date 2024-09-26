@@ -110,6 +110,7 @@ KernelClient::~KernelClient()
 	if (m_pMonitor) {
 		delete m_pMonitor;
 		m_pMonitor = nullptr;
+	}
 }
 
 void KernelClient::start(const QStringList &arguments)
