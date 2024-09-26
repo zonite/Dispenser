@@ -74,6 +74,7 @@ Monitor::Monitor(UnitItem *unit)
 	connect(m_pUnit, &UnitItem::chargingChanged, this, &Monitor::chargingChanged);
 
 	reencodeThread.start();
+	startReleaseTimer(m_pUnit);
 }
 
 Monitor::~Monitor()
@@ -233,6 +234,10 @@ void Monitor::startReleaseTimer(UnitItem *unit)
 	long msec = m_pUnit->getNextRelease(m_iReleaseLeadTime);
 
 	m_cReleaseTimer.start(msec - m_iReleaseLeadTime);
+
+	qDaemonLog(QStringLiteral("Next release in %1. Wake up in %2")
+	           .arg(QString::number(msec)
+	                .arg(QString::number(msec - m_iReleaseLeadTime))), QDaemonLog::NoticeEntry);
 }
 
 void Monitor::send()

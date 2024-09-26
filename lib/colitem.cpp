@@ -142,6 +142,8 @@ void ColItem::releaseTimeout(Alarm *alarm)
 
 void ColItem::timerStarted(Alarm *alarm)
 {
+	Q_UNUSED(alarm);
+
 	emit alarmChanged(this);
 }
 
