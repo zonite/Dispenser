@@ -63,7 +63,7 @@ signals:
 	void counterChanged(__u32 counter);
 	void doorChanged(__u8 door);
 	void lightChanged(__u8 light);
-	void chargingChanged(__u8 charging);
+	void chargingChanged(UnitItem *unit);
 	void nightChanged(__u8 night);
 	void colsChanged(UnitItem *unit);
 	void newCol(ColItem *col);

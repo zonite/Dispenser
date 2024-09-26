@@ -180,7 +180,7 @@ void UnitItem::setCharging(char state)
 		return;
 
 	m_sUnit.charging = state;
-	emit chargingChanged(m_sUnit.charging);
+	emit chargingChanged(this);
 }
 
 void UnitItem::setInitialized(qint8 init)
