@@ -270,7 +270,7 @@ void Monitor::send()
 
 
 		QFile video(QStringLiteral("/tmp/send.mov"));
-		video.rename(QStringLiteral("send-") + QDateTime::currentDateTime().toString("YYYY-MM-DD_HH.mm") + QStringLiteral(".mov"));
+		video.rename(QDir::tempPath() + QStringLiteral("/send-") + QDateTime::currentDateTime().toString("yyyy-MM-dd_HH.mm") + QStringLiteral(".mov"));
 		args << QStringLiteral("Dispenser Release Event")
 		     << body.fileName()
 		     << video.fileName()
