@@ -34,12 +34,6 @@ int main(int argc, char *argv[])
     //qRegisterMetaType<Alarm<UnitItem>>();
     //qRegisterMetaType<Alarm<ColItem>>();
 
-    KernelClient kernel(&a);
-
-
-    QObject::connect(&a, &QDaemonApplication::daemonized, &kernel, &KernelClient::start);
-    QObject::connect(&a, &QDaemonApplication::aboutToQuit, &kernel, &KernelClient::stop);
-
     QTranslator translator;
     const QStringList uiLanguages = QLocale::system().uiLanguages();
     for (const QString &locale : uiLanguages) {
@@ -49,6 +43,12 @@ int main(int argc, char *argv[])
 	    break;
 	}
     }
+
+    KernelClient kernel(&a);
+
+
+    QObject::connect(&a, &QDaemonApplication::daemonized, &kernel, &KernelClient::start);
+    QObject::connect(&a, &QDaemonApplication::aboutToQuit, &kernel, &KernelClient::stop);
 
     return QDaemonApplication::exec();
 //    return a.exec();

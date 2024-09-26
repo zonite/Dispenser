@@ -32,18 +32,19 @@ public:
 	__s8 getId() { return m_iSlotId; }
 	bool getInitialized() const { return m_bInitialized; }
 	void setParentNid(ColItem *parent, __s8 i);
-	bool getFull() { return m_bFull; }
+	QString getStateStr();
+	inline bool getFull() const { return m_bFull; }
 
 	const struct dispenser_mmap_slot *getSlotStatus() { return &m_sSlot; }
 	__s32 getFailedUp() { return m_sSlot.up_failed; }
 	__s32 getFailedDown() { return m_sSlot.down_failed; }
 
 signals:
-	void stateChanged(enum slot_state up);
-	void upChanged(char up);
-	void downChanged(char down);
-	void releaseChanged(char release);
-	void fullChanged(bool full);
+	void stateChanged(SlotItem *slot);
+	void upChanged(SlotItem *slot);
+	void downChanged(SlotItem *slot);
+	void releaseChanged(SlotItem *slot);
+	void fullChanged(SlotItem *slot);
 	//void idChanged(SlotItem *slot);
 
 private:

@@ -29,10 +29,14 @@ public:
 	void setSlots(int i);
 	void setColId(__s8 id);
 	void addSlot();
+
+	UnitItem *getUnit() const;
 	char getId() const;
 	bool getInitialized() const { return m_bInitialized; }
 	char getSlotCount() const { return m_sCol.slot_count; }
 	const QVector<SlotItem> *getSlots() const { return &m_cSlots; }
+	bool isFull() const;
+	bool isEmpty() const;
 
 public slots:
 	//void releaseTimeout(Alarm<ColItem> *alarm);

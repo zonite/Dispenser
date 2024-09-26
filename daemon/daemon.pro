@@ -52,4 +52,10 @@ DISTFILES += \
         http/HLSnginx.conf \
         http/RPInginx.conf \
         http/player.html \
-        skripts/rpistream.sh
+        skripts/captureCamera.sh \
+        skripts/createReport.sh \
+        skripts/reencode.sh \
+        skripts/rpistream.sh \
+        skripts/sendReport.sh \
+        skripts/startRec.sh \
+        skripts/stopRec.sh

@@ -89,6 +89,11 @@ void ColItem::addSlot()
 	//m_sCol.slot_count = m_cSlots.size();
 }
 
+UnitItem *ColItem::getUnit() const
+{
+	return m_pUnit;
+}
+
 char ColItem::getId() const
 {
 	if (m_sCol.col_id < 0 && m_pUnit) {
@@ -98,6 +103,28 @@ char ColItem::getId() const
 	}
 
 	return m_sCol.col_id;
+}
+
+bool ColItem::isFull() const
+{
+	for (int i = 0; i < m_cSlots.size(); ++i) {
+		if (!m_cSlots.at(i).getFull()) {
+			return false;
+		}
+	}
+
+	return true;
+}
+
+bool ColItem::isEmpty() const
+{
+	for (int i = 0; i < m_cSlots.size(); ++i) {
+		if (m_cSlots.at(i).getFull()) {
+			return false;
+		}
+	}
+
+	return true;
 }
 
 void ColItem::releaseTimeout(Alarm *alarm)

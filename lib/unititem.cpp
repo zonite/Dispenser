@@ -245,6 +245,26 @@ void UnitItem::checkInitialized()
 	emit initialized(this);
 }
 
+bool UnitItem::isFull()
+{
+	for (int i = 0; i < numCols(); ++i) {
+		if (!m_cCols.at(i).isFull())
+			return false;
+	}
+
+	return true;
+}
+
+bool UnitItem::isEmpty()
+{
+	for (int i = 0; i < numCols(); ++i) {
+		if (!m_cCols.at(i).isEmpty())
+			return false;
+	}
+
+	return true;
+}
+
 void UnitItem::releaseTimeout(Alarm *alarm)
 {
 	Q_UNUSED(alarm);
@@ -271,7 +291,7 @@ void UnitItem::initCols()
 		m_cCols[i].setParent(this);
 		m_cCols[i].setColId(i);
 
-		//emit newCol(&m_cCols[i]);
+		emit newCol(&m_cCols[i]);
 
 	}
 }

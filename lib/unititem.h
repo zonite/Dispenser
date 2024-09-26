@@ -38,7 +38,7 @@ public:
 	void setCharging(char state);
 	void setInitialized(qint8 init);
 
-	int numCols() { return m_sUnit.ncols; };
+	inline int numCols() { return m_sUnit.ncols; };
 	void setCols(int i);
 	void setSlots(int i);
 	void addCol();
@@ -47,6 +47,8 @@ public:
 	qint8 daemonInitialized() { return m_bInitialized; }
 
 	void checkInitialized();
+	bool isFull();
+	inline bool isCharging() const { return m_sUnit.charging; }
 
 public slots:
 	void releaseTimeout(Alarm *alarm);

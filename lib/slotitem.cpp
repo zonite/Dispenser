@@ -201,6 +201,26 @@ void SlotItem::setParentNid(ColItem *parent, __s8 i)
 	m_cSettings.endGroup();
 }
 
+QString SlotItem::getStateStr()
+{
+	switch (m_sSlot.state) {
+	case UNKNOWN:
+		return tr("unknown");
+	case FAILED:
+		return tr("failed");
+	case CLOSED:
+		return tr("closed");
+	case RELEASE:
+		return tr("releasing");
+	case OPENING:
+		return tr("opening");
+	case OPEN:
+		return tr("open");
+	case CLOSING:
+		return tr("closing");
+	}
+}
+
 /*
 void SlotItem::setId(__s8 i)
 {
