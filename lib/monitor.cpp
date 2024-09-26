@@ -209,6 +209,16 @@ void Monitor::sendMail()
 	send();
 }
 
+void Monitor::forceSend()
+{
+	reencodeThread.terminate();
+	reencodeThread.start();
+
+	m_cSendTimer.stop();
+
+	send();
+}
+
 void Monitor::startReleaseTimer(UnitItem *unit)
 {
 	if (unit != m_pUnit) {
