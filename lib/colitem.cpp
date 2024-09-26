@@ -144,7 +144,7 @@ void ColItem::timerStarted(Alarm *alarm)
 {
 	Q_UNUSED(alarm);
 
-	emit alarmsChanged(this);
+	emit alarmsChanged(m_pUnit);
 }
 
 void ColItem::initSlots()

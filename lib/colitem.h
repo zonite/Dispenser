@@ -47,7 +47,7 @@ signals:
 	void slotCountChanged(ColItem *col);
 	void releaseEvent(ColItem *col);
 	void newSlot(SlotItem *slot);
-	void alarmsChanged(ColItem *col);
+	void alarmsChanged(UnitItem *unit);
 	//void idChanged(ColItem *col);
 
 private:
