@@ -350,7 +350,7 @@ Monitor &Monitor::operator<<(QString text)
 
 
 ReEncoder::ReEncoder(Monitor *monitor)
-        : QObject(monitor)
+//        : QObject(monitor)
 {
 	m_pMonitor = monitor;
 }
