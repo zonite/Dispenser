@@ -106,6 +106,10 @@ KernelClient::~KernelClient()
 		::close(nl_fd);
 		nl_fd = -1;
 	}
+
+	if (m_pMonitor) {
+		delete m_pMonitor;
+		m_pMonitor = nullptr;
 }
 
 void KernelClient::start(const QStringList &arguments)
@@ -1140,6 +1144,8 @@ int KernelClient::resolve_family_id_by_name()
 	connect(&m_cUnit, &UnitItem::nightChanged, this, &KernelClient::setUnitStatus, Qt::QueuedConnection);
 	connect(&m_cUnit, &UnitItem::colsChanged, this, &KernelClient::connectCols, Qt::QueuedConnection);
 	connect(&m_cUnit, &UnitItem::initialized, this, &KernelClient::moduleAndDaemonInitialized, Qt::QueuedConnection);
+
+	m_pMonitor = new Monitor(&m_cUnit);
 
 	//request unit status
 	getUnitStatus();

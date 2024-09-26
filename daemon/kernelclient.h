@@ -12,6 +12,7 @@
 
 #include <unititem.h>
 #include <alarm.h>
+#include <monitor.h>
 
 #include "daemon.h"
 #include "buffer.h"
@@ -249,6 +250,7 @@ private:
 	/** Datamodel */
 	UnitItem m_cUnit;
 	/** Alarmmodel */
+	Monitor *m_pMonitor = nullptr;
 
 	QBuffer mOutBuffer;
 	Buffer mInBuffer;
