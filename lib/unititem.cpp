@@ -221,6 +221,20 @@ void UnitItem::addCol()
 	//m_cCols.append(new_col);
 }
 
+long UnitItem::getNextRelease(long offset)
+{
+	long int next = INT_MAX;
+	int current;
+
+	for (const Alarm *alarm : m_pAlarms) {
+		current = alarm->remainingTime();
+		if (current < next && current - offset > 0)
+			next = current;
+	}
+
+	return next;
+}
+
 void UnitItem::checkInitialized()
 {
 	if (m_bInitialized)
@@ -307,6 +321,13 @@ void UnitItem::releaseTimeout(Alarm *alarm)
 		emit releaseEvent(this);
 	}
 	*/
+}
+
+void UnitItem::timerStarted(Alarm *alarm)
+{
+	Q_UNUSED(alarm);
+
+	emit alarmsChanged(this);
 }
 
 void UnitItem::initCols()

@@ -66,11 +66,13 @@ void Alarm::setParent(const Timer *parent)
 
 		if (unit) {
 			connect(this, &Alarm::releaseTimeout, unit, &UnitItem::releaseTimeout, Qt::QueuedConnection);
+			connect(this, &Alarm::timerStarted, unit, &UnitItem::timerStarted, Qt::QueuedConnection);
 			qDaemonLog(QString("Alarms(%1) connected to unit.").arg(QString::number((long long int)this)), QDaemonLog::NoticeEntry);
 		}
 
 		if (col) {
 			connect(this, &Alarm::releaseTimeout, col, &ColItem::releaseTimeout, Qt::QueuedConnection);
+			connect(this, &Alarm::timerStarted, col, &ColItem::timerStarted, Qt::QueuedConnection);
 			qDaemonLog(QString("Alarms connected to col.").arg(QString::number((long long int)this)), QDaemonLog::NoticeEntry);
 		}
 
@@ -359,6 +361,11 @@ QString Alarm::getTimevalue() const
 	return QString("%1:%2").arg(getSeconds() / 3600 ).arg(getSeconds() / 60 % 60);
 }
 
+int Alarm::remainingTime() const
+{
+	return m_cTimer.remainingTime();
+}
+
 int Alarm::getRemaining()
 {
 	return m_cTimer.remainingTime();
@@ -382,6 +389,8 @@ void Alarm::startTimer()
 	//m_cTimer.start(msecToRelease);
 	m_cTimer.setInterval(120000);
 	m_cTimer.start(120000);
+
+	emit timerStarted(this);
 }
 
 //template<typename T>

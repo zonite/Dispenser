@@ -100,6 +100,7 @@ private slots:
 	void encoderReady();
 	void sendMail();
 	void forceSend();
+	void startReleaseTimer(UnitItem *unit);
 
 private:
 	void send();

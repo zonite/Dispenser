@@ -97,6 +97,7 @@ public:
 	//ColItem *getCol() { return m_pCol; }
 	qint32 getSeconds() const { return m_iSeconds; }
 	QString getTimevalue() const;
+	int remainingTime() const;
 	enum weekdays getDays() const { return m_iActive; }
 	int getRemaining();
 	bool isActive();
@@ -106,6 +107,7 @@ public slots:
 
 signals:
 	void releaseTimeout(Alarm *alarm);
+	void timerStarted(Alarm *alarm);
 
 private:
 	//void setParent(const T *parent);

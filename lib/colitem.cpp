@@ -140,6 +140,11 @@ void ColItem::releaseTimeout(Alarm *alarm)
 	emit releaseEvent(this);
 }
 
+void ColItem::timerStarted(Alarm *alarm)
+{
+	emit alarmChanged(this);
+}
+
 void ColItem::initSlots()
 {
 	for (int i = 0; i < m_cSlots.size(); ++i) {

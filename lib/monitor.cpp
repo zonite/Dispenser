@@ -5,6 +5,8 @@
 #include <QTemporaryFile>
 #include <QProcess>
 
+#include <QDaemonLog>
+
 Monitor::Monitor(UnitItem *unit)
         : QObject(unit)
 {
@@ -62,6 +64,7 @@ Monitor::Monitor(UnitItem *unit)
 	connect(this, &Monitor::reencode, encoder, &ReEncoder::doReEncode);
 	connect(encoder, &ReEncoder::done, this, &Monitor::encoderReady);
 
+	connect(m_pUnit, &UnitItem::alarmsChanged, this, &Monitor::startReleaseTimer);
 	connect(&m_cReleaseTimer, &QTimer::timeout, this, &Monitor::aboutToRelease);
 	connect(&m_cSendTimer, &QTimer::timeout, this, &Monitor::sendMail);
 	connect(&m_cInhibitTimer, &QTimer::timeout, this, &Monitor::forceSend);
@@ -183,8 +186,14 @@ void Monitor::chargingChanged(UnitItem *unit)
 void Monitor::aboutToRelease()
 {
 	add(REENCODE);
-
 	emit reencode();
+
+	*this << tr("%1:\tDispenser Start Recording for release.")
+	                .arg(QTime::currentTime().toString());
+
+	qDaemonLog(QStringLiteral("Release about to happen -> start record"), QDaemonLog::NoticeEntry);
+
+
 }
 
 void Monitor::encoderReady()
@@ -198,6 +207,18 @@ void Monitor::sendMail()
 		return;
 
 	send();
+}
+
+void Monitor::startReleaseTimer(UnitItem *unit)
+{
+	if (unit != m_pUnit) {
+		if (unit)
+			m_pUnit = unit;
+	}
+
+	long msec = m_pUnit->getNextRelease(m_iReleaseLeadTime);
+
+	m_cReleaseTimer.start(msec - m_iReleaseLeadTime);
 }
 
 void Monitor::send()
@@ -300,6 +321,10 @@ void Monitor::generateMessage(QStringList &lines)
 	      << QStringLiteral("");
 
 	lines << tr("End of raport");
+
+	lines << QStringLiteral("")
+	      << QStringLiteral("")
+	      << tr("Live video http://nfs.nykyri.eu:8080/player.html");
 }
 
 Monitor &Monitor::operator<<(QString text)

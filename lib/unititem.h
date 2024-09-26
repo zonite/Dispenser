@@ -45,6 +45,7 @@ public:
 
 	qint8 moduleInitialized() { return m_sUnit.initialized; }
 	qint8 daemonInitialized() { return m_bInitialized; }
+	long int getNextRelease( long int offset = 0);
 
 	void checkInitialized();
 	bool isFull();
@@ -55,6 +56,7 @@ public:
 
 public slots:
 	void releaseTimeout(Alarm *alarm);
+	void timerStarted(Alarm *alarm);
 	//void releaseTimeout(Alarm<UnitItem> *alarm);
 
 signals:
@@ -67,6 +69,7 @@ signals:
 	void newCol(ColItem *col);
 	void initialized(UnitItem *unit);
 	void releaseEvent(UnitItem *unit);
+	void alarmsChanged(UnitItem *unit);
 
 private slots:
 	void nightEnds();
