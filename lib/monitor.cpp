@@ -64,10 +64,14 @@ Monitor::Monitor(UnitItem *unit)
 	connect(this, &Monitor::reencode, encoder, &ReEncoder::doReEncode);
 	connect(encoder, &ReEncoder::done, this, &Monitor::encoderReady);
 
-	connect(m_pUnit, &UnitItem::alarmsChanged, this, &Monitor::startReleaseTimer);
 	connect(&m_cReleaseTimer, &QTimer::timeout, this, &Monitor::aboutToRelease);
 	connect(&m_cSendTimer, &QTimer::timeout, this, &Monitor::sendMail);
 	connect(&m_cInhibitTimer, &QTimer::timeout, this, &Monitor::forceSend);
+
+	connect(m_pUnit, &UnitItem::alarmsChanged, this, &Monitor::startReleaseTimer);
+	connect(m_pUnit, &UnitItem::newCol, this, &Monitor::newCol);
+	connect(m_pUnit, &UnitItem::releaseEvent, this, &Monitor::unitReleaseEvent);
+	connect(m_pUnit, &UnitItem::chargingChanged, this, &Monitor::chargingChanged);
 
 	reencodeThread.start();
 }
