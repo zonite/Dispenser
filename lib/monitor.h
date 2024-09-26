@@ -28,11 +28,14 @@
 //Monitor off
 ///opt/vc/bin/tvservice -o
 
-
+class Monitor;
 
 class ReEncoder : public QObject
 {
 	Q_OBJECT
+
+public:
+	ReEncoder(Monitor *monitor);
 
 public slots:
 	void doReEncode();
@@ -42,6 +45,7 @@ signals:
 
 private:
 	QTimer m_cEncodeTimer;
+	Monitor *m_pMonitor = nullptr;
 };
 
 
@@ -70,6 +74,10 @@ public:
 
 	explicit Monitor(QObject *parent = nullptr);
 	~Monitor();
+
+	const QString getStartRec() const { return m_cStartRecScript;}
+	const QString getStopRec() const { return m_cStopRecScript;}
+	const QString getReencode() const { return m_cReencodeScript;}
 
 public slots:
 

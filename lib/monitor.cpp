@@ -32,11 +32,11 @@ Monitor::Monitor(QObject *parent)
 		m_cAddresses[0].mask = (enum sendmask) m_cSettings.value("SendMasks", ALL).toInt();
 	}
 
-	m_cReportScript = m_cSettings.value("ReportScript", "createReport.sh").toString();
-	m_cSendScript = m_cSettings.value("SendScript", "sendReport.sh").toString();
-	m_cReencodeScript = m_cSettings.value("ReencodeScript", "reencode.sh").toString();
-	m_cStartRecScript = m_cSettings.value("StartRecScript", "startRec.sh").toString();
-	m_cStopRecScript = m_cSettings.value("StopRecScript", "stopRec.sh").toString();
+	m_cReportScript = m_cSettings.value("ReportScript", "/usr/bin/createReport.sh").toString();
+	m_cSendScript = m_cSettings.value("SendScript", "/usr/bin/sendReport.sh").toString();
+	m_cReencodeScript = m_cSettings.value("ReencodeScript", "/usr/bin/reencode.sh").toString();
+	m_cStartRecScript = m_cSettings.value("StartRecScript", "/usr/bin/startRec.sh").toString();
+	m_cStopRecScript = m_cSettings.value("StopRecScript", "/usr/bin/stopRec.sh").toString();
 	m_cRTMPappName = m_cSettings.value("RTMPappName", "reencode").toString();
 	m_cRTMPstreamName = m_cSettings.value("RTMPstreamName", "dispenser128").toString();
 	m_cRTMPrecLocation = m_cSettings.value("RTMPrecLocation", "/var/www/rec/").toString();
@@ -53,7 +53,7 @@ Monitor::Monitor(QObject *parent)
 	m_cSendTimer.setSingleShot(true);
 	m_cInhibitTimer.setSingleShot(true);
 
-	encoder = new ReEncoder;
+	encoder = new ReEncoder(this);
 	encoder->moveToThread(&reencodeThread);
 
 	//connections!
@@ -243,3 +243,36 @@ Monitor &Monitor::operator<<(QString text)
 	return *this;
 }
 
+
+ReEncoder::ReEncoder(Monitor *monitor)
+        : QObject(monitor)
+{
+	m_pMonitor = monitor;
+}
+
+void ReEncoder::doReEncode()
+{
+	if (!m_pMonitor) {
+		emit done(-1);
+
+		return;
+	}
+
+	QProcess encode;
+	QString prog = m_pMonitor->getStartRec();
+	QStringList args;
+
+	encode.start(prog, args);
+	encode.waitForFinished();
+	encode.readAll();
+
+	QThread::sleep(m_pMonitor->getDuration()); //sleep the wanted duration and sleep
+
+	prog = m_pMonitor->getStopRec();
+
+	encode.start(prog, args);
+	encode.waitForFinished();
+	encode.readAll();
+
+
+}
