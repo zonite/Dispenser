@@ -265,6 +265,30 @@ bool UnitItem::isEmpty()
 	return true;
 }
 
+const QStringList UnitItem::toStatusStr()
+{
+	QStringList list;
+	int slotRows = 0, cur_slots;
+
+	for (int i = 0; i < numCols(); ++i) {
+		cur_slots = m_cCols.at(i).getSlotCount();
+		if (cur_slots > slotRows)
+			slotRows = cur_slots;
+	}
+
+	for (int i = 0; i < slotRows; ++i) {
+		QString line;
+		for (int k = 0; k < numCols(); ++k) {
+			SlotItem *slot = col(k)->slot(i);
+			if (slot)
+				line += slot->getStateStr();
+			line += QStringLiteral("\t");
+		}
+		list << line;
+	}
+	return list;
+}
+
 void UnitItem::releaseTimeout(Alarm *alarm)
 {
 	Q_UNUSED(alarm);

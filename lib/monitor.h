@@ -72,12 +72,14 @@ public:
 	};
 
 
-	explicit Monitor(QObject *parent = nullptr);
+	explicit Monitor(UnitItem *unit);
 	~Monitor();
 
 	const QString getStartRec() const { return m_cStartRecScript;}
 	const QString getStopRec() const { return m_cStopRecScript;}
 	const QString getReencode() const { return m_cReencodeScript;}
+	unsigned long getDuration() const { return m_iClipDuration; }
+	const QString getRecLocation() const { return m_cRTMPrecLocation + m_cRTMPstreamName + ".flv"; }
 
 public slots:
 
@@ -103,6 +105,7 @@ private:
 	void send();
 	void syncAddresses();
 	inline void add(enum sendmask event) { m_iEvents = (enum sendmask) (m_iEvents | event); }
+	void generateMessage(QStringList &lines);
 
 	Monitor &operator<<(QString text);
 
@@ -111,6 +114,8 @@ private:
 
 	QSettings m_cSettings;
 	QVector<struct address> m_cAddresses;
+
+	UnitItem *m_pUnit = nullptr;
 
 	QThread reencodeThread;
 	QTimer m_cReleaseTimer; //Activates X seconds before release

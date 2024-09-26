@@ -48,7 +48,10 @@ public:
 
 	void checkInitialized();
 	bool isFull();
+	bool isEmpty();
 	inline bool isCharging() const { return m_sUnit.charging; }
+
+	const QStringList toStatusStr();
 
 public slots:
 	void releaseTimeout(Alarm *alarm);

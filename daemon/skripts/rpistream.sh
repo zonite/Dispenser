@@ -6,9 +6,9 @@
 #ffmpeg -ar 48000 -acodec pcm_s16le -f alsa -ac 2 -channel_layout 2.1 -i hw:1,0 -f v4l2 -codec:v h264_v4l2m2m -framerate 30 -video_size 1920x1080 -i /dev/video0 -vf "drawtext=fontfile=/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf: text='%{localtime\:%d.%m.%Y\ %H\\\\\:%M\\\\\:%S}': x=(w-tw)/2: y=h-(2*lh): fontcolor=white: box=1: boxcolor=0x00000000@1: fontsize=30" -c:v h264_v4l2m2m -f mpegts -b:v 3000k -crf 15 /tmp/test.mpg
 
 #capture for rpi:
-ffmpeg -fflags +genpts -thread_queue_size 32 -ar 48000 -acodec pcm_s16le -f alsa -ac 2 -channel_layout 2.1 -i hw:1,0 -thread_queue_size 32 -f video4linux2 -codec:v h264 -i /dev/video0 -use_wallclock_as_timestamps 1  -write_tmcd on -c:v copy -acodec aac -ab 192k -strict -2 -f flv rtmp://127.0.0.1/restream/dispenser128
+#ffmpeg -fflags +genpts -thread_queue_size 32 -ar 48000 -acodec pcm_s16le -f alsa -ac 2 -channel_layout 2.1 -i hw:1,0 -thread_queue_size 32 -f video4linux2 -codec:v h264 -i /dev/video0 -use_wallclock_as_timestamps 1  -write_tmcd on -c:v copy -acodec aac -ab 192k -strict -2 -f flv rtmp://127.0.0.1/restream/dispenser128
 #capture for rpi with timecode:
-ffmpeg -fflags +genpts -thread_queue_size 32 -ar 48000 -acodec pcm_s16le -f alsa -ac 2 -channel_layout 2.1 -i hw:1,0 -thread_queue_size 32 -f video4linux2 -codec:v h264_v4l2m2m -i /dev/video0 -vf "drawtext=fontfile=/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf: text='%{localtime\:%d.%m.%Y\ %H\\\\\:%M\\\\\:%S}': x=(w-tw)/2: y=h-(4*lh): fontcolor=white: box=1: boxcolor=0x00000000@1: boxborderw=2: fontsize=30" -use_wallclock_as_timestamps 1 -write_tmcd on -c:v h264_v4l2m2m -acodec aac -ab 192k -strict -2 -b:v 6000k -f flv rtmp://127.0.0.1/restream/dispenser128
+#ffmpeg -fflags +genpts -thread_queue_size 32 -ar 48000 -acodec pcm_s16le -f alsa -ac 2 -channel_layout 2.1 -i hw:1,0 -thread_queue_size 32 -f video4linux2 -codec:v h264_v4l2m2m -i /dev/video0 -vf "drawtext=fontfile=/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf: text='%{localtime\:%d.%m.%Y\ %H\\\\\:%M\\\\\:%S}': x=(w-tw)/2: y=h-(4*lh): fontcolor=white: box=1: boxcolor=0x00000000@1: boxborderw=2: fontsize=30" -use_wallclock_as_timestamps 1 -write_tmcd on -c:v h264_v4l2m2m -acodec aac -ab 192k -strict -2 -b:v 6000k -f flv rtmp://127.0.0.1/restream/dispenser128
 ffmpeg -fflags +genpts -thread_queue_size 1024 -ar 48000 -acodec pcm_s16le -f alsa -ac 2 -channel_layout 2.1 -i hw:1,0 -thread_queue_size 1024 -f video4linux2 -codec:v h264_v4l2m2m -i /dev/video0 -vf "drawtext=fontfile=/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf: text='%{localtime\:%d.%m.%Y\ %H\\\\\:%M\\\\\:%S}': x=(w-tw)/2: y=h-(4*lh): fontcolor=white: box=1: boxcolor=0x00000000@1: boxborderw=2: fontsize=30" -use_wallclock_as_timestamps 1 -write_tmcd on -c:v h264_v4l2m2m -acodec aac -ab 192k -strict -2 -b:v 6000k -f flv rtmp://127.0.0.1/restream/dispenser128
 
 #re-encode for email
@@ -34,6 +34,6 @@ ffmpeg -i input -filter_complex \
 
 #ffmpeg -fflags +genpts -f lavfi -i color=s=1920x1080:color=0xff0000 -an -s 1920x1080 -r 30 -vf "drawtext=fontfile=/usr/share/fonts/dejavu/DejaVuSans.ttf: text='%{localtime\:%d.%m.%Y\ %H\\\\\:%M\\\\\:%S}': x=(w-tw)/2: y=h-(4*lh): fontcolor=white: box=1: boxcolor=0x00000000@1: boxborderw=2: fontsize=30" -use_wallclock_as_timestamps 1 -write_tmcd on -t 15 -f flv /tmp/test.flv
 
-#vcgencmd measure_temp
+#vcgencmd measure_temp norm on 58.9C
 #v4l2-ctl --device=/dev/video0 --set-fmt-video=width=1920,height=1080
 #v4l2-ctl --set-ctrl video_bitrate=300000

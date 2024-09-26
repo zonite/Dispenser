@@ -1,13 +1,15 @@
 #include "monitor.h"
 
 #include <QTime>
+#include <QDir>
 #include <QTemporaryFile>
 #include <QProcess>
 
-Monitor::Monitor(QObject *parent)
-        : QObject{parent}
+Monitor::Monitor(UnitItem *unit)
+        : QObject(unit)
 {
 	ReEncoder *encoder;
+	m_pUnit = unit;
 
 	m_cSettings.value("DestAddresses");
 
@@ -201,21 +203,71 @@ void Monitor::sendMail()
 void Monitor::send()
 {
 	QTemporaryFile message;
+	//QString message = QDir::tempPath() + QStringLiteral("/message");
+	message.open();
 
 	if (m_iEvents & REENCODE) {
 		QTemporaryFile body;
-		QProcess *pack = new QProcess(this);
+		QProcess pack;
+		QStringList args;
 
 		if (body.open()) {
-			//fill content
+			QStringList content;
+			QTextStream out(&body);
+
+			generateMessage(content);
+
+			for(QString &line : content) {
+				out << line << QStringLiteral("\n");
+			}
+			out.flush();
+			body.flush();
 		}
 		body.fileName();
 
-		QFile video;
+
+		QFile video(QStringLiteral("/tmp/send.mov"));
+		video.rename(QStringLiteral("send-") + QDateTime::currentDateTime().toString("YYYY-MM-DD_HH.mm") + QStringLiteral(".mov"));
+		args << QStringLiteral("Dispenser Release Event")
+		     << (QDir::tempPath() + body.fileName())
+		     << video.fileName()
+		     << QDir::tempPath() + message.fileName();
+
+		pack.start(m_cReportScript, args);
 	} else {
+		QStringList content;
+		content << QStringLiteral("From: dispenser@nykyri.eu")
+		     << QStringLiteral("To: Minna Rakas <minna_mj@hotmail.com")
+		     << QStringLiteral("Subject: Dispenser Release Event")
+		     << QStringLiteral("");
 
+		generateMessage(content);
+
+		QTextStream out(&message);
+		for(QString &line : content) {
+			out << line << QStringLiteral("\n");
+		}
+		out.flush();
 	}
+	message.flush();
 
+	QProcess send;
+	QString prog = m_cSendScript;
+	QStringList args;
+
+	for (struct address &rcpt : m_cAddresses) {
+		if (rcpt.mask & m_iEvents) {
+			QStringList args;
+			args << QStringLiteral("dispenser@nykyri.eu")
+			     << rcpt.email
+			     << QDir::tempPath() + message.fileName();
+
+			send.start(prog, args);
+			send.waitForFinished();
+			send.readAll();
+		}
+	}
+	m_iEvents = NONE;
 }
 
 void Monitor::syncAddresses()
@@ -230,6 +282,24 @@ void Monitor::syncAddresses()
 
 	m_cSettings.setValue("DestAddresses", QVariant::fromValue(addresses));
 	m_cSettings.setValue("SendMasks", QVariant::fromValue(masks));
+}
+
+void Monitor::generateMessage(QStringList &lines)
+{
+	lines << tr("Event log:")
+	      << QStringLiteral("");
+	lines << m_cLog;
+
+	lines << QStringLiteral("")
+	      << QStringLiteral("")
+	      << tr("Unit Status:");
+
+	m_cLog.clear();
+
+	lines << m_pUnit->toStatusStr()
+	      << QStringLiteral("");
+
+	lines << tr("End of raport");
 }
 
 Monitor &Monitor::operator<<(QString text)
@@ -274,5 +344,13 @@ void ReEncoder::doReEncode()
 	encode.waitForFinished();
 	encode.readAll();
 
+	prog = m_pMonitor->getReencode();
+	args.clear();
+	args << m_pMonitor->getRecLocation();
 
+	encode.start(prog, args);
+	encode.waitForFinished();
+	encode.readAll();
+
+	emit done(0);
 }
