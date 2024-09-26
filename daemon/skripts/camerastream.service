@@ -4,6 +4,8 @@ Description=Capture USB camera and stream
 [Service]
 Type=simple
 ExecStart=/usr/bin/captureCamera.sh restream dispenser128
+RestartSec=2
+Restart=always
 
 [Install]
 WantedBy=multi-user.target
