@@ -485,7 +485,7 @@ void ReEncoder::doSend()
 
 	smtp.quit();
 
-	//video.remove();
+	video.remove();
 }
 
 /*
