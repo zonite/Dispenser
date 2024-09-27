@@ -454,7 +454,7 @@ void ReEncoder::doSend()
 	text.setText(content);
 	message.addPart(&text);
 
-	QFile video(QStringLiteral("/tmp/send.mov"));
+	QFile video("/tmp/send.mov");
 	if (video.exists()) {
 		MimeAttachment attachment(&video);
 		attachment.setContentType("video/quicktime");
