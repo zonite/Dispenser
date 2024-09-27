@@ -32,7 +32,7 @@ INCLUDEPATH += \
 #    /usr/include/qt5/QtDaemon \
 #    /usr/include/aarch64-linux-gnu/qt5/QtDaemon
 
-LIBS += -L".$$PRO_FILE_PWD/../lib/" -lQt5Daemon -lDispenser
+LIBS += -L".$$PRO_FILE_PWD/../lib/" -L".$$PRO_FILE_PWD/../../SmtpClient-for-Qt/src/" -lSmtpMime -lQt5Daemon -lDispenser
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
@@ -50,13 +50,13 @@ RESOURCES += \
 
 DISTFILES += \
         http/HLSnginx.conf \
-        http/RPInginx.conf \
-        http/player.html \
-        skripts/camerastream.service \
-        skripts/captureCamera.sh \
-        skripts/createReport.sh \
-        skripts/reencode.sh \
-        skripts/rpistream.sh \
-        skripts/sendReport.sh \
-        skripts/startRec.sh \
-        skripts/stopRec.sh
+	http/RPInginx.conf \
+	http/player.html \
+	skripts/camerastream.service \
+	skripts/captureCamera.sh \
+	skripts/createReport.sh \
+	skripts/reencode.sh \
+	skripts/rpistream.sh \
+	skripts/sendReport.sh \
+	skripts/startRec.sh \
+	skripts/stopRec.sh
