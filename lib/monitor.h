@@ -118,6 +118,7 @@ private:
 
 	UnitItem *m_pUnit = nullptr;
 
+	bool m_bEncoding = false;
 	QThread reencodeThread;
 	QTimer m_cReleaseTimer; //Activates X seconds before release
 	QTimer m_cSendTimer;

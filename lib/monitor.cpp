@@ -194,6 +194,8 @@ void Monitor::chargingChanged(UnitItem *unit)
 void Monitor::aboutToRelease()
 {
 	add(REENCODE);
+
+	m_bEncoding = true;
 	emit reencode();
 
 	*this << tr("%1:\tDispenser Start Recording for release.")
@@ -213,23 +215,31 @@ void Monitor::encoderReady()
 		qDaemonLog(QStringLiteral("Send timer active after ENCODE ready. Waiting..."), QDaemonLog::NoticeEntry);
 		return;
 	}
+
+	m_cInhibitTimer.stop();
+	send();
 }
 
 void Monitor::sendMail()
 {
 	qDaemonLog(QStringLiteral("Send timer expired."), QDaemonLog::NoticeEntry);
 
-	if (reencodeThread.isRunning()) {
+	if (m_bEncoding) {
 		qDaemonLog(QStringLiteral("Send timer: encoder running -> return."), QDaemonLog::NoticeEntry);
 		return;
 	}
+
+	m_cInhibitTimer.stop();
 
 	send();
 }
 
 void Monitor::forceSend()
 {
+	qDaemonLog(QStringLiteral("Inhibit timer expired!"), QDaemonLog::NoticeEntry);
+
 	reencodeThread.terminate();
+	m_bEncoding = false;
 	reencodeThread.start();
 
 	m_cSendTimer.stop();
@@ -262,7 +272,7 @@ void Monitor::send()
 
 	qDaemonLog(QStringLiteral("Send report. Video exists %1").arg(video.exists()), QDaemonLog::NoticeEntry);
 
-	if (m_iEvents & REENCODE || video.exists()) {
+	if (m_iEvents & REENCODE && video.exists()) {
 		QTemporaryFile body;
 		QProcess pack;
 		QStringList args;
@@ -388,8 +398,11 @@ void ReEncoder::doReEncode()
 	if (!m_pMonitor) {
 		emit done(-1);
 
+		qDaemonLog(QStringLiteral("ReEncoder no monitor!"), QDaemonLog::ErrorEntry);
 		return;
 	}
+
+	qDaemonLog(QStringLiteral("Record."), QDaemonLog::NoticeEntry);
 
 	QProcess encode;
 	QString startSh = m_pMonitor->getStartRec();
@@ -417,6 +430,8 @@ void ReEncoder::doReEncode()
 	encode.start(prog, args);
 	encode.waitForFinished();
 	encode.readAll();
+
+	qDaemonLog(QStringLiteral("Record done."), QDaemonLog::NoticeEntry);
 
 	emit done(0);
 }
