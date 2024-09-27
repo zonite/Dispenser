@@ -456,7 +456,7 @@ void ReEncoder::doSend()
 	message.addPart(&text);
 
 	QFile video("/tmp/send.mov");
-	video.rename(QStringLiteral("release-") + QDateTime::currentDateTime().toString("yyyy-MM-dd_HH.mm") + QStringLiteral(".mov"));
+	video.rename(QDir::tempPath() + QStringLiteral("/release-") + QDateTime::currentDateTime().toString("yyyy-MM-dd_HH.mm") + QStringLiteral(".mov"));
 	MimeAttachment attachment(&video);
 	if (video.exists()) {
 		attachment.setContentType("video/quicktime");
