@@ -265,10 +265,8 @@ void Monitor::startReleaseTimer(UnitItem *unit)
 
 void Monitor::send()
 {
-	QTemporaryFile message;
 	QFile video(QStringLiteral("/tmp/send.mov"));
 	//QString message = QDir::tempPath() + QStringLiteral("/message");
-	message.open();
 
 	qDaemonLog(QStringLiteral("Send report. Video exists %1").arg(video.exists()), QDaemonLog::NoticeEntry);
 
@@ -297,13 +295,18 @@ void Monitor::send()
 		args << QStringLiteral("Dispenser Release Event")
 		     << body.fileName()
 		     << video.fileName()
-		     << "/tmp/mpack_testi";
+		     << "/tmp/dispenser.msg";
 		//     << message.fileName();
+
+		qDaemonLog(QStringLiteral("MPack video."), QDaemonLog::NoticeEntry);
 
 		pack.start(m_cReportScript, args);
 		pack.waitForFinished();
 		pack.readAll();
 	} else {
+		QFile message("/tmp/dispenser.msg");
+		message.open(QIODevice::WriteOnly | QIODevice::Text);
+
 		QStringList content;
 		content << QStringLiteral("From: dispenser@nykyri.eu")
 		     << QStringLiteral("To: Minna Rakas <minna_mj@hotmail.com")
@@ -317,8 +320,11 @@ void Monitor::send()
 			out << line << QStringLiteral("\n");
 		}
 		out.flush();
+		message.close();
+
+		qDaemonLog(QStringLiteral("Email generated"), QDaemonLog::NoticeEntry);
 	}
-	message.flush();
+	QFile message("/tmp/dispenser.msg");
 
 	QProcess send;
 	QString prog = m_cSendScript;
@@ -331,6 +337,8 @@ void Monitor::send()
 			     << rcpt.email
 			     << message.fileName();
 			     //<< QDir::tempPath() + message.fileName();
+
+			qDaemonLog(QStringLiteral("Sending to: %1").arg(rcpt.email), QDaemonLog::NoticeEntry);
 
 			send.start(prog, args);
 			send.waitForFinished();
