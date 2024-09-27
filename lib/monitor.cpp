@@ -297,7 +297,8 @@ void Monitor::send()
 		args << QStringLiteral("Dispenser Release Event")
 		     << body.fileName()
 		     << video.fileName()
-		     << message.fileName();
+		     << "/tmp/mpack_testi";
+		//     << message.fileName();
 
 		pack.start(m_cReportScript, args);
 		pack.waitForFinished();
