@@ -206,7 +206,7 @@ void SlotItem::setParentNid(ColItem *parent, __s8 i)
 	m_cSettings.endGroup();
 }
 
-QString SlotItem::getStateStr()
+QString SlotItem::getStateStr() const
 {
 	return stateToStr(m_sSlot.state);
 }
