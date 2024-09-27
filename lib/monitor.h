@@ -53,6 +53,7 @@ public:
 	};
 
 	ReEncoder(Monitor *monitor);
+	~ReEncoder();
 
 public slots:
 	void doReEncode();
