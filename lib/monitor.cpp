@@ -323,7 +323,7 @@ ReEncoder::ReEncoder(Monitor *monitor)
 		}
 	} else  {
 		m_cAddresses.resize(1);
-		m_cAddresses[0].email = m_cSettings.value("DestAddresses", "zonite@nykyri.eu").toString();
+		m_cAddresses[0].email = m_cSettings.value("DestAddresses", "zonite@icloud.com").toString();
 		m_cAddresses[0].mask = (enum sendmask) m_cSettings.value("SendMasks", ALL).toInt();
 	}
 
@@ -335,6 +335,7 @@ ReEncoder::~ReEncoder()
 {
 	syncAddresses();
 
+	m_cSettings.sync();
 }
 
 void ReEncoder::doReEncode()
@@ -455,6 +456,7 @@ void ReEncoder::doSend()
 	message.addPart(&text);
 
 	QFile video("/tmp/send.mov");
+	video.rename(QStringLiteral("send-") + QDateTime::currentDateTime().toString("yyyy-MM-dd_HH.mm") + QStringLiteral(".mov"));
 	MimeAttachment attachment(&video);
 	if (video.exists()) {
 		attachment.setContentType("video/quicktime");
@@ -482,6 +484,8 @@ void ReEncoder::doSend()
 	}
 
 	smtp.quit();
+
+	//video.remove();
 }
 
 /*
