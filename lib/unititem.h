@@ -38,7 +38,7 @@ public:
 	void setCharging(char state);
 	void setInitialized(qint8 init);
 
-	inline int numCols() { return m_sUnit.ncols; };
+	inline int numCols() const { return m_sUnit.ncols; };
 	void setCols(int i);
 	void setSlots(int i);
 	void addCol();
@@ -52,7 +52,7 @@ public:
 	bool isEmpty();
 	inline bool isCharging() const { return m_sUnit.charging; }
 
-	const QStringList toStatusStr();
+	const QStringList toStatusStr() const;
 
 public slots:
 	void releaseTimeout(Alarm *alarm);

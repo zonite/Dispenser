@@ -32,7 +32,7 @@ public:
 	__s8 getId() { return m_iSlotId; }
 	bool getInitialized() const { return m_bInitialized; }
 	void setParentNid(ColItem *parent, __s8 i);
-	QString getStateStr();
+	QString getStateStr() const;
 	inline bool getFull() const { return m_bFull; }
 
 	const struct dispenser_mmap_slot *getSlotStatus() { return &m_sSlot; }

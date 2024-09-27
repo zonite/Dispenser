@@ -6,35 +6,13 @@
 #include <QProcess>
 
 #include <QDaemonLog>
+#include <SmtpMime>
 
 Monitor::Monitor(UnitItem *unit)
         : QObject(unit)
 {
 	ReEncoder *encoder;
 	m_pUnit = unit;
-
-	m_cSettings.value("DestAddresses");
-
-	if (m_cSettings.value("DestAddresses").canConvert(QMetaType::QStringList)) {
-		QList<QVariant> addresses = m_cSettings.value("DestAddresses").toList();
-		QList<QVariant> masks = m_cSettings.value("SendMasks").toList();
-
-		for (int i = 0; i < addresses.size(); ++i) {
-			struct address newAddress;
-
-			newAddress.email = addresses.at(i).toString();
-			if (masks.size() < i)
-				newAddress.mask = (enum sendmask) masks.at(i).toUInt();
-			else
-				newAddress.mask = ALL;
-
-			m_cAddresses.append(newAddress);
-		}
-	} else  {
-		m_cAddresses.resize(1);
-		m_cAddresses[0].email = m_cSettings.value("DestAddresses", "zonite@nykyri.eu").toString();
-		m_cAddresses[0].mask = (enum sendmask) m_cSettings.value("SendMasks", ALL).toInt();
-	}
 
 	m_cReportScript = m_cSettings.value("ReportScript", "/usr/bin/createReport.sh").toString();
 	m_cSendScript = m_cSettings.value("SendScript", "/usr/bin/sendReport.sh").toString();
@@ -62,6 +40,7 @@ Monitor::Monitor(UnitItem *unit)
 
 	//connections!
 	connect(this, &Monitor::reencode, encoder, &ReEncoder::doReEncode);
+	connect(this, &Monitor::sendMessage, encoder, &ReEncoder::doSend);
 	connect(encoder, &ReEncoder::done, this, &Monitor::encoderReady);
 
 	connect(&m_cReleaseTimer, &QTimer::timeout, this, &Monitor::aboutToRelease);
@@ -81,8 +60,6 @@ Monitor::~Monitor()
 {
 	reencodeThread.quit();
 
-	syncAddresses();
-
 	m_cSettings.setValue("ReportScript", m_cReportScript);
 	m_cSettings.setValue("SendScript", m_cSendScript);
 	m_cSettings.setValue("ReencodeScript", m_cReencodeScript);
@@ -101,6 +78,31 @@ Monitor::~Monitor()
 	reencodeThread.wait();
 }
 
+bool Monitor::generatingMessage() const
+{
+	return m_cSendTimer.isActive();
+}
+
+QStringList Monitor::getLog()
+{
+	QStringList log;
+
+	log = m_cLog;
+	m_cLog.clear();
+
+	return log;
+}
+
+Monitor::sendmask Monitor::getEvents()
+{
+	enum sendmask events;
+
+	events = m_iEvents;
+	m_iEvents = NONE;
+
+	return events;
+}
+
 void Monitor::newSlot(SlotItem *slot)
 {
 	connect(slot, &SlotItem::releaseChanged, this, &Monitor::releaseSlot);
@@ -117,7 +119,7 @@ void Monitor::newCol(ColItem *col)
 
 void Monitor::releaseSlot(SlotItem *slot)
 {
-	*this << tr("%1\tSlot %2/%3 release. State is %4, lock is %5, up sensor is %6, down sensor is %7.")
+	*this << tr("%1:\tSlot %2/%3 release. State is %4, lock is %5, up sensor is %6, down sensor is %7.")
 	                .arg(QTime::currentTime().toString())
 	                .arg(slot->getCol()->getId())
 	                .arg(slot->getId())
@@ -130,7 +132,7 @@ void Monitor::releaseSlot(SlotItem *slot)
 
 void Monitor::stateChanged(SlotItem *slot)
 {
-	*this << tr("%1\tSlot %2/%3 state change -> %4. Lock is %5, up sensor is %6, down sensor is %7.")
+	*this << tr("%1:\tSlot %2/%3 state change -> %4. Lock is %5, up sensor is %6, down sensor is %7.")
 	                .arg(QTime::currentTime().toString())
 	                .arg(slot->getCol()->getId())
 	                .arg(slot->getId())
@@ -142,7 +144,7 @@ void Monitor::stateChanged(SlotItem *slot)
 	add(STATE);
 
 	if (slot->getCol()->getUnit()->isEmpty()) {
-		*this << tr("%1\tDispenser is now EMPTY!")
+		*this << tr("%1:\tDispenser is now EMPTY!")
 		                .arg(QTime::currentTime().toString());
 		add(EMPTY);
 	}
@@ -238,12 +240,11 @@ void Monitor::forceSend()
 {
 	qDaemonLog(QStringLiteral("Inhibit timer expired!"), QDaemonLog::NoticeEntry);
 
-	reencodeThread.terminate();
-	m_bEncoding = false;
-	reencodeThread.start();
+	//reencodeThread.terminate();
+	//m_bEncoding = false;
+	//reencodeThread.start();
 
 	m_cSendTimer.stop();
-
 	send();
 }
 
@@ -265,90 +266,12 @@ void Monitor::startReleaseTimer(UnitItem *unit)
 
 void Monitor::send()
 {
-	QFile video(QStringLiteral("/tmp/send.mov"));
-	//QString message = QDir::tempPath() + QStringLiteral("/message");
+	emit sendMessage();
 
-	qDaemonLog(QStringLiteral("Send report. Video exists %1").arg(video.exists()), QDaemonLog::NoticeEntry);
-
-	if (m_iEvents & REENCODE && video.exists()) {
-		QTemporaryFile body;
-		QProcess pack;
-		QStringList args;
-
-		if (body.open()) {
-			QStringList content;
-			QTextStream out(&body);
-
-			generateMessage(content);
-
-			for(QString &line : content) {
-				out << line << QStringLiteral("\n");
-			}
-			out.flush();
-			body.flush();
-		}
-		body.fileName();
-
-
-		//QFile video(QStringLiteral("/tmp/send.mov"));
-		video.rename(QDir::tempPath() + QStringLiteral("/send-") + QDateTime::currentDateTime().toString("yyyy-MM-dd_HH.mm") + QStringLiteral(".mov"));
-		args << QStringLiteral("Dispenser Release Event")
-		     << body.fileName()
-		     << video.fileName()
-		     << "/tmp/dispenser.msg";
-		//     << message.fileName();
-
-		qDaemonLog(QStringLiteral("MPack video."), QDaemonLog::NoticeEntry);
-
-		pack.start(m_cReportScript, args);
-		pack.waitForFinished();
-		pack.readAll();
-	} else {
-		QFile message("/tmp/dispenser.msg");
-		message.open(QIODevice::WriteOnly | QIODevice::Text);
-
-		QStringList content;
-		content << QStringLiteral("From: dispenser@nykyri.eu")
-		     << QStringLiteral("To: Minna Rakas <minna_mj@hotmail.com")
-		     << QStringLiteral("Subject: Dispenser Release Event")
-		     << QStringLiteral("");
-
-		generateMessage(content);
-
-		QTextStream out(&message);
-		for(QString &line : content) {
-			out << line << QStringLiteral("\n");
-		}
-		out.flush();
-		message.close();
-
-		qDaemonLog(QStringLiteral("Email generated"), QDaemonLog::NoticeEntry);
-	}
-	QFile message("/tmp/dispenser.msg");
-
-	QProcess send;
-	QString prog = m_cSendScript;
-	QStringList args;
-
-	for (struct address &rcpt : m_cAddresses) {
-		if (rcpt.mask & m_iEvents) {
-			QStringList args;
-			args << QStringLiteral("dispenser@nykyri.eu")
-			     << rcpt.email
-			     << message.fileName();
-			     //<< QDir::tempPath() + message.fileName();
-
-			qDaemonLog(QStringLiteral("Sending to: %1").arg(rcpt.email), QDaemonLog::NoticeEntry);
-
-			send.start(prog, args);
-			send.waitForFinished();
-			send.readAll();
-		}
-	}
-	m_iEvents = NONE;
+	return;
 }
 
-void Monitor::syncAddresses()
+void ReEncoder::syncAddresses()
 {
 	QVariantList addresses;
 	QVariantList masks;
@@ -360,28 +283,6 @@ void Monitor::syncAddresses()
 
 	m_cSettings.setValue("DestAddresses", QVariant::fromValue(addresses));
 	m_cSettings.setValue("SendMasks", QVariant::fromValue(masks));
-}
-
-void Monitor::generateMessage(QStringList &lines)
-{
-	lines << tr("Event log:")
-	      << QStringLiteral("");
-	lines << m_cLog;
-
-	lines << QStringLiteral("")
-	      << QStringLiteral("")
-	      << tr("Unit Status:");
-
-	m_cLog.clear();
-
-	lines << m_pUnit->toStatusStr()
-	      << QStringLiteral("");
-
-	lines << tr("End of report");
-
-	lines << QStringLiteral("")
-	      << QStringLiteral("")
-	      << tr("Live video http://nfs.nykyri.eu:8080/player.html");
 }
 
 Monitor &Monitor::operator<<(QString text)
@@ -400,6 +301,38 @@ ReEncoder::ReEncoder(Monitor *monitor)
 //        : QObject(monitor)
 {
 	m_pMonitor = monitor;
+
+	m_cSettings.value("DestAddresses");
+
+	if (m_cSettings.value("DestAddresses").canConvert(QMetaType::QStringList)) {
+		QList<QVariant> addresses = m_cSettings.value("DestAddresses").toList();
+		QList<QVariant> masks = m_cSettings.value("SendMasks").toList();
+
+		for (int i = 0; i < addresses.size(); ++i) {
+			struct address newAddress;
+
+			newAddress.email = addresses.at(i).toString();
+			if (masks.size() < i)
+				newAddress.mask = (enum sendmask) masks.at(i).toUInt();
+			else
+				newAddress.mask = ALL;
+
+			m_cAddresses.append(newAddress);
+		}
+	} else  {
+		m_cAddresses.resize(1);
+		m_cAddresses[0].email = m_cSettings.value("DestAddresses", "zonite@nykyri.eu").toString();
+		m_cAddresses[0].mask = (enum sendmask) m_cSettings.value("SendMasks", ALL).toInt();
+	}
+
+	m_cMailServer = m_cSettings.value("MailServer", "mail.nykyri.eu").toString();
+	m_cMailSender = m_cSettings.value("MailSender", "dispenser@nykyri.eu").toString();
+}
+
+ReEncoder::~ReEncoder()
+{
+	syncAddresses();
+
 }
 
 void ReEncoder::doReEncode()
@@ -419,28 +352,184 @@ void ReEncoder::doReEncode()
 	QStringList args;
 
 	encode.start(stopSh, args);
-	encode.waitForFinished();
+	encode.waitForFinished(2000); //recored control timeout
 	encode.readAll();
 
 	encode.start(startSh, args);
-	encode.waitForFinished();
+	encode.waitForFinished(2000); //recored control timeout
 	encode.readAll();
 
 	QThread::sleep(m_pMonitor->getDuration()); //sleep the wanted duration and sleep
 
 	encode.start(stopSh, args);
-	encode.waitForFinished();
+	encode.waitForFinished(2000); //recored control timeout
 	encode.readAll();
 
 	QString prog = m_pMonitor->getReencode();
 	args.clear();
 	args << m_pMonitor->getRecLocation();
 
-	encode.start(prog, args);
-	encode.waitForFinished();
+	encode.start(prog, args); // Video will be in /tmp/send.mov
+	encode.waitForFinished(30000); //reencode timeout.
 	encode.readAll();
 
 	qDaemonLog(QStringLiteral("Record done."), QDaemonLog::NoticeEntry);
 
 	emit done(0);
 }
+
+void ReEncoder::doSend()
+{
+	if (m_pMonitor) {
+		if (m_pMonitor->generatingMessage())
+			return;
+	} else {
+		return;
+	}
+
+	QStringList m_cLog, cLines;
+	enum sendmask m_iEvents;
+
+	m_pMonitor->lockLog();
+	m_cLog = m_pMonitor->getLog();
+	m_iEvents = (ReEncoder::sendmask) m_pMonitor->getEvents();
+	m_pMonitor->unlockLog();
+
+	if (m_cLog.isEmpty()) {
+		qDaemonLog(QStringLiteral("Empty Log. Cancel send and return."), QDaemonLog::NoticeEntry);
+		return;
+	}
+
+	//Progress with message!
+	SmtpClient smtp(m_cMailServer, 25);
+
+	MimeMessage message;
+	message.setSender(EmailAddress(m_cMailSender, tr("Dispenser Daemon")));
+
+	for (struct address &rcpt : m_cAddresses) {
+		if (rcpt.mask & m_iEvents) {
+			message.addRecipient(rcpt.email);
+			qDaemonLog(QStringLiteral("Sending to: %1").arg(rcpt.email), QDaemonLog::NoticeEntry);
+		}
+	}
+
+	if (m_iEvents & RELEASE) {
+		message.setSubject(tr("Dispenser Release Event"));
+	} else if (m_iEvents & CHARGING) {
+		message.setSubject(tr("Dispenser Charging Changed"));
+	} else {
+		message.setSubject(tr("Dispenser Event"));
+	}
+
+	cLines << tr("Event log:")
+	      << QStringLiteral("");
+	cLines << m_cLog;
+
+	cLines << QStringLiteral("")
+	      << QStringLiteral("")
+	      << tr("Unit Status:");
+
+	cLines << m_pMonitor->getUnit()->toStatusStr()
+	      << QStringLiteral("");
+
+	cLines << tr("End of report");
+
+	cLines << QStringLiteral("")
+	      << QStringLiteral("")
+	      << tr("Live video http://dispenser.nykyri.eu:8080/player.html");
+
+	QString content;
+
+	for (const QString &line : m_cLog) {
+		content += line;
+		content += "\n";
+	}
+
+	MimeText text;
+	text.setText(content);
+	message.addPart(&text);
+
+	QFile video(QStringLiteral("/tmp/send.mov"));
+	MimeAttachment attachment(&video);
+	attachment.setContentType("video/quicktime");
+	message.addPart(&attachment);
+
+
+
+	smtp.connectToHost();
+	smtp.sendMail(message);
+	smtp.quit();
+}
+
+/*
+QFile video(QStringLiteral("/tmp/send.mov"));
+//QString message = QDir::tempPath() + QStringLiteral("/message");
+
+qDaemonLog(QStringLiteral("Send report. Video exists %1").arg(video.exists()), QDaemonLog::NoticeEntry);
+
+if (m_iEvents & REENCODE && video.exists()) {
+	QTemporaryFile body;
+	QProcess pack;
+	QStringList args;
+
+	if (body.open()) {
+		QStringList content;
+		QTextStream out(&body);
+
+		generateMessage(content);
+
+		for(QString &line : content) {
+			out << line << QStringLiteral("\n");
+		}
+		out.flush();
+		body.flush();
+	}
+	body.fileName();
+
+
+	//QFile video(QStringLiteral("/tmp/send.mov"));
+	video.rename(QDir::tempPath() + QStringLiteral("/send-") + QDateTime::currentDateTime().toString("yyyy-MM-dd_HH.mm") + QStringLiteral(".mov"));
+	args << QStringLiteral("Dispenser Release Event")
+	     << body.fileName()
+	     << video.fileName()
+	     << "/tmp/dispenser.msg";
+	//     << message.fileName();
+
+	qDaemonLog(QStringLiteral("MPack video."), QDaemonLog::NoticeEntry);
+
+	pack.start(m_cReportScript, args);
+	pack.waitForFinished();
+	pack.readAll();
+} else {
+	QFile message("/tmp/dispenser.msg");
+	message.open(QIODevice::WriteOnly | QIODevice::Text);
+
+	QStringList content;
+	content << QStringLiteral("From: dispenser@nykyri.eu")
+	     << QStringLiteral("To: Minna Rakas <minna_mj@hotmail.com")
+	     << QStringLiteral("Subject: Dispenser Release Event")
+	     << QStringLiteral("");
+
+	generateMessage(content);
+
+	QTextStream out(&message);
+	for(QString &line : content) {
+		out << line << QStringLiteral("\n");
+	}
+	out.flush();
+	message.close();
+
+	qDaemonLog(QStringLiteral("Email generated"), QDaemonLog::NoticeEntry);
+}
+QFile message("/tmp/dispenser.msg");
+
+QProcess send;
+QString prog = m_cSendScript;
+QStringList args;
+
+m_iEvents = NONE;
+
+void ReEncode::generateMessage(QStringList &lines)
+{
+}
+*/

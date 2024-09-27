@@ -279,7 +279,7 @@ bool UnitItem::isEmpty()
 	return true;
 }
 
-const QStringList UnitItem::toStatusStr()
+const QStringList UnitItem::toStatusStr() const
 {
 	QStringList list;
 	int slotRows = 0, cur_slots;
@@ -294,9 +294,15 @@ const QStringList UnitItem::toStatusStr()
 		QString line;
 		line = QStringLiteral("%1\t").arg(QString::number(i));
 		for (int k = 0; k < numCols(); ++k) {
-			SlotItem *slot = col(k)->slot(i);
+			const ColItem *col = nullptr;
+			const SlotItem *slot = nullptr;
+
+			col = const_cast<const ColItem *>( &m_cCols.at(k) );
+			if (col)
+				slot = const_cast<const SlotItem *>( &col->getSlots()->at(i) );
 			if (slot)
 				line += slot->getStateStr();
+
 			line += QStringLiteral("\t");
 		}
 		list << line;

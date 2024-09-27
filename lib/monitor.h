@@ -5,6 +5,7 @@
 #include <QSettings>
 #include <QThread>
 #include <QTimer>
+#include <QMutex>
 
 #include "lib_global.h"
 
@@ -35,17 +36,42 @@ class ReEncoder : public QObject
 	Q_OBJECT
 
 public:
+	enum sendmask {
+		NONE = 0x0,
+		RELEASE = 0x1,
+		CHARGING = 0x2,
+		FILLED = 0x4,
+		STATE = 0x8,
+		EMPTY = 0x10,
+		REENCODE = 0x20,
+		ALL = 0x3F,
+	};
+
+	struct address {
+		QString email = nullptr;
+		enum sendmask mask = NONE;
+	};
+
 	ReEncoder(Monitor *monitor);
 
 public slots:
 	void doReEncode();
+	void doSend();
 
 signals:
 	void done(int result);
 
 private:
+	void syncAddresses();
+
 	QTimer m_cEncodeTimer;
 	Monitor *m_pMonitor = nullptr;
+	QSettings m_cSettings;
+
+	QString m_cMailServer;
+	QString m_cMailSender;
+
+	QVector<struct address> m_cAddresses;
 };
 
 
@@ -66,11 +92,6 @@ public:
 		ALL = 0x3F,
 	};
 
-	struct address {
-		QString email = nullptr;
-		enum sendmask mask = NONE;
-	};
-
 
 	explicit Monitor(UnitItem *unit);
 	~Monitor();
@@ -80,6 +101,14 @@ public:
 	const QString getReencode() const { return m_cReencodeScript;}
 	unsigned long getDuration() const { return m_iClipDuration; }
 	const QString getRecLocation() const { return m_cRTMPrecLocation + m_cRTMPstreamName + ".flv"; }
+	const UnitItem *getUnit() const { return m_pUnit; }
+	bool generatingMessage() const;
+
+	QStringList getLog();
+	enum sendmask getEvents();
+
+	void lockLog() { m_cLogMutex.lock(); }
+	void unlockLog() { m_cLogMutex.unlock(); }
 
 public slots:
 
@@ -94,6 +123,7 @@ public slots:
 
 signals:
 	void reencode();
+	void sendMessage();
 
 private slots:
 	void aboutToRelease();
@@ -104,7 +134,6 @@ private slots:
 
 private:
 	void send();
-	void syncAddresses();
 	inline void add(enum sendmask event) { m_iEvents = (enum sendmask) (m_iEvents | event); }
 	void generateMessage(QStringList &lines);
 
@@ -112,10 +141,9 @@ private:
 
 	QStringList m_cLog;
 	enum sendmask m_iEvents = NONE;
+	QMutex m_cLogMutex;
 
 	QSettings m_cSettings;
-	QVector<struct address> m_cAddresses;
-
 	UnitItem *m_pUnit = nullptr;
 
 	bool m_bEncoding = false;

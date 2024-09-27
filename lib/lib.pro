@@ -15,7 +15,7 @@ SOURCES += \
     colitem.cpp \
 #    dispenser.cpp \
         localinfo.cpp \
-        monitor.cpp \
+	monitor.cpp \
     slotitem.cpp \
         timer.cpp \
     unititem.cpp
@@ -26,7 +26,7 @@ HEADERS += \
     lib_global.h \
 #    dispenser.h \
         localinfo.h \
-        monitor.h \
+	monitor.h \
     slotitem.h \
         timer.h \
     unititem.h
@@ -36,8 +36,11 @@ CONFIG += debug
 
 PKGCONFIG += Qt5Daemon
 
+LIBS += -L".$$PRO_FILE_PWD/../../SmtpClient-for-Qt/src/" -lSmtpMime
+
 INCLUDEPATH += \
-        ../include
+        ../include \
+	../../SmtpClient-for-Qt/src/
 
 # Default rules for deployment.
 unix {
