@@ -114,7 +114,7 @@ void SlotItem::setState(__u8 state)
 	m_bInitialized = true;
 
 	if (state != m_sSlot.state) {
-		m_sSlot.state;
+		m_sSlot.state = (enum slot_state) state;
 		emit stateChanged(this);
 		//emit stateChanged(m_sSlot.state);
 	}

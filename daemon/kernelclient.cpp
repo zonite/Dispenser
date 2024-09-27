@@ -659,14 +659,15 @@ void KernelClient::parse_slot_cmd(nlattr *attrs[])
 			pSlot->setRelease(new_slot_state.release);
 			pSlot->setState(new_slot_state.state);
 
-			qDaemonLog(QString("NL: Slot %1/%2 status full=%3, up=%4, down=%5, release=%6, state=%7.")
+			qDaemonLog(QString("NL: Slot %1/%2 status full=%3, up=%4, down=%5, release=%6, state=%7==%8.")
 			           .arg(*col)
 			           .arg(*slot)
 			           .arg(full)
 			           .arg(QString::number(new_slot_state.up))
 			           .arg(QString::number(new_slot_state.down))
 			           .arg(QString::number(new_slot_state.release))
-			           .arg(SlotItem::stateToStr(new_slot_state.state)), QDaemonLog::NoticeEntry);
+			           .arg(SlotItem::stateToStr(new_slot_state.state))
+			           .arg(pSlot->getStateStr()), QDaemonLog::NoticeEntry);
 
 			//if (new_slot_state.state == UNKNOWN) {
 			//	setSlotStatus(pSlot);

@@ -134,12 +134,12 @@ void Monitor::stateChanged(SlotItem *slot)
 {
 	*this << tr("%1:\tSlot %2/%3 state change -> %4. Lock is %5, up sensor is %6, down sensor is %7.")
 	                .arg(QTime::currentTime().toString())
-	                .arg(slot->getCol()->getId())
-	                .arg(slot->getId())
+	                .arg(QString::number(slot->getCol()->getId()))
+	                .arg(QString::number(slot->getId()))
 	                .arg(slot->getStateStr())
 	                .arg(slot->getSlotStatus()->release ? tr("released") : tr("locked"))
-	                .arg(slot->getSlotStatus()->up)
-	                .arg(slot->getSlotStatus()->down);
+	                .arg(QString::number(slot->getSlotStatus()->up))
+	                .arg(QString::number(slot->getSlotStatus()->down));
 
 	add(STATE);
 
@@ -175,7 +175,7 @@ void Monitor::colReleaseEvent(ColItem *col)
 {
 	*this << tr("%1:\tDispenser release from column %2!")
 	                .arg(QTime::currentTime().toString())
-	                .arg(col->getId());
+	                .arg(QString::number(col->getId()));
 
 	add(RELEASE);
 	startReleaseTimer(m_pUnit);
