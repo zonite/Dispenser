@@ -467,11 +467,13 @@ void ReEncoder::doSend()
 		return;
 	}
 
+	/*
 	smtp.login("zonite", "test");
 	if (!smtp.waitForAuthenticated()) {
 		qDebug() << "Failed to login!";
 		return;
 	}
+	*/
 
 	smtp.sendMail(message);
 	if (!smtp.waitForMailSent()) {
