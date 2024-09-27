@@ -383,9 +383,12 @@ void ReEncoder::doReEncode()
 void ReEncoder::doSend()
 {
 	if (m_pMonitor) {
-		if (m_pMonitor->generatingMessage())
+		if (m_pMonitor->generatingMessage()) {
+			qDaemonLog(QStringLiteral("ReEncored::doSend: Monitor timer is still running."), QDaemonLog::NoticeEntry);
 			return;
+		}
 	} else {
+		qDaemonLog(QStringLiteral("ReEncoder::doSend: no Monitor."), QDaemonLog::NoticeEntry);
 		return;
 	}
 
@@ -403,7 +406,7 @@ void ReEncoder::doSend()
 	}
 
 	//Progress with message!
-	SmtpClient smtp(m_cMailServer, 25);
+	SmtpClient smtp(m_cMailServer, 25, SmtpClient::TcpConnection);
 
 	MimeMessage message;
 	message.setSender(EmailAddress(m_cMailSender, tr("Dispenser Daemon")));
@@ -442,7 +445,7 @@ void ReEncoder::doSend()
 
 	QString content;
 
-	for (const QString &line : m_cLog) {
+	for (const QString &line : cLines) {
 		content += line;
 		content += "\n";
 	}
@@ -452,11 +455,11 @@ void ReEncoder::doSend()
 	message.addPart(&text);
 
 	QFile video(QStringLiteral("/tmp/send.mov"));
-	MimeAttachment attachment(&video);
-	attachment.setContentType("video/quicktime");
-	message.addPart(&attachment);
-
-
+	if (video.exists()) {
+		MimeAttachment attachment(&video);
+		attachment.setContentType("video/quicktime");
+		message.addPart(&attachment);
+	}
 
 	smtp.connectToHost();
 	smtp.sendMail(message);
