@@ -462,7 +462,23 @@ void ReEncoder::doSend()
 	}
 
 	smtp.connectToHost();
+	if (!smtp.waitForReadyConnected()) {
+		qDebug() << "Failed to connect to host!";
+		return;
+	}
+
+	smtp.login("zonite", "test");
+	if (!smtp.waitForAuthenticated()) {
+		qDebug() << "Failed to login!";
+		return;
+	}
+
 	smtp.sendMail(message);
+	if (!smtp.waitForMailSent()) {
+		qDebug() << "Failed to send mail!";
+		return;
+	}
+
 	smtp.quit();
 }
 
