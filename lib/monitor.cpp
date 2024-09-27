@@ -287,7 +287,9 @@ void ReEncoder::syncAddresses()
 
 Monitor &Monitor::operator<<(QString text)
 {
+	m_cLogMutex.lock();
 	m_cLog << text;
+	m_cLogMutex.unlock();
 
 	m_cSendTimer.start(m_iSendTime);
 	if (!m_cInhibitTimer.isActive())

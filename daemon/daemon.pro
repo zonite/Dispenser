@@ -32,7 +32,7 @@ INCLUDEPATH += \
 #    /usr/include/qt5/QtDaemon \
 #    /usr/include/aarch64-linux-gnu/qt5/QtDaemon
 
-LIBS += -L".$$PRO_FILE_PWD/../lib/" -L".$$PRO_FILE_PWD/../../SmtpClient-for-Qt/src/" -lSmtpMime -lQt5Daemon -lDispenser
+LIBS += -L".$$PRO_FILE_PWD/../lib/" -L".$$PRO_FILE_PWD/../../SmtpClient-for-Qt/src/" -lQt5Daemon -lDispenser -lSmtpMime
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
