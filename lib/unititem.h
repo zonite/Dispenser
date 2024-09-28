@@ -54,6 +54,7 @@ public:
 	inline __s8 numCols() const { return m_sUnit.ncols; };
 	void setCols(int i);
 	void setSlots(int i);
+	void setAlarm(__s32 alarm);
 	void addCol();
 
 	qint8 moduleInitialized() { return m_sUnit.initialized; }
@@ -87,6 +88,9 @@ signals:
 private slots:
 	void nightEnds();
 	void nightStarts();
+
+	//Websocket interface:
+	void serverReady();
 
 private:
 	void initCols();

@@ -259,7 +259,7 @@ void WebSocketServer::bcastColCount(UnitItem *unit)
 {
 	QByteArray data;
 	QDataStream out(&data, QIODevice::WriteOnly);
-	NEW_UNIT_CMD(cmd, DISPENSER_GENL_UNIT_CHARGING);
+	NEW_UNIT_CMD(cmd, DISPENSER_GENL_COL_NUM);
 
 	out << cmd.toInt;
 	out << unit->numCols();
@@ -431,6 +431,7 @@ void WebSocketServer::processColRequest(QDataStream &in, __u8 col, __u8 slot, DI
 	__u16 val16 = 0;
 	__u32 val32 = 0;
 	__u64 val64 = 0;
+	__s32 alarm = 0;
 	ColItem *pCol = m_pUnit->col(col);
 	qDebug() << "processColRequest col =" << col << "slot =" << slot;
 
@@ -520,9 +521,13 @@ void WebSocketServer::processColRequest(QDataStream &in, __u8 col, __u8 slot, DI
 		in >> status;
 		qDebug() << "Ignore DISPENSER_GENL_UNIT_NIGHT.";
 		break;
-	case DISPENSER_GENL_UNIT_ALARM: //Unit alarm
-		in >> val32;
-		qDebug() << "Ignore DISPENSER_GENL_UNIT_ALARM.";
+	case DISPENSER_GENL_UNIT_ALARM: //Col alarm
+		in >> alarm;
+		if (alarm & REQUEST) {
+			bcastColAlarms(pCol);
+		} else {
+			pCol->setAlarm(alarm);
+		}
 		break;
 	case __DISPENSER_GENL_ATTR_MAX:
 		in >> status;
@@ -537,6 +542,7 @@ void WebSocketServer::processUnitRequest(QDataStream &in, __u8 col, __u8 slot, D
 	__u16 val16 = 0;
 	__u32 val32 = 0;
 	__u64 val64 = 0;
+	__s32 alarm = 0;
 	qDebug() << "processUnitRequest";
 
 	Q_UNUSED(col);
@@ -626,8 +632,12 @@ void WebSocketServer::processUnitRequest(QDataStream &in, __u8 col, __u8 slot, D
 		bcastNight(m_pUnit->getNight());
 		break;
 	case DISPENSER_GENL_UNIT_ALARM: //Unit alarm
-		in >> val32;
-		bcastAlarms(m_pUnit);
+		in >> alarm;
+		if (alarm & REQUEST) {
+			bcastAlarms(m_pUnit);
+		} else {
+			m_pUnit->setAlarm(alarm);
+		}
 		break;
 	case __DISPENSER_GENL_ATTR_MAX:
 		in >> status;

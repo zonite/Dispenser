@@ -3,7 +3,11 @@
 UnitList::UnitList(QObject *parent)
         : QObject{parent}
 {
-	mItems.append(new UnitItem);
+	UnitItem *default_unit = new UnitItem(this);
+
+	mItems.append(default_unit);
+
+	default_unit->setDataServer("https://dispenser128.nykyri.eu:8080/");
 }
 
 QVector<UnitItem *> UnitList::items() const

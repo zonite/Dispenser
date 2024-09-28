@@ -161,6 +161,7 @@ enum weekdays {
 	SATURDAY = 32,
 	SUNDAY = 64,
 	EVERYDAY = 127,
+	REQUEST = 128,
 }__attribute__ ((__packed__));
 static_assert( sizeof(enum weekdays) == 1 );
 

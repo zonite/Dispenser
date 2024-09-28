@@ -17,7 +17,7 @@ public slots:
 
 signals:
 	//void releaseTimeout(Timer *alarm);
-
+	void modifyAlarm(Alarm *alarm);
 };
 
 #endif // TIMER_H

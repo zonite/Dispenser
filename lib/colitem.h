@@ -28,6 +28,7 @@ public:
 	void setParent(UnitItem *unit) { m_pUnit = unit; }
 	void setSlots(int i);
 	void setColId(__s8 id);
+	void setAlarm(__s32 alarm);
 	void addSlot();
 
 	UnitItem *getUnit() const;

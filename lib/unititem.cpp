@@ -143,6 +143,8 @@ void UnitItem::setDataServer(QString server)
 	}
 
 	m_pDataStream = new WebSocketClient(this, server);
+
+	connect(m_pDataStream, &WebSocketClient::connected, this, &UnitItem::serverReady);
 }
 
 void UnitItem::setCounter(__u8 i)
@@ -235,6 +237,24 @@ void UnitItem::setSlots(int i)
 		return;
 
 	m_sUnit.nslots = i;
+}
+
+void UnitItem::setAlarm(__s32 alarm)
+{
+	Alarm *newAlarm = new Alarm(this, &alarm);
+
+	if (newAlarm->getDays() == NONE) {
+		Alarm *toDelete = m_pAlarms[newAlarm->getSeconds()];
+		m_pAlarms.remove(newAlarm->getSeconds());
+		delete toDelete;
+		delete newAlarm;
+	} else if (m_pAlarms.contains(newAlarm->getSeconds())) {
+		m_pAlarms[newAlarm->getSeconds()]->setDays(newAlarm->getDays());
+		delete newAlarm;
+		newAlarm = nullptr;
+	} else {
+		m_pAlarms[newAlarm->getSeconds()] = newAlarm;
+	}
 }
 
 void UnitItem::addCol()
@@ -389,4 +409,13 @@ void UnitItem::nightEnds()
 void UnitItem::nightStarts()
 {
 	setNight(1);
+}
+
+void UnitItem::serverReady()
+{
+	m_pDataStream->getColCount();
+	m_pDataStream->getDoor();
+	m_pDataStream->getLight();
+	m_pDataStream->getNight();
+	m_pDataStream->getCharging();
 }

@@ -54,6 +54,24 @@ void ColItem::setColId(__s8 id)
 	//emit idChanged(this);
 }
 
+void ColItem::setAlarm(__s32 alarm)
+{
+	Alarm *newAlarm = new Alarm(this, &alarm);
+
+	if (newAlarm->getDays() == NONE) {
+		Alarm *toDelete = m_pAlarms[newAlarm->getSeconds()];
+		m_pAlarms.remove(newAlarm->getSeconds());
+		delete toDelete;
+		delete newAlarm;
+	} else if (m_pAlarms.contains(newAlarm->getSeconds())) {
+		m_pAlarms[newAlarm->getSeconds()]->setDays(newAlarm->getDays());
+		delete newAlarm;
+		newAlarm = nullptr;
+	} else {
+		m_pAlarms[newAlarm->getSeconds()] = newAlarm;
+	}
+}
+
 void ColItem::setSlots(int i)
 {
 	//QVector<QObject> lista;
