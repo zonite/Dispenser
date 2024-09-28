@@ -19,6 +19,8 @@
 //class Alarm;
 //template <typename T> class Alarm;
 
+class WebSocketClient;
+
 class LIB_EXPORT UnitItem : public Timer
 {
 	Q_OBJECT

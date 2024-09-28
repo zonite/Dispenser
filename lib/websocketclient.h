@@ -4,9 +4,9 @@
 #include <QObject>
 #include <QWebSocket>
 
-#include <unititem.h>
-#include <colitem.h>
-#include <slotitem.h>
+#include "unititem.h"
+#include "colitem.h"
+#include "slotitem.h"
 
 class UnitItem;
 
