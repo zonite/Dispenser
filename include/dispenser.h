@@ -276,19 +276,19 @@ struct dispenser_cmd {
 
 union dispenser_cmd {
 	struct {
-		enum DISPENSER_GENL_COMMAND cmd = DISPENSER_GENL_CMD_UNSPEC;
-		enum DISPENSER_GENL_ATTRIBUTE attr = DISPENSER_GENL_ATTR_UNSPEC;
-		__u8 col = 0;
-		__u8 slot = 0;
+		enum DISPENSER_GENL_COMMAND cmd;
+		enum DISPENSER_GENL_ATTRIBUTE attr;
+		__u8 col;
+		__u8 slot;
 	} fields;
 	__u32 toInt;
 };
 static_assert(sizeof(union dispenser_cmd) == 4 );
 
-#define DISPENSER_CMD(com, att, c, s) ((__u32) (((com & 0xFF) << 24 )) | ((att & 0xFF) << 16) | ((c & 0xFF) << 8) | (s & 0xFF))
+#define DISPENSER_CMD_PACK(com, att, c, s) ((__u32) (((com & 0xFF) << 24 )) | ((att & 0xFF) << 16) | ((c & 0xFF) << 8) | (s & 0xFF))
 
 #define EMPTY_CMD(name) union dispenser_cmd name = { .toInt = 0 }
-#define NEW_CMD(name, com, att, c, s) union dispenser_cmd name = { .toInt = DISPENSER_CMD(com, att, c, s) }
+#define NEW_CMD(name, com, att, c, s) union dispenser_cmd name = { .toInt = DISPENSER_CMD_PACK(com, att, c, s) }
 
 #define NEW_UNIT_CMD(name, att) NEW_CMD(name, DISPENSER_GENL_CMD_UNIT_STATUS, att, 0, 0)
 #define NEW_COL_CMD(name, att, c) NEW_CMD(name, DISPENSER_GENL_CMD_COL_STATUS, att, c, 0)
@@ -314,7 +314,7 @@ static_assert(sizeof(union dispenser_cmd) == 4 );
 #define GREETER  _IOW('a', 'c', struct dispenser_ioc *)
 //#define DISPENSERIOCTL _IO(0xB4, 0x20)
 
-//#define DISPENSER_CMD _IOW(0xB4, 0x20, struct dispenser_ioctl *)
+#define DISPENSER_CMD _IOW(0xB4, 0x20, struct dispenser_ioctl *)
 
 
 //bitfield door,power,night,light (night+light settable)
