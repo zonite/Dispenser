@@ -16,8 +16,10 @@ WebSocketClient::WebSocketClient(UnitItem *unit, QString server)
 
 	connect(&m_webSocket, QOverload<QAbstractSocket::SocketError>::of(&QWebSocket::error),
 	        [=](QAbstractSocket::SocketError error){ this->error(error); });
+	connect(&m_webSocket, &QWebSocket::sslErrors, this, &WebSocketClient::sslError);
 
 	m_webSocket.open(m_cDispenserAddress);
+	m_webSocket.ignoreSslErrors();
 }
 
 WebSocketClient::~WebSocketClient()
@@ -109,6 +111,13 @@ void WebSocketClient::error(QAbstractSocket::SocketError error)
 	if (!m_webSocket.isValid()) {
 		m_webSocket.open(m_cDispenserAddress);
 	}
+}
+
+void WebSocketClient::sslError(const QList<QSslError> &error)
+{
+	qDebug() << "SSL error occured" << error;
+
+	m_webSocket.ignoreSslErrors(error);
 }
 
 void WebSocketClient::textMessageReceived(QString message)

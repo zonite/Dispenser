@@ -31,6 +31,7 @@ private slots:
 	void onConnected();
 	void closed();
 	void error(QAbstractSocket::SocketError error);
+	void sslError(const QList<QSslError> &error);
 	void textMessageReceived(QString message);
 	void binaryMessageReceived(QByteArray message);
 
