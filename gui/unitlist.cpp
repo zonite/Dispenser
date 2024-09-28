@@ -7,7 +7,7 @@ UnitList::UnitList(QObject *parent)
 
 	mItems.append(default_unit);
 
-	default_unit->setDataServer("https://dispenser128.nykyri.eu:8080/");
+	default_unit->setDataServer("wss://dispenser128.nykyri.eu:8080/");
 }
 
 QVector<UnitItem *> UnitList::items() const
