@@ -65,7 +65,6 @@ DISTFILES +=
 
 HEADERS += \
         manager.h \
-	qdaemonlog.h \
 	unitlist.h \
 	unitmodel.h \
 	websocketclient.h
