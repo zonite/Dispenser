@@ -8,6 +8,7 @@
 
 #include "lib_global.h"
 
+#include "websocketclient.h"
 #include "colitem.h"
 #include "slotitem.h"
 #include "alarm.h"
@@ -30,6 +31,8 @@ public:
 
 	const struct dispenser_mmap_unit *getUnitStatus() { return &m_sUnit; }
 
+	void setDataServer(QString server);
+
 	void setCounter(__u8);
 
 	void setDoor(char state);
@@ -38,7 +41,15 @@ public:
 	void setCharging(char state);
 	void setInitialized(qint8 init);
 
-	inline int numCols() const { return m_sUnit.ncols; };
+	__u8 getDoor() { return m_sUnit.door; }
+	__u8 getNight() { return m_sUnit.night; }
+	__u8 getLight() { return m_sUnit.light; }
+	__u8 getCharging() { return m_sUnit.charging; }
+	__u8 getAlarmCount() { return m_pAlarms.size(); }
+	QMap<int, Alarm *> getAlarms() { return m_pAlarms; }
+	Alarm *getAlarm(int i);
+
+	inline __s8 numCols() const { return m_sUnit.ncols; };
 	void setCols(int i);
 	void setSlots(int i);
 	void addCol();
@@ -79,6 +90,7 @@ private:
 	void initCols();
 	void saveAlarms();
 
+	WebSocketClient *m_pDataStream = nullptr;
 	struct dispenser_mmap_unit m_sUnit = { 0, 0, 0, 0, 0, 0, 0, 0, { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, 0, 0, 0, 0 };
 	QVector<ColItem> m_cCols;
 	bool m_bInitialized = false;

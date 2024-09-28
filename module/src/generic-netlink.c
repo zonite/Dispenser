@@ -101,7 +101,13 @@ static struct nla_policy const dispenser_genl_policy[DISPENSER_GENL_ATTR_COUNT] 
 	[DISPENSER_GENL_CALIBRATION0] = { .type = NLA_U64 }, //calibration data u64
 	[DISPENSER_GENL_CALIBRATION1] = { .type = NLA_S16 }, //calibration data s16
 	[DISPENSER_GENL_INITIALIZED] = { .type = NLA_U8 }, //calibration data u8
-//	[DISPENSER_GENL_CALIBRATION] = { .type = NLA_U32 }, //calibration data
+	[DISPENSER_GENL_SLOT_STATE] = { .type = NLA_U8 }, //enum slot_state
+	[DISPENSER_GENL_UNIT_LIGHT] = { .type = NLA_U8 }, //Unit light
+	[DISPENSER_GENL_UNIT_DOOR] = { .type = NLA_U8 }, //Unit door
+	[DISPENSER_GENL_UNIT_CHARGING] = { .type = NLA_U8 }, //Unit charging
+	[DISPENSER_GENL_UNIT_NIGHT] = { .type = NLA_U8 }, //Unit night
+	[DISPENSER_GENL_UNIT_ALARM] = { .type = NLA_U32 }, //Unit alarm
+	//	[DISPENSER_GENL_CALIBRATION] = { .type = NLA_U32 }, //calibration data
 };
 
 /** Generic Netlink Family Descriptor **/

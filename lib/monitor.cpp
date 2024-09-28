@@ -114,7 +114,7 @@ void Monitor::newCol(ColItem *col)
 {
 	connect(col, &ColItem::newSlot, this, &Monitor::newSlot);
 	connect(col, &ColItem::releaseEvent, this, &Monitor::colReleaseEvent);
-	connect(col, &ColItem::alarmsChanged, this, &Monitor::startReleaseTimer);
+	connect(col, &ColItem::alarmsChanged, this, &Monitor::startColReleaseTimer);
 }
 
 void Monitor::releaseSlot(SlotItem *slot)
@@ -261,6 +261,22 @@ void Monitor::startReleaseTimer(UnitItem *unit)
 
 	qDaemonLog(QStringLiteral("Next release in %1. Wake up in %2")
 	           .arg(QString::number(msec))
+	           .arg(QString::number(msec - m_iReleaseLeadTime)), QDaemonLog::NoticeEntry);
+}
+
+void Monitor::startColReleaseTimer(ColItem *col)
+{
+	if (!col) {
+		return;
+	}
+
+	long msec = col->getNextRelease(m_iReleaseLeadTime);
+
+	m_cReleaseTimer.start(msec - m_iReleaseLeadTime);
+
+	qDaemonLog(QStringLiteral("Next release in %1 from col = %2. Wake up in %3")
+	           .arg(QString::number(msec))
+	           .arg(QString::number(col->getId()))
 	           .arg(QString::number(msec - m_iReleaseLeadTime)), QDaemonLog::NoticeEntry);
 }
 

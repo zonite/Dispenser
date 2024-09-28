@@ -110,6 +110,11 @@ UnitItem::~UnitItem()
 	}
 
 	m_pAlarms.clear();
+
+	if (m_pDataStream) {
+		delete m_pDataStream;
+		m_pDataStream = nullptr;
+	}
 }
 
 
@@ -129,6 +134,15 @@ ColItem *UnitItem::col(int col)
 		return nullptr;
 
 	return &m_cCols[col];
+}
+
+void UnitItem::setDataServer(QString server)
+{
+	if (m_pDataStream) {
+		delete m_pDataStream;
+	}
+
+	m_pDataStream = new WebSocketClient(this, server);
 }
 
 void UnitItem::setCounter(__u8 i)
@@ -186,6 +200,15 @@ void UnitItem::setCharging(char state)
 void UnitItem::setInitialized(qint8 init)
 {
 	m_sUnit.initialized = init;
+}
+
+Alarm *UnitItem::getAlarm(int i)
+{
+	auto k = m_pAlarms.cbegin(), end = m_pAlarms.cend();
+
+	k += i;
+
+	return k != end ? k.value() : nullptr;
 }
 
 void UnitItem::setCols(int i)

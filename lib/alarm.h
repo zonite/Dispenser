@@ -80,7 +80,7 @@ public:
 	//static QList<int> toIntList(QList<Alarm> alarms);
 	static QList<int> toIntList(const QMap<int, Alarm*> alarms);
 	static QList<QVariant> toVariantList(const QMap<int, Alarm*> alarms);
-	int toInt() const { return ((m_iSeconds << 8) | m_iActive); }
+	__u32 toInt() const { return ((m_iSeconds << 8) | m_iActive); }
 
 	//QTimer *setParent(UnitItem *unit);
 	//QTimer *setParent(ColItem *col);

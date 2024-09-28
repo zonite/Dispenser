@@ -32,6 +32,7 @@ public:
 	__s8 getId() { return m_iSlotId; }
 	bool getInitialized() const { return m_bInitialized; }
 	void setParentNid(ColItem *parent, __s8 i);
+	enum slot_state getState() const { return m_sSlot.state; };
 	QString getStateStr() const;
 	inline bool getFull() const { return m_bFull; }
 

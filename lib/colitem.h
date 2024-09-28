@@ -31,12 +31,16 @@ public:
 	void addSlot();
 
 	UnitItem *getUnit() const;
-	char getId() const;
+	__s8 getId() const;
 	bool getInitialized() const { return m_bInitialized; }
-	char getSlotCount() const { return m_sCol.slot_count; }
+	__s8 getSlotCount() const { return m_sCol.slot_count; }
 	const QVector<SlotItem> *getSlots() const { return &m_cSlots; }
 	bool isFull() const;
 	bool isEmpty() const;
+
+	long int getNextRelease( long int offset = 0);
+
+	QMap<int, Alarm *> getAlarms() { return m_pAlarms; }
 
 public slots:
 	//void releaseTimeout(Alarm<ColItem> *alarm);
@@ -47,7 +51,7 @@ signals:
 	void slotCountChanged(ColItem *col);
 	void releaseEvent(ColItem *col);
 	void newSlot(SlotItem *slot);
-	void alarmsChanged(UnitItem *unit);
+	void alarmsChanged(ColItem *col);
 	//void idChanged(ColItem *col);
 
 private:

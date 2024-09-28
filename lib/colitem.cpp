@@ -94,7 +94,7 @@ UnitItem *ColItem::getUnit() const
 	return m_pUnit;
 }
 
-char ColItem::getId() const
+__s8 ColItem::getId() const
 {
 	if (m_sCol.col_id < 0 && m_pUnit) {
 		//Error
@@ -127,6 +127,20 @@ bool ColItem::isEmpty() const
 	return true;
 }
 
+long ColItem::getNextRelease(long offset)
+{
+	long int next = INT_MAX;
+	int current;
+
+	for (const Alarm *alarm : m_pAlarms) {
+		current = alarm->remainingTime();
+		if (current < next && current - offset > 0)
+			next = current;
+	}
+
+	return next;
+}
+
 void ColItem::releaseTimeout(Alarm *alarm)
 {
 	Q_UNUSED(alarm);
@@ -144,7 +158,7 @@ void ColItem::timerStarted(Alarm *alarm)
 {
 	Q_UNUSED(alarm);
 
-	emit alarmsChanged(m_pUnit);
+	emit alarmsChanged(this);
 }
 
 void ColItem::initSlots()

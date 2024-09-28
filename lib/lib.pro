@@ -1,5 +1,7 @@
 QT -= gui
 
+QT += websockets
+
 TEMPLATE = lib
 DEFINES += LIB_LIBRARY
 
@@ -18,7 +20,8 @@ SOURCES += \
 	monitor.cpp \
     slotitem.cpp \
         timer.cpp \
-    unititem.cpp
+    unititem.cpp \
+        websocketclient.cpp
 
 HEADERS += \
         alarm.h \
@@ -29,7 +32,8 @@ HEADERS += \
 	monitor.h \
     slotitem.h \
         timer.h \
-    unititem.h
+    unititem.h \
+        websocketclient.h
 
 CONFIG += link_pkgconfig
 CONFIG += debug

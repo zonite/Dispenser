@@ -2,14 +2,18 @@
 #define WEBSOCKETCLIENT_H
 
 #include <QObject>
-
 #include <QWebSocket>
+
+#include <unititem.h>
+#include <colitem.h>
+#include <slotitem.h>
 
 class WebSocketClient : public QObject
 {
 	Q_OBJECT
 public:
-	explicit WebSocketClient(QObject *parent = nullptr);
+	explicit WebSocketClient(UnitItem *unit, QString server);
+	~WebSocketClient();
 
 signals:
 
@@ -21,6 +25,7 @@ private slots:
 private:
 	QWebSocket m_webSocket;
 	QUrl m_cDispenserAddress;
+	UnitItem *m_pUnit;
 };
 
 #endif // WEBSOCKETCLIENT_H

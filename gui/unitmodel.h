@@ -3,7 +3,8 @@
 
 #include <QAbstractListModel>
 
-class UnitList;
+#include "unitlist.h"
+//class UnitList;
 
 class UnitModel : public QAbstractListModel
 {

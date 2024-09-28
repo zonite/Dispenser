@@ -132,6 +132,7 @@ private slots:
 	void sendMail();
 	void forceSend();
 	void startReleaseTimer(UnitItem *unit);
+	void startColReleaseTimer(ColItem *col);
 
 private:
 	void send();

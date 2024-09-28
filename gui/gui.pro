@@ -33,6 +33,7 @@ RESOURCES += qml.qrc
 SOURCES += \
     main.cpp \
     manager.cpp \
+    qdaemonlog.cpp \
     unitlist.cpp \
     unitmodel.cpp \
     websocketclient.cpp
@@ -41,6 +42,8 @@ SOURCES += \
 INCLUDEPATH += \
     ../include \
     ../lib
+
+LIBS += -L".$$PRO_FILE_PWD/../lib/" -lDispenser
 
 #HEADERS += \
 #    mainwindow.h
@@ -62,6 +65,7 @@ DISTFILES +=
 
 HEADERS += \
         manager.h \
+	qdaemonlog.h \
 	unitlist.h \
 	unitmodel.h \
 	websocketclient.h

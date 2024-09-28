@@ -117,6 +117,12 @@ enum DISPENSER_GENL_ATTRIBUTE {
 	DISPENSER_GENL_CALIBRATION0, //calibration data u64
 	DISPENSER_GENL_CALIBRATION1, //calibration data s16
 	DISPENSER_GENL_INITIALIZED, //calibration data u8
+	DISPENSER_GENL_SLOT_STATE, //enum slot_state
+	DISPENSER_GENL_UNIT_LIGHT, //Unit light
+	DISPENSER_GENL_UNIT_DOOR, //Unit door
+	DISPENSER_GENL_UNIT_CHARGING, //Unit charging
+	DISPENSER_GENL_UNIT_NIGHT, //Unit night
+	DISPENSER_GENL_UNIT_ALARM, //Unit alarm
 	__DISPENSER_GENL_ATTR_MAX,
 } __attribute__ ((__packed__));
 
@@ -204,10 +210,10 @@ struct dispenser_ioctl {
 
 struct dispenser_mmap_unit {
 	volatile unsigned int counter;
-	volatile char charging;
-	volatile char button;
-	volatile char light;
-	volatile char door;
+	volatile unsigned char charging;
+	volatile unsigned char button;
+	volatile unsigned char light;
+	volatile unsigned char door;
 	volatile __s32 temperature;
 	volatile __u32 pressure;
 	volatile __u32 humidity;
@@ -242,12 +248,73 @@ union dispenser_mmap {
 	struct dispenser_mmap_slot slot;
 };
 
+/*
+struct dispenser_cmd {
+	enum DISPENSER_GENL_COMMAND cmd;
+	enum DISPENSER_GENL_ATTRIBUTE attr;
+	__u8 count;
+	__u8 pos;
+	__u64 value;
+} __attribute__ ((__packed__)); //12 bytes
+*/
+
+
+//#define UNIT_CMD(cmd, attr)            ((int) ((cmd & 0xFF )) | ((attr & 0xFF) << 8))
+//#define COL_CMD(cmd, attr, col)        ((int) ((cmd & 0xFF )) | ((attr & 0xFF) << 8) | ((col & 0xFF) << 16))
+
+//#define CMD_TO_INT(cmd) ((__u32) cmd)
+//#define INT_TO_CMD(integer) ((struct dispenser_cmd) integer)
+
+/*
+struct dispenser_cmd {
+	enum DISPENSER_GENL_COMMAND cmd = DISPENSER_GENL_CMD_UNSPEC;
+	enum DISPENSER_GENL_ATTRIBUTE attr = DISPENSER_GENL_ATTR_UNSPEC;
+	__u8 col = 0;
+	__u8 slot = 0;
+} __attribute__ ((__packed__)) new_cmd = { DISPENSER_GENL_CMD_UNSPEC, DISPENSER_GENL_ATTR_UNSPEC, 0, 0 }; //4 bytes = 32bits
+*/
+
+union dispenser_cmd {
+	struct {
+		enum DISPENSER_GENL_COMMAND cmd = DISPENSER_GENL_CMD_UNSPEC;
+		enum DISPENSER_GENL_ATTRIBUTE attr = DISPENSER_GENL_ATTR_UNSPEC;
+		__u8 col = 0;
+		__u8 slot = 0;
+	} fields;
+	__u32 toInt;
+};
+static_assert(sizeof(union dispenser_cmd) == 4 );
+
+#define DISPENSER_CMD(com, att, c, s) ((__u32) (((com & 0xFF) << 24 )) | ((att & 0xFF) << 16) | ((c & 0xFF) << 8) | (s & 0xFF))
+
+#define EMPTY_CMD(name) union dispenser_cmd name = { .toInt = 0 }
+#define NEW_CMD(name, com, att, c, s) union dispenser_cmd name = { .toInt = DISPENSER_CMD(com, att, c, s) }
+
+#define NEW_UNIT_CMD(name, att) NEW_CMD(name, DISPENSER_GENL_CMD_UNIT_STATUS, att, 0, 0)
+#define NEW_COL_CMD(name, att, c) NEW_CMD(name, DISPENSER_GENL_CMD_COL_STATUS, att, c, 0)
+#define NEW_SLOT_CMD(name, att, c, s) NEW_CMD(name, DISPENSER_GENL_CMD_SLOT_STATUS, att, c, s)
+
+
+
+//#define DISPENSER_CMD(cm, att, c, sl) { .cmd = cm, .attr = att, .col = c, .slot = sl }
+//#define NEW_CMD(name, cm, att, c, sl) struct dispenser_cmd name = DISPENSER_CMD(cm, att, c, sl)
+
+//#define UNIT_CMD(att) DISPENSER_CMD(DISPENSER_GENL_CMD_UNIT_STATUS, att, 0, 0)
+//#define COL_CMD(att, c) DISPENSER_CMD(DISPENSER_GENL_CMD_COL_STATUS, att, col, 0)
+//#define SLOT_CMD(att, c, slot) DISPENSER_CMD(DISPENSER_GENL_CMD_SLOT_STATUS, att, col, slot)
+
+//#define NEW_UNIT_CMD(name, att) NEW_CMD(name, DISPENSER_GENL_CMD_UNIT_STATUS, att, 0, 0)
+//#define NEW_COL_CMD(name, att, c) NEW_CMD(name, DISPENSER_GENL_CMD_COL_STATUS, att, c, 0)
+//#define NEW_SLOT_CMD(naem, att, c, sl) NEW_CMD(name, DISPENSER_GENL_CMD_SLOT_STATUS, att, c, sl)
+
+
+
 #define WR_VALUE _IOW('a', 'a', int32_t *)
 #define RD_VALUE _IOR('a', 'b', int32_t *)
 #define GREETER  _IOW('a', 'c', struct dispenser_ioc *)
 //#define DISPENSERIOCTL _IO(0xB4, 0x20)
 
-#define DISPENSER_CMD _IOW(0xB4, 0x20, struct dispenser_ioctl *)
+//#define DISPENSER_CMD _IOW(0xB4, 0x20, struct dispenser_ioctl *)
 
 
 //bitfield door,power,night,light (night+light settable)

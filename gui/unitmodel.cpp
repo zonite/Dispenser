@@ -23,13 +23,16 @@ QVariant UnitModel::data(const QModelIndex &index, int role) const
 	if (!index.isValid() || !mList)
 		return QVariant();
 
-	const UnitItem item = mList->items().at(index.row());
+	const UnitItem *item = mList->items().at(index.row());
+	Q_UNUSED(item);
 
 	switch (role) {
 	        case DoneRole:
-		        return QVariant(item.done);
+		        return QVariant(1);
+			//return QVariant(item.done);
 	        case DescriptionRole:
-		        return QVariant(item.description);
+		        return QVariant("joo");
+			//return QVariant(item.description);
 	}
 
 	return QVariant();
@@ -40,18 +43,23 @@ bool UnitModel::setData(const QModelIndex &index, const QVariant &value, int rol
 	if (!mList)
 		return false;
 
-	UnitItem item = mList->items().at(index.row());
+	UnitItem *item = mList->items().at(index.row());
+	bool joo = item->getDoor();
+	Q_UNUSED(joo);
+	QString test;
 
 	switch (role) {
 	case DoneRole:
-		item.done = value.toBool();
+		joo = value.toBool();
+		//item.done = value.toBool();
 		break;
 	case DescriptionRole:
-		item.description = value.toString();
+		test = value.toString();
+		//item.description = value.toString();
 		break;
 	}
 
-	if (mList->setItemAt(index.row(), item)) {
+	if (mList->setItemAt(index.row(), *item)) {
 		emit dataChanged(index, index, QVector<int>() << role);
 		return true;
 	}

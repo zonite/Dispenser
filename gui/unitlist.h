@@ -4,7 +4,10 @@
 #include <QObject>
 #include <QVector>
 
+#include <unititem.h>
+#include <colitem.h>
 #include <slotitem.h>
+
 /*
 struct UnitItem
 {
@@ -19,7 +22,7 @@ class UnitList : public QObject
 public:
 	explicit UnitList(QObject *parent = nullptr);
 
-	QVector<UnitItem> items() const;
+	QVector<UnitItem *> items() const;
 
 	bool setItemAt(int index, const UnitItem &item);
 
@@ -36,7 +39,7 @@ public slots:
 	void removeCompletedItems();
 
 private:
-	QVector<UnitItem> mItems;
+	QVector<UnitItem *> mItems;
 
 
 };
