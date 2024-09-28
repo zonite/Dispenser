@@ -8,6 +8,8 @@
 #include <colitem.h>
 #include <slotitem.h>
 
+class UnitItem;
+
 class WebSocketClient : public QObject
 {
 	Q_OBJECT
