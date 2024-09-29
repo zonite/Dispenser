@@ -29,6 +29,8 @@ Simulator::Simulator(UnitItem *unit)
 
 void Simulator::open()
 {
+	qDebug() << "Simulator open timeout";
+
 	switch (m_iPhase) {
 	case RELEASE:
 		m_pSlot->setRelease(1);
@@ -59,6 +61,8 @@ void Simulator::open()
 void Simulator::close()
 {
 	m_cTimer.setInterval(2000);
+
+	qDebug() << "Simulator close timeout";
 
 	switch (m_iPhase) {
 	case RELEASE:

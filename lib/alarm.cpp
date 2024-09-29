@@ -331,6 +331,7 @@ void Alarm::setSeconds(qint32 seconds)
 void Alarm::setInterval(quint32 interval)
 {
 	m_iInterval = (interval % 86400) * 1000;
+	m_cTimer.setInterval(m_iInterval);
 }
 
 //template<typename T>

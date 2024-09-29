@@ -362,21 +362,21 @@ long UnitItem::getNextRelease(long offset) //Real timer remaining time
 
 QDateTime UnitItem::getNextRelease(QDateTime offset) const //DateTime of next release.
 {
-	int offset_seconds = offset.time().msecsSinceStartOfDay() / 1000;
-	int toGoSec = 86400 * 365; //Year in seconds;
+	int offset_seconds = offset.time().msecsSinceStartOfDay();
+	int toGoSec = 24 * 86400 * 1000; //24 days in milliseconds;
 
 	for(const Alarm *alarm : m_pAlarms) {
-		int alarm_offset = alarm->getSeconds();
-		int alarm_interval = alarm->getInterval();
-		int alarm_toGo = (((alarm_offset - offset_seconds) % alarm_interval) + alarm_interval) % alarm_interval;
-		//int alarm_toGo = (((alarm_offset - offset_seconds) % alarm_interval) + alarm_interval - 1) % alarm_interval + 1;
+		int alarm_offset = alarm->getSeconds() * 1000;
+		int alarm_interval = alarm->getInterval() * 1000;
+		//int alarm_toGo = (((alarm_offset - offset_seconds) % alarm_interval) + alarm_interval) % alarm_interval;
+		int alarm_toGo = (((alarm_offset - offset_seconds) % alarm_interval) + alarm_interval - 1) % alarm_interval + 1;
 		if (alarm_toGo < toGoSec
 		                && ((1 << offset.addSecs(alarm_toGo).date().dayOfWeek()) & alarm->getDays())) {
 			toGoSec = alarm_toGo;
 		}
 	}
 
-	return offset.addSecs(toGoSec);
+	return offset.addMSecs(toGoSec);
 }
 
 void UnitItem::checkInitialized()
