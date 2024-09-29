@@ -121,12 +121,12 @@ void Monitor::releaseSlot(SlotItem *slot)
 {
 	*this << tr("%1:\tSlot %2/%3 release. State is %4, lock is %5, up sensor is %6, down sensor is %7.")
 	                .arg(QTime::currentTime().toString())
-	                .arg(slot->getCol()->getId())
-	                .arg(slot->getId())
+	                .arg(QString::number(slot->getCol()->getId()))
+	                .arg(QString::number(slot->getId()))
 	                .arg(slot->getStateStr())
 	                .arg(slot->getSlotStatus()->release ? tr("released") : tr("locked"))
-	                .arg(slot->getSlotStatus()->up)
-	                .arg(slot->getSlotStatus()->down);
+	                .arg(QString::number(slot->getSlotStatus()->up))
+	                .arg(QString::number(slot->getSlotStatus()->down));
 
 }
 
