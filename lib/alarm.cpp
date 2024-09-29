@@ -390,7 +390,7 @@ void Alarm::startTimer()
 {
 	int msecToRelease;
 
-	msecToRelease = (m_iSeconds - QTime::currentTime().msecsSinceStartOfDay()) % m_iInterval;
+	msecToRelease = (((m_iSeconds - QTime::currentTime().msecsSinceStartOfDay()) % m_iInterval) + m_iInterval) % m_iInterval;
 	//if (msecToRelease < 0)
 	//	msecToRelease += 86400000;
 
