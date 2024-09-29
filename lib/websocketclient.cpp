@@ -212,6 +212,7 @@ void WebSocketClient::getSlotCount(ColItem *col)
 		qDebug() << "Col not initialized -> connect signals";
 
 		connect(col, &ColItem::newSlot, this, &WebSocketClient::getSlotState);
+		connect(col, &ColItem::newSlot, this, &WebSocketClient::getSlotReleaseTime);
 		connect(col, &Timer::modifyAlarm, this, &WebSocketClient::modifyAlarm);
 	}
 
@@ -242,14 +243,37 @@ void WebSocketClient::getSlotState(SlotItem *slot)
 	m_webSocket.sendBinaryMessage(data);
 }
 
+void WebSocketClient::getSlotReleaseTime(SlotItem *slot)
+{
+	QByteArray data;
+	QDataStream out(&data, QIODevice::WriteOnly);
+	NEW_SLOT_CMD(cmd, DISPENSER_GENL_UNIT_ALARM, slot->getCol()->getId(), slot->getId());
+
+	//Slot has no signals to connect to!
+	/*
+	if (!slot->getInitialized()) {
+		qDebug() << "Slot" << slot->getCol()->getId() << "/" << slot->getId() << "not initialized -> connect signals";
+
+		connect(slot, &SlotItem::signal, this, &WebSocketClient::slot);
+	}
+	*/
+	__u32 val32 = 0;
+
+	out << cmd.toInt;
+	out << val32;
+
+	m_webSocket.sendBinaryMessage(data);
+}
+
 void WebSocketClient::processSlotMessage(QDataStream &in, __u8 col, __u8 slot, DISPENSER_GENL_ATTRIBUTE attr)
 {
 	__u8 status = 0;
 	__u16 val16 = 0;
 	__u32 val32 = 0;
 	__u64 val64 = 0;
+	QDateTime releaseTime;
 	SlotItem *pSlot = m_pUnit->slot(col, slot);
-	qDebug() << "processSlotRequest col =" << col << "slot =" << slot;
+	qDebug() << "processSlotMessage col =" << col << "slot =" << slot;
 
 	if (!pSlot) {
 		qDebug() << QStringLiteral("WebSocketClient::processSlotMessage: Slot ptr == NULL, col = %1, slot = %2").arg(QString::number(col)).arg(QString::number(slot));
@@ -280,6 +304,7 @@ void WebSocketClient::processSlotMessage(QDataStream &in, __u8 col, __u8 slot, D
 	case DISPENSER_GENL_SLOT_STATUS: //bitfield up,down,release,+enum state (5bits) (settable)
 		in >> status;
 		pSlot->setState(status);
+		qDebug() << "DISPENSER_GENL_SLOT_STATUS: Slot state is" << pSlot->getStateStr();
 		break;
 	case DISPENSER_GENL_SLOT_FAILED_UP: //u32 attr
 		in >> val32;
@@ -320,6 +345,7 @@ void WebSocketClient::processSlotMessage(QDataStream &in, __u8 col, __u8 slot, D
 	case DISPENSER_GENL_SLOT_STATE: //enum slot_state
 		in >> status;
 		pSlot->setState(status);
+		qDebug() << "DISPENSER_GENL_SLOT_STATE: Slot state is" << pSlot->getStateStr();
 		break;
 	case DISPENSER_GENL_UNIT_LIGHT: //Unit light
 		in >> status;
@@ -338,7 +364,8 @@ void WebSocketClient::processSlotMessage(QDataStream &in, __u8 col, __u8 slot, D
 		qDebug() << "Ignore DISPENSER_GENL_UNIT_NIGHT.";
 		break;
 	case DISPENSER_GENL_UNIT_ALARM: //Unit alarm
-		in >> val32;
+		in >> releaseTime;
+		pSlot->setReleaseTime(releaseTime);
 		qDebug() << "Ignore DISPENSER_GENL_UNIT_ALARM.";
 		break;
 	case __DISPENSER_GENL_ATTR_MAX:

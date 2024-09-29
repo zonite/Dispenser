@@ -3,6 +3,7 @@
 
 #include <QObject>
 #include <QSettings>
+#include <QDateTime>
 
 #include "lib_global.h"
 
@@ -27,14 +28,16 @@ public:
 	void setRelease(__u8 release);
 	void setFailedUp(__s32 failures);
 	void setFailedDown(__s32 failures);
-
-	ColItem *getCol();
-	__s8 getId() { return m_iSlotId; }
-	bool getInitialized() const { return m_bInitialized; }
+	void setReleaseTime(QDateTime time);
 	void setParentNid(ColItem *parent, __s8 i);
+
+	ColItem *getCol() const;
+	__s8 getId() const { return m_iSlotId; }
+	bool getInitialized() const { return m_bInitialized; }
 	enum slot_state getState() const { return m_sSlot.state; };
 	QString getStateStr() const;
 	inline bool getFull() const { return m_bFull; }
+	QDateTime getRelease() const { return m_cReleaseTime; }
 
 	const struct dispenser_mmap_slot *getSlotStatus() { return &m_sSlot; }
 	__s32 getFailedUp() { return m_sSlot.up_failed; }
@@ -46,12 +49,14 @@ signals:
 	void downChanged(SlotItem *slot);
 	void releaseChanged(SlotItem *slot);
 	void fullChanged(SlotItem *slot);
+	void releaseTimeChanged(SlotItem *slot);
 	//void idChanged(SlotItem *slot);
 
 private:
 	QSettings m_cSettings;
 	struct dispenser_mmap_slot m_sSlot = { UNKNOWN, 0, 0, 0, 0, 0 };
 	ColItem *m_pCol = nullptr;
+	QDateTime m_cReleaseTime;
 	__s8 m_iSlotId = -1;
 	bool m_bFull = false;
 	bool m_bInitialized = false;

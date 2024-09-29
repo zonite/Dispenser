@@ -52,8 +52,8 @@ public:
 	//explicit Alarm(qint32 sec, enum weekdays days = EVERYDAY);
 	//Alarm(UnitItem *unit, const int *i = nullptr);
 	//Alarm(ColItem *col, const int *i = nullptr);
-	Alarm(const Timer *parent, qint32 sec, enum weekdays days = EVERYDAY);
-	Alarm(const Timer *parent, const int *i = nullptr);
+	Alarm(const Timer *parent, qint32 sec, enum weekdays days = EVERYDAY, int interval = 86400);
+	Alarm(const Timer *parent, const __u64 *i = nullptr);
 	//Alarm(const T *parent, qint32 sec, enum weekdays days = EVERYDAY);
 	//Alarm(const T *parent, const int *i = nullptr);
 	//template <typename T> Alarm(T *p, const int *i = nullptr);
@@ -66,29 +66,31 @@ public:
 	//bool operator<(const Alarm &b) const;
 
 	//inline operator QVariant() const { return QVariant::fromValue(*this); } //convert to QVariant
-	inline operator int() const { return ((m_iSeconds << 8) | m_iActive); } //convert to int
+	inline operator __u64() const { return (((__u64)m_iInterval << 32) | ((m_iSeconds << 8) & 0xFFFFFF00 ) | m_iActive); } //convert to int
 
 	//static QList<Alarm> &fromVariant(const QVariant &var);
 	//static void clean(QList<Alarm> &list);
 	//template<typename T> static void mapFromIntList(T *parent, QMap<int, Alarm*> &map, QList<int> &list);
-	static void mapFromIntList(Timer *parent, QMap<int, Alarm*> &map, const QList<int> &list);
+	static void mapFromIntList(Timer *parent, QMap<int, Alarm*> &map, const QList<__u64> &list);
 	static void mapFromVariantList(Timer *parent, QMap<int, Alarm*> &map, const QList<QVariant> &list);
 	//static void mapFromIntList(T *parent, QMap<int, Alarm*> &map, const QList<int> &list);
 	//static QList<Alarm> fromVariant(QVariant var);
 	//static Alarm fromInt(int i);
 	//static QVariant toVariant(QList<Alarm> alarms);
 	//static QList<int> toIntList(QList<Alarm> alarms);
-	static QList<int> toIntList(const QMap<int, Alarm*> alarms);
+	static QList<__u64> toIntList(const QMap<int, Alarm*> alarms);
 	static QList<QVariant> toVariantList(const QMap<int, Alarm*> alarms);
-	__u32 toInt() const { return ((m_iSeconds << 8) | m_iActive); }
+	__u64 toInt() const { return (((__u64)m_iInterval << 32) | ((m_iSeconds << 8) & 0xFFFFFF00 ) | m_iActive); }
+
 
 	//QTimer *setParent(UnitItem *unit);
 	//QTimer *setParent(ColItem *col);
 	void setAlarm(QTime time);
 	void setSeconds(qint32 seconds);
+	void setInterval(quint32 interval);
 	void setDays(enum weekdays days);
 	void orDays(enum weekdays days);
-	void setupInt(const int *i);
+	void setupInt(const __u64 *i);
 	bool checkDay();
 
 	const Timer *getParent() { return m_pParent; }
@@ -96,6 +98,7 @@ public:
 	//UnitItem *getUnit() { return m_pUnit; }
 	//ColItem *getCol() { return m_pCol; }
 	qint32 getSeconds() const { return m_iSeconds; }
+	quint32 getInterval() const {return m_iInterval; }
 	QString getTimevalue() const;
 	int remainingTime() const;
 	enum weekdays getDays() const { return m_iActive; }
@@ -118,6 +121,7 @@ private:
 	void connectTimer();
 
 	qint32 m_iSeconds = -1;
+	qint32 m_iInterval = 86400;
 	enum weekdays m_iActive = NONE;
 	//ColItem *m_pCol = nullptr;
 	//UnitItem *m_pUnit = nullptr;

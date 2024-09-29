@@ -21,17 +21,18 @@ Alarm::Alarm(Alarm::T *p, const int *i)
 */
 //template<typename T>
 //Alarm<T>::Alarm(const T *parent, qint32 sec, weekdays days)
-Alarm::Alarm(const Timer *parent, qint32 sec, weekdays days)
+Alarm::Alarm(const Timer *parent, qint32 sec, weekdays days, int interval)
 {
 	setParent(parent);
 
 	setDays(days);
+	setInterval(interval);
 	setSeconds(sec);
 }
 
 //template<typename T>
 //Alarm<T>::Alarm(const T *parent, const int *i)
-Alarm::Alarm(const Timer *parent, const int *i)
+Alarm::Alarm(const Timer *parent, const __u64 *i)
 {
 	setParent(parent);
 
@@ -133,9 +134,9 @@ Alarm::~Alarm()
 }
 
 //template<typename T>
-void Alarm::mapFromIntList(Timer *parent, QMap<int, Alarm *> &map, const QList<int> &list)
+void Alarm::mapFromIntList(Timer *parent, QMap<int, Alarm *> &map, const QList<__u64> &list)
 {
-	for (const int &item : list) {
+	for (const __u64 &item : list) {
 		Alarm *alarm = new Alarm(parent, &item);
 		map.insert(alarm->getSeconds(), alarm);
 	}
@@ -144,7 +145,7 @@ void Alarm::mapFromIntList(Timer *parent, QMap<int, Alarm *> &map, const QList<i
 void Alarm::mapFromVariantList(Timer *parent, QMap<int, Alarm *> &map, const QList<QVariant> &list)
 {
 	for (const QVariant &var : list) {
-		int i = var.toInt();
+		__u64 i = var.toULongLong();
 		Alarm *alarm = new Alarm(parent, &i);
 		map.insert(alarm->getSeconds(), alarm);
 	}
@@ -152,12 +153,12 @@ void Alarm::mapFromVariantList(Timer *parent, QMap<int, Alarm *> &map, const QLi
 }
 
 //template<typename T>
-QList<int> Alarm::toIntList(const QMap<int, Alarm *> alarms)
+QList<__u64> Alarm::toIntList(const QMap<int, Alarm *> alarms)
 {
-	QList<int> ints;
+	QList<__u64> ints;
 
 	for (const Alarm *alarm : alarms) {
-		int i = alarm->toInt();
+		__u64 i = alarm->toInt();
 		ints.append(i);
 	}
 
@@ -168,7 +169,7 @@ QList<QVariant> Alarm::toVariantList(const QMap<int, Alarm *> alarms)
 {
 	QList<QVariant> ints;
 	for (const Alarm *alarm : alarms) {
-		int i = alarm->toInt();
+		__u64 i = alarm->toInt();
 		ints.append(i);
 	}
 
@@ -319,11 +320,17 @@ void Alarm::setSeconds(qint32 seconds)
 	m_iSeconds = seconds % 86400;
 
 	startTimer();
-	qDaemonLog(QString("Alarm started. Currect time is %1. Alarm is at %2:%3:%4. To go %5min.")
+	qDaemonLog(QString("Alarm started. Currect time is %1. Alarm is at %2:%3:%4. Interval %5. To go %6min.")
 	           .arg(QTime::currentTime().toString("hh:mm"))
 	           .arg(m_iSeconds / 3600).arg((m_iSeconds / 60) % 60).arg(m_iSeconds % 60)
+	           .arg(m_iInterval / 3660)
 	           .arg(m_cTimer.remainingTime() / 60000)
 	           , QDaemonLog::NoticeEntry);
+}
+
+void Alarm::setInterval(quint32 interval)
+{
+	m_iInterval = interval % 86400;
 }
 
 //template<typename T>
@@ -339,11 +346,12 @@ void Alarm::orDays(weekdays days)
 }
 
 //template<typename T>
-void Alarm::setupInt(const int *i)
+void Alarm::setupInt(const __u64 *i)
 {
 	if (i) {
 		setDays((enum weekdays) ((char) (*i) & 0xFF));
 		setSeconds((*i) >> 8);
+		setInterval((*i) >> 32 & 0xFFFFFFFF);
 	}
 }
 
@@ -387,8 +395,8 @@ void Alarm::startTimer()
 		msecToRelease += 86400000;
 
 	//m_cTimer.start(msecToRelease);
-	m_cTimer.setInterval(3600000);
-	m_cTimer.start(3600000);
+	m_cTimer.setInterval(300000);
+	m_cTimer.start(300000);
 
 	emit timerStarted(this);
 }
@@ -423,6 +431,7 @@ QDataStream &operator<<(QDataStream &out, const Alarm &alarm)
 }
 
 //template<typename T>
+/*
 QDataStream &operator>>(QDataStream &in, Alarm &alarm)
 {
 	QVariant a, b;
@@ -433,13 +442,14 @@ QDataStream &operator>>(QDataStream &in, Alarm &alarm)
 
 	return in;
 }
-
+*/
 //template<typename T>
+/*
 bool cmp(const Alarm &a, const Alarm &b)
 {
 	return a.getSeconds() < b.getSeconds();
 }
-
+*/
 void Alarm::timeout() {
 	qDaemonLog(QString("Alarm timed out at %1.").arg(QTime::currentTime().toString("hh:mm:ss")), QDaemonLog::NoticeEntry);
 	if (checkDay())

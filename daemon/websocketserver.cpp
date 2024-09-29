@@ -161,6 +161,7 @@ void WebSocketServer::connectCol(ColItem *newCol)
 void WebSocketServer::connectSlot(SlotItem *newSlot)
 {
 	connect(newSlot, &SlotItem::stateChanged, this, &WebSocketServer::bcastSlotState);
+	connect(newSlot, &SlotItem::releaseTimeChanged, this, &WebSocketServer::bcastSlotReleaseTime);
 }
 
 void WebSocketServer::bcastLight(__u8 light)
@@ -312,6 +313,18 @@ void WebSocketServer::bcastSlotState(SlotItem *slot)
 	bcastBinaryMessage(data);
 }
 
+void WebSocketServer::bcastSlotReleaseTime(SlotItem *slot)
+{
+	QByteArray data;
+	QDataStream out(&data, QIODevice::WriteOnly);
+	NEW_SLOT_CMD(cmd, DISPENSER_GENL_UNIT_ALARM, slot->getCol()->getId(), slot->getId());
+
+	out << cmd.toInt;
+	out << slot->getRelease();
+
+	bcastBinaryMessage(data);
+}
+
 void WebSocketServer::bcastBinaryMessage(QByteArray data)
 {
 	for (QWebSocket *client : m_cClients) {
@@ -416,6 +429,7 @@ void WebSocketServer::processSlotRequest(QDataStream &in, __u8 col, __u8 slot, D
 		break;
 	case DISPENSER_GENL_UNIT_ALARM: //Unit alarm
 		in >> val32;
+		bcastSlotReleaseTime(pSlot);
 		qDebug() << "Ignore DISPENSER_GENL_UNIT_ALARM.";
 		break;
 	case __DISPENSER_GENL_ATTR_MAX:

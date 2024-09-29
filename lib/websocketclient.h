@@ -43,6 +43,7 @@ private slots:
 
 	//get slot data
 	void getSlotState(SlotItem *slot);
+	void getSlotReleaseTime(SlotItem *slot);
 
 private:
 	void processSlotMessage(QDataStream &in, __u8 col, __u8 slot, enum DISPENSER_GENL_ATTRIBUTE attr);

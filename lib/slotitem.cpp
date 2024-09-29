@@ -127,6 +127,7 @@ void SlotItem::setFull(bool full)
 
 		emit fullChanged(this);
 		//emit fullChanged(m_bFull);
+		m_pCol->getUnit()->countFull();
 	}
 }
 
@@ -175,7 +176,18 @@ void SlotItem::setFailedDown(__s32 failures)
 	}
 }
 
-ColItem *SlotItem::getCol()
+void SlotItem::setReleaseTime(QDateTime time)
+{
+	m_cReleaseTime = time;
+
+	qDaemonLog(QStringLiteral("Slot %1/%2 release set to %3")
+	           .arg(QString::number(m_pCol->getId()))
+	           .arg(QString::number(m_iSlotId))
+	           .arg(m_cReleaseTime.toString()), QDaemonLog::NoticeEntry);
+	emit releaseTimeChanged(this);
+}
+
+ColItem *SlotItem::getCol() const
 {
 	if (!m_pCol) {
 		qDaemonLog(QStringLiteral("Uninitilized column."), QDaemonLog::ErrorEntry);

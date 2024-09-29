@@ -49,6 +49,7 @@ private slots:
 
 	//Slot Slots:
 	void bcastSlotState(SlotItem *slot);
+	void bcastSlotReleaseTime(SlotItem * slot);
 
 private:
 	void bcastBinaryMessage(QByteArray data);

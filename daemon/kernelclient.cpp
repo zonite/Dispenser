@@ -22,8 +22,8 @@
 #include <dispenser.h>
 
 #include "kernelclient.h"
-
 #include "websocketserver.h"
+#include "simulator.h"
 
 #if NLA_ALIGNTO != NLMSG_ALIGNTO
 #error "NLA_ALIGNTO and NLMSG_ALIGNTO are not equal!"
@@ -1409,6 +1409,8 @@ void KernelClient::release(__s8 col, __s8 slot, bool force, __u8 count)
 
 
 	qDaemonLog(QStringLiteral("Release command inhibit for debugging!"), QDaemonLog::NoticeEntry);
+	//simulating!
+	new Simulator(&m_cUnit);
 	//sendToKernel(&toKernel);
 }
 

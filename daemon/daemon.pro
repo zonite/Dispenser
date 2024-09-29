@@ -14,6 +14,7 @@ SOURCES += \
         buffer.cpp \
 	kernelclient.cpp \
 	main.cpp \
+        simulator.cpp \
 	websocketserver.cpp
 
 TRANSLATIONS += \
@@ -43,6 +44,7 @@ HEADERS += \
         buffer.h \
 	daemon.h \
 	kernelclient.h \
+        simulator.h \
 	websocketserver.h
 
 RESOURCES += \

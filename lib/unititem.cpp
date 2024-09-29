@@ -213,6 +213,85 @@ Alarm *UnitItem::getAlarm(int i)
 	return k != end ? k.value() : nullptr;
 }
 
+SlotItem *UnitItem::getNextSlot()
+{
+	SlotItem *slot = nullptr;
+
+	for (ColItem &col : m_cCols) {
+		SlotItem *colSlot = col.getNextReleaseSlot();
+		if (!colSlot)
+			continue;
+		if (slot || slot->getRelease() >= colSlot->getRelease())
+			slot = colSlot;
+	}
+	return slot;
+}
+
+void UnitItem::assingReleases()
+{
+	int fullCount = m_iFullCount, i = 0;
+	QVector<int> colReleased(m_cCols.count()); //index for releases.
+	QVector<QVector <QDateTime>> releases;
+	releases.resize(m_cCols.count());
+	QDateTime time = QDateTime::currentDateTime();
+
+	/*
+	for (i = 0; i < m_cCols.count(); ++i) {
+		//colFull[i] = m_cCols.at(i).getFullCount();
+		releases[i].resize(m_cCols.at(i).getFullCount());
+	}
+	*/
+
+	for (i = 0; i < fullCount; ++i) {
+		QDateTime nextRelease = getNextRelease(time);
+		const ColItem *releaseFrom = nullptr;
+		int slotsLeft = 0;
+
+		for (ColItem &col : m_cCols) {
+			QDateTime colNextRelease = col.getNextReleaseTime(time);
+			int colRemaining = 0;
+
+			while (colNextRelease < nextRelease && colReleased.at(col.getId()) < col.getFullCount()) {
+				//Col release before unit!
+				//releases[col.getId()][colReleased[col.getId()]] = colNextRelease;
+				releases[col.getId()].append(colNextRelease); //Append release time to col;
+				++(colReleased[col.getId()]);
+				++i;
+				colNextRelease = col.getNextReleaseTime(colNextRelease); //advance time!
+			} //This col is released to the point when unit will release next!
+
+			colRemaining = col.getFullCount() - colReleased.at(col.getId());
+			if (colRemaining >= slotsLeft) {
+				releaseFrom = &col;
+				slotsLeft = colRemaining;
+			}
+		} //Both cols are released until the point of unit being the next.
+
+		if (releaseFrom && slotsLeft) {
+			releases[releaseFrom->getId()].append(nextRelease); //append release time
+			++(colReleased[releaseFrom->getId()]); //increase release count
+			time = nextRelease; //advance time
+		}
+	}
+
+	//times counted -> assing!
+	for (ColItem &col : m_cCols) {
+		col.assingReleases(releases.at(col.getId()));
+	}
+}
+
+int UnitItem::countFull()
+{
+	int count = 0;
+
+	for (ColItem &col : m_cCols) {
+		count += col.countFull();
+	}
+	m_iFullCount = count;
+
+	return m_iFullCount;
+}
+
 void UnitItem::setCols(int i)
 {
 	if (m_cCols.size() == i)
@@ -239,7 +318,7 @@ void UnitItem::setSlots(int i)
 	m_sUnit.nslots = i;
 }
 
-void UnitItem::setAlarm(__s32 alarm)
+void UnitItem::setAlarm(__u64 alarm)
 {
 	Alarm *newAlarm = new Alarm(this, &alarm);
 
@@ -250,6 +329,7 @@ void UnitItem::setAlarm(__s32 alarm)
 		delete newAlarm;
 	} else if (m_pAlarms.contains(newAlarm->getSeconds())) {
 		m_pAlarms[newAlarm->getSeconds()]->setDays(newAlarm->getDays());
+		m_pAlarms[newAlarm->getSeconds()]->setInterval(newAlarm->getInterval());
 		delete newAlarm;
 		newAlarm = nullptr;
 	} else {
@@ -264,7 +344,7 @@ void UnitItem::addCol()
 	//m_cCols.append(new_col);
 }
 
-long UnitItem::getNextRelease(long offset)
+long UnitItem::getNextRelease(long offset) //Real timer remaining time
 {
 	long int next = INT_MAX;
 	int current;
@@ -276,6 +356,24 @@ long UnitItem::getNextRelease(long offset)
 	}
 
 	return next;
+}
+
+QDateTime UnitItem::getNextRelease(QDateTime offset) const //DateTime of next release.
+{
+	int offset_seconds = offset.time().msecsSinceStartOfDay() / 1000;
+	int toGoSec = 86400 * 365; //Year in seconds;
+
+	for(const Alarm *alarm : m_pAlarms) {
+		int alarm_offset = alarm->getSeconds();
+		int alarm_interval = alarm->getInterval();
+		int alarm_toGo = (offset_seconds - alarm_offset) % alarm_interval;
+		if (alarm_toGo < toGoSec
+		                && ((1 << offset.addSecs(alarm_toGo).date().dayOfWeek()) & alarm->getDays())) {
+			toGoSec = alarm_toGo;
+		}
+	}
+
+	return offset.addSecs(toGoSec);
 }
 
 void UnitItem::checkInitialized()

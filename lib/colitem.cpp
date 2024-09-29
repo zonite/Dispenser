@@ -54,7 +54,7 @@ void ColItem::setColId(__s8 id)
 	//emit idChanged(this);
 }
 
-void ColItem::setAlarm(__s32 alarm)
+void ColItem::setAlarm(__u64 alarm)
 {
 	Alarm *newAlarm = new Alarm(this, &alarm);
 
@@ -65,6 +65,7 @@ void ColItem::setAlarm(__s32 alarm)
 		delete newAlarm;
 	} else if (m_pAlarms.contains(newAlarm->getSeconds())) {
 		m_pAlarms[newAlarm->getSeconds()]->setDays(newAlarm->getDays());
+		m_pAlarms[newAlarm->getSeconds()]->setInterval(newAlarm->getInterval());
 		delete newAlarm;
 		newAlarm = nullptr;
 	} else {
@@ -107,6 +108,19 @@ void ColItem::addSlot()
 	//m_sCol.slot_count = m_cSlots.size();
 }
 
+void ColItem::assingReleases(const QVector<QDateTime> list)
+{
+	int i = 0, k = 0;
+
+	for (i = 0; i < list.count(); ++i) {
+		for (; k < m_cSlots.count(); ++k) {
+			if (m_cSlots.at(k).getFull()) {
+				m_cSlots[k].setReleaseTime(list[i]);
+			}
+		}
+	}
+}
+
 UnitItem *ColItem::getUnit() const
 {
 	return m_pUnit;
@@ -145,7 +159,30 @@ bool ColItem::isEmpty() const
 	return true;
 }
 
-long ColItem::getNextRelease(long offset)
+int ColItem::countFull()
+{
+	int count = 0;
+
+	for (const SlotItem &slot : m_cSlots) {
+		count += slot.getFull();
+	}
+	m_iFullCount = count;
+
+	return m_iFullCount;
+}
+
+SlotItem *ColItem::getNextReleaseSlot()
+{
+	for (SlotItem &slot : m_cSlots) {
+		if (slot.getFull()) {
+			return &slot;
+		}
+	}
+
+	return nullptr;
+}
+
+long ColItem::getNextReleaseAlarm(long offset)
 {
 	long int next = INT_MAX;
 	int current;
@@ -157,6 +194,24 @@ long ColItem::getNextRelease(long offset)
 	}
 
 	return next;
+}
+
+QDateTime ColItem::getNextReleaseTime(QDateTime offset) //DateTime of next release.
+{
+	int offset_seconds = offset.time().msecsSinceStartOfDay() / 1000;
+	int toGoSec = 86400 * 365; //Year in seconds
+
+	for(const Alarm *alarm : m_pAlarms) {
+		int alarm_offset = alarm->getSeconds();
+		int alarm_interval = alarm->getInterval();
+		int alarm_toGo = (offset_seconds - alarm_offset) % alarm_interval;
+		if (alarm_toGo < toGoSec
+		                && ((1 << offset.addSecs(alarm_toGo).date().dayOfWeek()) & alarm->getDays())) {
+			toGoSec = alarm_toGo;
+		}
+	}
+
+	return offset.addSecs(toGoSec);
 }
 
 void ColItem::releaseTimeout(Alarm *alarm)

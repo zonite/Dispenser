@@ -28,8 +28,9 @@ public:
 	void setParent(UnitItem *unit) { m_pUnit = unit; }
 	void setSlots(int i);
 	void setColId(__s8 id);
-	void setAlarm(__s32 alarm);
+	void setAlarm(__u64 alarm);
 	void addSlot();
+	void assingReleases(const QVector<QDateTime> list);
 
 	UnitItem *getUnit() const;
 	__s8 getId() const;
@@ -38,8 +39,12 @@ public:
 	const QVector<SlotItem> *getSlots() const { return &m_cSlots; }
 	bool isFull() const;
 	bool isEmpty() const;
+	int getFullCount() const { return m_iFullCount; }
+	int countFull();
+	SlotItem *getNextReleaseSlot();
 
-	long int getNextRelease( long int offset = 0);
+	long int getNextReleaseAlarm( long int offset = 0);
+	QDateTime getNextReleaseTime( QDateTime offset);
 
 	QMap<int, Alarm *> getAlarms() { return m_pAlarms; }
 
@@ -65,6 +70,7 @@ private:
 
 	struct dispenser_mmap_column m_sCol = { .col_id = -1, .slot_count = -1 };
 	QVector<SlotItem> m_cSlots;
+	int m_iFullCount = 0;
 	UnitItem *m_pUnit = nullptr;
 	bool m_bInitialized = false;
 };

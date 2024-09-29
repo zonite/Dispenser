@@ -50,16 +50,21 @@ public:
 	__u8 getAlarmCount() { return m_pAlarms.size(); }
 	QMap<int, Alarm *> getAlarms() { return m_pAlarms; }
 	Alarm *getAlarm(int i);
+	SlotItem *getNextSlot(); //Returns nex slot to be released
+	void assingReleases();
+	int getFullCount() const { return m_iFullCount; }
+	int countFull();
 
 	inline __s8 numCols() const { return m_sUnit.ncols; };
 	void setCols(int i);
 	void setSlots(int i);
-	void setAlarm(__s32 alarm);
+	void setAlarm(__u64 alarm);
 	void addCol();
 
 	qint8 moduleInitialized() { return m_sUnit.initialized; }
 	qint8 daemonInitialized() { return m_bInitialized; }
-	long int getNextRelease( long int offset = 0);
+	long int getNextRelease( long int offset = 0);  //Real timer remaining time
+	QDateTime getNextRelease( QDateTime offset) const;  //Real timer remaining time
 
 	void checkInitialized();
 	bool isFull();
@@ -99,6 +104,7 @@ private:
 	WebSocketClient *m_pDataStream = nullptr;
 	struct dispenser_mmap_unit m_sUnit = { 0, 0, 0, 0, 0, 0, 0, 0, { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, 0, 0, 0, 0 };
 	QVector<ColItem> m_cCols;
+	int m_iFullCount = 0;
 	bool m_bInitialized = false;
 	QMap<int, Alarm *> m_pAlarms; //Release timers!
 	//QMap<int, Alarm<UnitItem> *> m_pAlarms; //Release timers!

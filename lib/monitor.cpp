@@ -270,7 +270,7 @@ void Monitor::startColReleaseTimer(ColItem *col)
 		return;
 	}
 
-	long msec = col->getNextRelease(m_iReleaseLeadTime);
+	long msec = col->getNextReleaseAlarm(m_iReleaseLeadTime);
 
 	m_cReleaseTimer.start(msec - m_iReleaseLeadTime);
 
