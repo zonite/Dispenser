@@ -12,15 +12,15 @@ Simulator::Simulator(UnitItem *unit)
 	if (m_pUnit->isEmpty()) {
 		m_cTimer.setInterval(30000);
 		m_iPhase = OPEN;
-		m_pSlot = m_pUnit->getNextSlot();
+		m_pSlot = (SlotItem *)&m_pUnit->col(m_pUnit->numCols() - 1)->getSlots()->last();
 		connect(&m_cTimer, &QTimer::timeout, this, &Simulator::close);
 	} else {
 		m_cTimer.setInterval(2000);
 		m_iPhase = RELEASE;
-		m_pSlot = (SlotItem *)&m_pUnit->col(m_pUnit->numCols() - 1)->getSlots()->last();
+		m_pSlot = m_pUnit->getNextSlot();
 		connect(&m_cTimer, &QTimer::timeout, this, &Simulator::open);
 	}
-	m_pSlot = m_pUnit->getNextSlot();
+	//m_pSlot = m_pUnit->getNextSlot();
 
 	m_cTimer.start();
 
