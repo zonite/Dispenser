@@ -368,7 +368,7 @@ QDateTime UnitItem::getNextRelease(QDateTime offset) const //DateTime of next re
 	for(const Alarm *alarm : m_pAlarms) {
 		int alarm_offset = alarm->getSeconds();
 		int alarm_interval = alarm->getInterval();
-		int alarm_toGo = (offset_seconds - alarm_offset) % alarm_interval;
+		int alarm_toGo = (alarm_offset - offset_seconds) % alarm_interval;
 		if (alarm_toGo < toGoSec
 		                && ((1 << offset.addSecs(alarm_toGo).date().dayOfWeek()) & alarm->getDays())) {
 			toGoSec = alarm_toGo;
