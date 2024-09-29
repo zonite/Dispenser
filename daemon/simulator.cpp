@@ -1,5 +1,7 @@
 #include "simulator.h"
 
+#include <QDebug>
+
 
 Simulator::Simulator(UnitItem *unit)
 {
@@ -21,6 +23,8 @@ Simulator::Simulator(UnitItem *unit)
 	m_pSlot = m_pUnit->getNextSlot();
 
 	m_cTimer.start();
+
+	qDebug() << "Simulator Starting!";
 }
 
 void Simulator::open()

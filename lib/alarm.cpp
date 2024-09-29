@@ -323,8 +323,8 @@ void Alarm::setSeconds(qint32 seconds)
 	qDaemonLog(QString("Alarm started. Currect time is %1. Alarm is at %2:%3:%4. Interval %5. To go %6min.")
 	           .arg(QTime::currentTime().toString("hh:mm"))
 	           .arg(m_iSeconds / 3600).arg((m_iSeconds / 60) % 60).arg(m_iSeconds % 60)
-	           .arg(m_iInterval / 3660)
-	           .arg(m_cTimer.remainingTime() / 60000)
+	           .arg(QTime::fromMSecsSinceStartOfDay(m_iInterval).toString())
+	           .arg(QTime::fromMSecsSinceStartOfDay(m_cTimer.remainingTime()).toString())
 	           , QDaemonLog::NoticeEntry);
 }
 
@@ -350,8 +350,8 @@ void Alarm::setupInt(const __u64 *i)
 {
 	if (i) {
 		setDays((enum weekdays) ((char) (*i) & 0xFF));
-		setSeconds((*i) >> 8);
 		setInterval((*i) >> 32 & 0xFFFFFFFF);
+		setSeconds((*i) >> 8);
 	}
 }
 
@@ -390,13 +390,20 @@ void Alarm::startTimer()
 {
 	int msecToRelease;
 
-	msecToRelease = m_iSeconds * 1000 - QTime::currentTime().msecsSinceStartOfDay();
-	if (msecToRelease < 0)
-		msecToRelease += 86400000;
+	msecToRelease = (QTime::currentTime().msecsSinceStartOfDay() - (m_iSeconds * 1000)) % m_iInterval;
+	//if (msecToRelease < 0)
+	//	msecToRelease += 86400000;
 
 	//m_cTimer.start(msecToRelease);
-	m_cTimer.setInterval(300000);
-	m_cTimer.start(300000);
+	m_cTimer.setInterval(m_iInterval);
+	m_cTimer.start(msecToRelease);
+
+	qDaemonLog(QString("Alarm Start %1. To timeout %2, interval %3, Alarm stores tmout %4, interv %5.")
+	           .arg(QTime::currentTime().toString("hh:mm:ss"))
+	           .arg(QTime::fromMSecsSinceStartOfDay(m_cTimer.remainingTime()).toString())
+	           .arg(QTime::fromMSecsSinceStartOfDay(m_cTimer.interval()).toString())
+	           .arg(QTime::fromMSecsSinceStartOfDay(m_iSeconds * 1000).toString())
+	           .arg(QTime::fromMSecsSinceStartOfDay(m_iInterval * 1000).toString()), QDaemonLog::NoticeEntry);
 
 	emit timerStarted(this);
 }
