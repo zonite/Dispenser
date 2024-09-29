@@ -317,12 +317,12 @@ void Alarm::setAlarm(QTime time)
 //template<typename T>
 void Alarm::setSeconds(qint32 seconds)
 {
-	m_iSeconds = seconds % 86400;
+	m_iSeconds = (seconds % 86400) * 1000;
 
 	startTimer();
 	qDaemonLog(QString("Alarm started. Currect time is %1. Alarm is at %2:%3:%4. Interval %5. To go %6min.")
 	           .arg(QTime::currentTime().toString("hh:mm"))
-	           .arg(m_iSeconds / 3600).arg((m_iSeconds / 60) % 60).arg(m_iSeconds % 60)
+	           .arg(m_iSeconds / 3600000).arg((m_iSeconds / 60000) % 60).arg((m_iSeconds/1000) % 60)
 	           .arg(QTime::fromMSecsSinceStartOfDay(m_iInterval).toString())
 	           .arg(QTime::fromMSecsSinceStartOfDay(m_cTimer.remainingTime()).toString())
 	           , QDaemonLog::NoticeEntry);
@@ -330,7 +330,7 @@ void Alarm::setSeconds(qint32 seconds)
 
 void Alarm::setInterval(quint32 interval)
 {
-	m_iInterval = interval % 86400;
+	m_iInterval = (interval % 86400) * 1000;
 }
 
 //template<typename T>
@@ -390,12 +390,12 @@ void Alarm::startTimer()
 {
 	int msecToRelease;
 
-	msecToRelease = (QTime::currentTime().msecsSinceStartOfDay() - (m_iSeconds * 1000)) % (m_iInterval * 1000);
+	msecToRelease = (m_iSeconds - QTime::currentTime().msecsSinceStartOfDay()) % m_iInterval;
 	//if (msecToRelease < 0)
 	//	msecToRelease += 86400000;
 
 	//m_cTimer.start(msecToRelease);
-	m_cTimer.setInterval(m_iInterval * 1000);
+	//m_cTimer.setInterval(m_iInterval * 1000);
 	m_cTimer.start(msecToRelease);
 
 	qDaemonLog(QString("Alarm Start %1. To timeout %2, interval %3 @ %4, Alarm stores tmout %5, interv %6.")
@@ -403,8 +403,8 @@ void Alarm::startTimer()
 	           .arg(QTime::fromMSecsSinceStartOfDay(m_cTimer.remainingTime()).toString())
 	           .arg(QTime::fromMSecsSinceStartOfDay(m_cTimer.interval()).toString())
 	           .arg(QTime::currentTime().addMSecs(m_cTimer.remainingTime()).toString())
-	           .arg(QTime::fromMSecsSinceStartOfDay(m_iSeconds * 1000).toString())
-	           .arg(QTime::fromMSecsSinceStartOfDay(m_iInterval * 1000).toString()), QDaemonLog::NoticeEntry);
+	           .arg(QTime::fromMSecsSinceStartOfDay(m_iSeconds).toString())
+	           .arg(QTime::fromMSecsSinceStartOfDay(m_iInterval).toString()), QDaemonLog::NoticeEntry);
 
 	emit timerStarted(this);
 }
@@ -459,6 +459,7 @@ bool cmp(const Alarm &a, const Alarm &b)
 }
 */
 void Alarm::timeout() {
+	m_cTimer.start((m_iSeconds - QTime::currentTime().msecsSinceStartOfDay()) % m_iInterval);
 	qDaemonLog(QString("Alarm timed out at %1.").arg(QTime::currentTime().toString("hh:mm:ss")), QDaemonLog::NoticeEntry);
 	if (checkDay())
 		emit releaseTimeout(this);
