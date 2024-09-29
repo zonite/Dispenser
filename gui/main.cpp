@@ -13,18 +13,6 @@
 #include "unitmodel.h"
 #include "unitlist.h"
 
-class QDaemonLog {
-public:
-	enum EntrySeverity  { NoticeEntry, WarningEntry, ErrorEntry };
-	void qDaemonLog(const QString & message, QDaemonLog::EntrySeverity severity);
-};
-
-void QDaemonLog::qDaemonLog(const QString & message, QDaemonLog::EntrySeverity severity)
-{
-	Q_UNUSED(message);
-	Q_UNUSED(severity);
-}
-
 int main(int argc, char *argv[])
 {
 	QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);

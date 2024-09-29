@@ -286,7 +286,7 @@ union dispenser_cmd {
 };
 static_assert(sizeof(union dispenser_cmd) == 4 );
 
-#define DISPENSER_CMD_PACK(com, att, c, s) ((__u32) (((com & 0xFF) << 24 )) | ((att & 0xFF) << 16) | ((c & 0xFF) << 8) | (s & 0xFF))
+#define DISPENSER_CMD_PACK(com, att, c, s) ((__u32) ((com & 0xFF) | ((att & 0xFF) << 8) | ((c & 0xFF) << 16) | ((s & 0xFF) << 24)))
 
 #define EMPTY_CMD(name) union dispenser_cmd name = { .toInt = 0 }
 #define NEW_CMD(name, com, att, c, s) union dispenser_cmd name = { .toInt = DISPENSER_CMD_PACK(com, att, c, s) }
