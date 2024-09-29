@@ -390,12 +390,12 @@ void Alarm::startTimer()
 {
 	int msecToRelease;
 
-	msecToRelease = (QTime::currentTime().msecsSinceStartOfDay() - (m_iSeconds * 1000)) % m_iInterval;
+	msecToRelease = (QTime::currentTime().msecsSinceStartOfDay() - (m_iSeconds * 1000)) % (m_iInterval * 1000);
 	//if (msecToRelease < 0)
 	//	msecToRelease += 86400000;
 
 	//m_cTimer.start(msecToRelease);
-	m_cTimer.setInterval(m_iInterval);
+	m_cTimer.setInterval(m_iInterval * 1000);
 	m_cTimer.start(msecToRelease);
 
 	qDaemonLog(QString("Alarm Start %1. To timeout %2, interval %3, Alarm stores tmout %4, interv %5.")
