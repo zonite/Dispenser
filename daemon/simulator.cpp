@@ -66,14 +66,9 @@ void Simulator::close()
 
 	switch (m_iPhase) {
 	case RELEASE:
-		m_pSlot->setRelease(1);
-		m_pSlot->setState(slot_state::RELEASE);
 		m_iPhase = OPENING;
 		break;
 	case OPENING:
-		m_pSlot->setUp(0);
-		m_pSlot->setState(slot_state::OPENING);
-		m_pSlot->setFull(0);
 		m_iPhase = OPEN;
 		break;
 	case OPEN:
@@ -87,6 +82,9 @@ void Simulator::close()
 		m_iPhase = CLOSED;
 		break;
 	case CLOSED:
+		m_pSlot->setState(slot_state::CLOSED);
+		m_pSlot->setFull(1);
+
 		ColItem *col = m_pSlot->getCol();
 		if (!m_pSlot->getId()) {
 			if (!col->getId()) {
