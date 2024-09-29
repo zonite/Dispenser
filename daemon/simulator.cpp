@@ -17,7 +17,7 @@ Simulator::Simulator(UnitItem *unit)
 	} else {
 		m_cTimer.setInterval(2000);
 		m_iPhase = RELEASE;
-		m_pSlot = (SlotItem *)&m_pUnit->col(m_pUnit->numCols())->getSlots()->last();
+		m_pSlot = (SlotItem *)&m_pUnit->col(m_pUnit->numCols() - 1)->getSlots()->last();
 		connect(&m_cTimer, &QTimer::timeout, this, &Simulator::open);
 	}
 	m_pSlot = m_pUnit->getNextSlot();
