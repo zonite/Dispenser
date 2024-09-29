@@ -435,6 +435,7 @@ const QStringList UnitItem::toStatusStr() const
 
 	for (int i = slotRows - 1; i >= 0; --i) {
 		QString line;
+		QString times;
 		line = QStringLiteral("%1\t").arg(QString::number(i));
 		for (int k = 0; k < numCols(); ++k) {
 			const ColItem *col = nullptr;
@@ -443,11 +444,16 @@ const QStringList UnitItem::toStatusStr() const
 			col = const_cast<const ColItem *>( &m_cCols.at(k) );
 			if (col)
 				slot = const_cast<const SlotItem *>( &col->getSlots()->at(i) );
-			if (slot)
+
+			if (slot) {
 				line += slot->getStateStr();
+				times += QStringLiteral("\t");
+				times += slot->getRelease().toString("HH:mm:ss");
+			}
 
 			line += QStringLiteral("\t");
 		}
+		line += times;
 		list << line;
 	}
 	return list;
