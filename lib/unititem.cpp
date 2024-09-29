@@ -147,6 +147,11 @@ void UnitItem::setDataServer(QString server)
 	m_pDataStream = new WebSocketClient(this, server);
 
 	connect(m_pDataStream, &WebSocketClient::connected, this, &UnitItem::serverReady);
+
+	//disable alarms:
+	for (Alarm *alarm : m_pAlarms) {
+		alarm->disconnectTimer();
+	}
 }
 
 void UnitItem::setCounter(__u8 i)
