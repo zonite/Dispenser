@@ -110,13 +110,9 @@ void ColItem::addSlot()
 
 void ColItem::assingReleases(const QVector<QDateTime> list)
 {
-	int i = 0, k = 0;
-
-	for (i = 0; i < list.count(); ++i) {
-		for (; k < m_cSlots.count(); ++k) {
-			if (m_cSlots.at(k).getFull()) {
-				m_cSlots[k].setReleaseTime(list[i]);
-			}
+	for (int i = 0, k = 0; (k < m_cSlots.count()) && (i < list.count()); ++k) {
+		if (m_cSlots.at(k).getFull()) {
+			m_cSlots[k].setReleaseTime(list[i++]);
 		}
 	}
 }
