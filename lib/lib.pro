@@ -1,6 +1,6 @@
 QT -= gui
 
-QT += websockets
+QT += websockets core
 
 TEMPLATE = lib
 DEFINES += LIB_LIBRARY

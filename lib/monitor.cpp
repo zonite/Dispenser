@@ -4,6 +4,7 @@
 #include <QDir>
 #include <QTemporaryFile>
 #include <QProcess>
+#include <QCoreApplication>
 
 #include <QDaemonLog>
 #include <SmtpMime>
@@ -13,6 +14,10 @@ Monitor::Monitor(UnitItem *unit)
 {
 	ReEncoder *encoder;
 	m_pUnit = unit;
+
+	QCoreApplication::setOrganizationName(ORGANIZATION);
+	QCoreApplication::setOrganizationDomain(DOMAIN);
+	QCoreApplication::setApplicationName(APPNAME);
 
 	m_cReportScript = m_cSettings.value("ReportScript", "/usr/bin/createReport.sh").toString();
 	m_cSendScript = m_cSettings.value("SendScript", "/usr/bin/sendReport.sh").toString();
@@ -319,6 +324,10 @@ ReEncoder::ReEncoder(Monitor *monitor)
 //        : QObject(monitor)
 {
 	m_pMonitor = monitor;
+
+	QCoreApplication::setOrganizationName(ORGANIZATION);
+	QCoreApplication::setOrganizationDomain(DOMAIN);
+	QCoreApplication::setApplicationName(APPNAME);
 
 	m_cSettings.value("DestAddresses");
 
