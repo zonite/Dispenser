@@ -128,6 +128,7 @@ void SlotItem::setFull(bool full)
 		emit fullChanged(this);
 		//emit fullChanged(m_bFull);
 		m_pCol->getUnit()->countFull();
+		m_pCol->getUnit()->assingReleases();
 	}
 }
 
