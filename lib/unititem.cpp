@@ -223,7 +223,7 @@ SlotItem *UnitItem::getNextSlot()
 		SlotItem *colSlot = col.getNextReleaseSlot();
 		if (!colSlot)
 			continue;
-		if (slot || slot->getRelease() >= colSlot->getRelease())
+		if (slot && slot->getRelease() >= colSlot->getRelease())
 			slot = colSlot;
 	}
 	return slot;
