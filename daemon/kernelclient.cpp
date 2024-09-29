@@ -1337,6 +1337,7 @@ void KernelClient::connectSlots(ColItem *col)
 		slot = col->slot(i);
 		if (slot) {
 			//connect(slot, &SlotItem::idChanged, this, &KernelClient::getSlotStatus);
+			connect(slot, &SlotItem::fullChanged, &m_cUnit, &UnitItem::assingReleases);
 
 			if (m_cUnit.moduleInitialized())
 				setSlotStatus(slot);

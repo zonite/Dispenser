@@ -125,10 +125,10 @@ void SlotItem::setFull(bool full)
 	if (full != m_bFull) {
 		m_bFull = full;
 
+		m_pCol->getUnit()->countFull();
 		emit fullChanged(this);
 		//emit fullChanged(m_bFull);
-		m_pCol->getUnit()->countFull();
-		m_pCol->getUnit()->assingReleases();
+		//m_pCol->getUnit()->assingReleases();
 	}
 }
 
