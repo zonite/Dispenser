@@ -364,6 +364,14 @@ bool Alarm::checkDay()
 	return (weekday & m_iActive);
 }
 
+//Disable alarms permanently
+void Alarm::disconnectTimer()
+{
+	disconnect(&m_cTimer);
+	m_bInhibit = true;
+	m_cTimer.stop();
+}
+
 //template<typename T>
 QString Alarm::getTimevalue() const
 {
@@ -390,6 +398,8 @@ bool Alarm::isActive()
 void Alarm::startTimer()
 {
 	int msecToRelease;
+	if (m_bInhibit)
+		return;
 
 	msecToRelease = (((m_iSeconds - QTime::currentTime().msecsSinceStartOfDay()) % m_iInterval) + m_iInterval) % m_iInterval;
 	//if (msecToRelease < 0)

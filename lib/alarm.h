@@ -92,6 +92,7 @@ public:
 	void orDays(enum weekdays days);
 	void setupInt(const __u64 *i);
 	bool checkDay();
+	void disconnectTimer();
 
 	const Timer *getParent() { return m_pParent; }
 	//const T *getParent() { return m_pParent; }
@@ -123,6 +124,7 @@ private:
 	qint32 m_iSeconds = -1;
 	qint32 m_iInterval = 86400000;
 	enum weekdays m_iActive = NONE;
+	bool m_bInhibit = 0;
 	//ColItem *m_pCol = nullptr;
 	//UnitItem *m_pUnit = nullptr;
 	//const T *m_pParent = nullptr;
