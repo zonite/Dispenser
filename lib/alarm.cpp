@@ -415,7 +415,8 @@ void Alarm::connectTimer()
 	connect(&m_cTimer, &QTimer::timeout, this, &Alarm::timeout);
 
 	m_cTimer.setTimerType(Qt::VeryCoarseTimer);
-	m_cTimer.setInterval(24 * 3600 * 1000);
+	//m_cTimer.setInterval(m_iInterval);
+	//m_cTimer.setInterval(24 * 3600 * 1000);
 
 	//QObject::connect(&m_cTimer, &QTimer::timeout, this, &Alarm::timeout);
 	//connect(&m_cTimer, &QTimer::timeout, this, &Alarm<T>::timeout);
