@@ -278,7 +278,7 @@ void UnitItem::assingReleases()
 		if (releaseFrom && slotsLeft) {
 			releases[releaseFrom->getId()].append(nextRelease); //append release time
 			++(colReleased[releaseFrom->getId()]); //increase release count
-			time = nextRelease; //advance time
+			time = nextRelease + 1; //advance time
 		}
 	}
 
