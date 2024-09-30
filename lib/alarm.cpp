@@ -317,7 +317,7 @@ void Alarm::setAlarm(QTime time)
 //template<typename T>
 void Alarm::setSeconds(qint32 seconds)
 {
-	m_iSeconds = (seconds % 86400) * 1000;
+	m_iSeconds = (((seconds % 86400) + 86400) % 86400) * 1000;
 
 	startTimer();
 	qDaemonLog(QString("Alarm started. Currect time is %1. Alarm is at %2:%3:%4. Interval %5. To go %6min.")
