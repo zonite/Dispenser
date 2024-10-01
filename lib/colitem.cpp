@@ -84,14 +84,19 @@ void ColItem::setSlots(int i)
 	if (i == m_cSlots.size())
 		return;
 
+	emit preSlotRemoved(0, m_cSlots.size());
 	if (m_cSlots.size())
 		m_cSlots.clear();
+	emit postSlotRemoved();
 
+	emit preSlotAppended();
 	m_cSlots.resize(i);
 	m_sCol.slot_count = m_cSlots.size();
 
 	initSlots();
 	m_bInitialized = true;
+
+	emit postSlotAppended();
 
 	emit slotCountChanged(this);
 
@@ -247,7 +252,14 @@ void ColItem::initSlots()
 void ColItem::saveAlarms()
 {
 	//m_cSettings.setValue(QString("Col%1").arg(m_sCol.col_id), QVariant::fromValue(Alarm::toVariantList(m_pAlarms)));
-	m_cSettings.setValue(QString("Col%1").arg(m_sCol.col_id), QVariant::fromValue(Alarm::toVariantList(m_pAlarms)));
+	//m_cSettings.setValue(QString("Col%1").arg(m_sCol.col_id), QVariant::fromValue(Alarm::toVariantList(m_pAlarms)));
+	if (m_pAlarms.size() == 0) {
+		m_cSettings.setValue(QString("Col%1").arg(m_sCol.col_id), QVariant());
+	} else if (m_pAlarms.size() == 1) {
+		m_cSettings.setValue(QString("Col%1").arg(m_sCol.col_id), m_pAlarms.first()->toInt());
+	} else {
+		m_cSettings.setValue(QString("Col%1").arg(m_sCol.col_id), QVariant::fromValue(Alarm::toVariantList(m_pAlarms)));
+	}
 
 	m_cSettings.sync();
 }

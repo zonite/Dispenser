@@ -60,6 +60,11 @@ signals:
 	void alarmsChanged(ColItem *col);
 	//void idChanged(ColItem *col);
 
+	void preSlotRemoved(int index1, int index2);
+	void postSlotRemoved();
+	void preSlotAppended();
+	void postSlotAppended();
+
 private:
 	void initSlots();
 	void saveAlarms();
@@ -69,7 +74,7 @@ private:
 	QMap<int, Alarm *> m_pAlarms; //Release timer!
 	//QMap<int, Alarm<ColItem> *> m_pAlarms; //Release timer!
 
-	struct dispenser_mmap_column m_sCol = { .col_id = -1, .slot_count = -1 };
+	struct dispenser_mmap_column m_sCol = { .col_id = -1, .slot_count = 0 };
 	QVector<SlotItem> m_cSlots;
 	int m_iFullCount = 0;
 	UnitItem *m_pUnit = nullptr;

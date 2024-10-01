@@ -4,10 +4,17 @@ UnitList::UnitList(QObject *parent)
         : QObject{parent}
 {
 	UnitItem *default_unit = new UnitItem(this);
+	QSettings settings;
+	QString server;
 
 	mItems.append(default_unit);
 
-	default_unit->setDataServer("wss://dispenser128.nykyri.wg:8080/");
+	//default_unit->setDataServer("wss://dispenser128.nykyri.wg:8080/");
+	server = settings.value("DefaultServer", "wss://dispenser128.nykyri.wg:8080/").toString();
+	default_unit->setDataServer(server);
+
+	settings.setValue("DefaultServer", server);
+	settings.sync();
 }
 
 QVector<UnitItem *> UnitList::items() const

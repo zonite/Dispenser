@@ -56,6 +56,8 @@ public:
 	int countFull();
 
 	inline __s8 numCols() const { return m_sUnit.ncols; };
+	inline __s8 getRows() const { return m_iRows; };
+	__s8 countRows();
 	void setCols(int i);
 	void setSlots(int i);
 	void setAlarm(__u64 alarm);
@@ -78,6 +80,13 @@ public slots:
 	void timerStarted(Alarm *alarm);
 	//void releaseTimeout(Alarm<UnitItem> *alarm);
 
+	void preColSlotAppended() { emit preSlotAppended(); }
+	void postColSlotAppended() { countRows(); emit postSlotAppended(); }
+
+	void preColSlotRemoved(int index1, int index2) { emit preSlotRemoved(index1, index2); }
+	void postColSlotRemoved() { m_iRows = 0; emit postSlotRemoved(); }
+
+
 signals:
 	void counterChanged(__u32 counter);
 	void doorChanged(__u8 door);
@@ -89,6 +98,18 @@ signals:
 	void initialized(UnitItem *unit);
 	void releaseEvent(UnitItem *unit);
 	void alarmsChanged(UnitItem *unit);
+
+	void preColAppended();
+	void postColAppended();
+
+	void preColRemoved(int index1, int index2);
+	void postColRemoved();
+
+	void preSlotAppended();
+	void postSlotAppended();
+
+	void preSlotRemoved(int index, int index2);
+	void postSlotRemoved();
 
 private slots:
 	void nightEnds();
@@ -104,6 +125,7 @@ private:
 	WebSocketClient *m_pDataStream = nullptr;
 	struct dispenser_mmap_unit m_sUnit = { 0, 0, 0, 0, 0, 0, 0, 0, { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, 0, 0, 0, 0 };
 	QVector<ColItem> m_cCols;
+	__s8 m_iRows = 0;
 	int m_iFullCount = 0;
 	bool m_bInitialized = false;
 	QMap<int, Alarm *> m_pAlarms; //Release timers!

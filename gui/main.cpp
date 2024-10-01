@@ -12,6 +12,7 @@
 #include "manager.h"
 #include "unitmodel.h"
 #include "unitlist.h"
+#include "slotmodel.h"
 
 int main(int argc, char *argv[])
 {
@@ -36,6 +37,7 @@ int main(int argc, char *argv[])
 	qmlRegisterType<UnitModel>("Dispenser", 1, 0, "UnitModel");
 	qmlRegisterUncreatableType<UnitList>("Dispenser", 1, 0, "UnitList",
 	                                     QStringLiteral("UnitList should not be created in QML"));
+	qmlRegisterType<SlotModel>("Dispenser", 1, 0, "SlotModel");
 
 	UnitList unitList;
 

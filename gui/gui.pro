@@ -34,6 +34,7 @@ SOURCES += \
     main.cpp \
     manager.cpp \
     qdaemonlog.cpp \
+    slotmodel.cpp \
     unitlist.cpp \
     unitmodel.cpp
 #    mainwindow.cpp
@@ -64,5 +65,6 @@ DISTFILES +=
 
 HEADERS += \
         manager.h \
+        slotmodel.h \
 	unitlist.h \
 	unitmodel.h

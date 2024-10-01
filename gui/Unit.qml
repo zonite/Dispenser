@@ -1,9 +1,9 @@
-import QtQuick 2.7
-import QtQuick.Controls 2.0
+import QtQuick 2.15
+import QtQuick.Controls 2.15
 import QtQuick.Layouts 1.3
 import Dispenser 1.0
 
-Frame {
+Rectangle {
     id: unitManager
 
     state: "notConnected"
@@ -29,67 +29,86 @@ Frame {
 
     implicitHeight: view.height
 
+    TableView {
+        anchors.fill: parent
+        columnSpacing: 1
+        rowSpacing: 1
+        clip: true
+
+        model: SlotModel {
+
+        }
+
+        delegate: SlotButton {
+
+        }
+    }
+
     StackView {
         id: unitView
+        initialItem: init
+        anchors.fill: parent
+    }
 
-        initialItem: Component {
-            id: init
+    Component {
+        id: init
 
 
-            RowLayout {
-                height: parent.height
-                StackView.visible: true
+        RowLayout {
+            height: parent.height
+            StackView.visible: true
 
-                CheckBox {
-                    id: box
-                    checked: model.done
-                    onClicked: model.done = checked
-                }
-                Rectangle {
-                    id: rex
-                    implicitHeight: 50
-                    implicitWidth: 50
-                }
+            CheckBox {
+                id: box
+                checked: model.done
+                onClicked: model.done = checked
+            }
+            Rectangle {
+                id: rex
+                implicitHeight: 50
+                implicitWidth: 50
+            }
 
-                TextField {
-                    Layout.fillWidth: true
-                    text: model.description
-                    onEditingFinished: model.description = text
-                }
+            TextField {
+                Layout.fillWidth: true
+                text: model.description
+                onEditingFinished: model.description = text
+            }
 
-                Button {
-                    text: qsTr("Connect")
-                    onClicked: unitManager.state == "connected" ? unitManager.state = "notConnected" : unitManager.state = "connected"
-                }
+            Button {
+                text: qsTr("Connect")
+                onClicked: unitManager.state == "connected" ? unitManager.state = "notConnected" : unitManager.state = "connected"
             }
         }
-
-        pushEnter: Transition {
-            id: pushEnter
-            ParallelAnimation {
-                PropertyAction { property: "x"; value: pushEnter.ViewTransition.item.pos }
-                NumberAnimation { properties: "y"; from: pushEnter.ViewTransition.item.pos + stackView.offset; to: pushEnter.ViewTransision.item.pos; duration: 400; easing.type: Easing.OutCubic }
-                NumberAnimation { properties: "opacity"; from: 0; to: 1; duration: 400; easing.type: Easing.OutCubic }
-             }
-        }
-        popExit: Transition {
-            id: popExit
-            ParallelAnimation {
-                PropertyAction { property: "x"; value: popExit.ViewTransition.item.pos }
-                NumberAnimation { properties: "y"; from: popExit.ViewTransition.item.pos; to: popExit.ViewTransision.item.pos + stackView.offset; duration: 400; easing.type: Easing.OutCubic }
-                NumberAnimation { properties: "opacity"; from: 1; to: 0; duration: 400; easing.type: Easing.OutCubic }
-             }
-        }
-        pushExit: Transition {
-            id: pushExit
-            PropertyAction { property: "x"; value: pushExit.ViewTransition.item.pos }
-            PropertyAction { property: "y"; value: pushExit.ViewTransition.item.pos }
-        }
-        popEnter: Transition {
-            id: popEnter
-            PropertyAction { property: "x"; value: popEnter.ViewTransition.item.pos }
-            PropertyAction { property: "y"; value: popEnter.ViewTransition.item.pos }
-        }
-
     }
+
+    /*
+    pushEnter: Transition {
+        id: pushEnter
+        ParallelAnimation {
+            PropertyAction { property: "x"; value: pushEnter.ViewTransition.item.pos }
+            NumberAnimation { properties: "y"; from: pushEnter.ViewTransition.item.pos + stackView.offset; to: pushEnter.ViewTransision.item.pos; duration: 400; easing.type: Easing.OutCubic }
+            NumberAnimation { properties: "opacity"; from: 0; to: 1; duration: 400; easing.type: Easing.OutCubic }
+        }
+    }
+    popExit: Transition {
+        id: popExit
+        ParallelAnimation {
+            PropertyAction { property: "x"; value: popExit.ViewTransition.item.pos }
+            NumberAnimation { properties: "y"; from: popExit.ViewTransition.item.pos; to: popExit.ViewTransision.item.pos + stackView.offset; duration: 400; easing.type: Easing.OutCubic }
+            NumberAnimation { properties: "opacity"; from: 1; to: 0; duration: 400; easing.type: Easing.OutCubic }
+        }
+    }
+    pushExit: Transition {
+        id: pushExit
+        PropertyAction { property: "x"; value: pushExit.ViewTransition.item.pos }
+        PropertyAction { property: "y"; value: pushExit.ViewTransition.item.pos }
+    }
+    popEnter: Transition {
+        id: popEnter
+        PropertyAction { property: "x"; value: popEnter.ViewTransition.item.pos }
+        PropertyAction { property: "y"; value: popEnter.ViewTransition.item.pos }
+    }
+    */
 }
+

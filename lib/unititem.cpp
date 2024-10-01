@@ -304,6 +304,19 @@ int UnitItem::countFull()
 	return m_iFullCount;
 }
 
+__s8 UnitItem::countRows()
+{
+	__s8 rows = 0;
+	for (const ColItem &col : m_cCols) {
+		if (col.getSlotCount() > rows) {
+			rows = col.getSlotCount();
+		}
+	}
+	m_iRows = rows;
+
+	return m_iRows;
+}
+
 void UnitItem::setCols(int i)
 {
 	if (m_cCols.size() == i)
@@ -311,13 +324,18 @@ void UnitItem::setCols(int i)
 
 	qDaemonLog(QString("Unit: cols changed %1 -> %2").arg(m_cCols.size()).arg(i), QDaemonLog::NoticeEntry);
 
+	emit preColRemoved(0, m_cCols.size());
 	if (m_cCols.size() != 0)
 		m_cCols.clear();
+	emit postColRemoved();
 
+
+	emit preColAppended();
 	m_cCols.resize(i);
 	m_sUnit.ncols = m_cCols.size();
 
 	initCols();
+	emit postColAppended();
 
 	emit colsChanged(this);
 }
@@ -506,8 +524,12 @@ void UnitItem::initCols()
 		m_cCols[i].setParent(this);
 		m_cCols[i].setColId(i);
 
-		emit newCol(&m_cCols[i]);
+		connect(&m_cCols[i], &ColItem::preSlotAppended, this, &UnitItem::preColSlotAppended);
+		connect(&m_cCols[i], &ColItem::postSlotAppended, this, &UnitItem::postColSlotAppended);
+		connect(&m_cCols[i], &ColItem::preSlotRemoved, this, &UnitItem::preColSlotRemoved);
+		connect(&m_cCols[i], &ColItem::postSlotRemoved, this, &UnitItem::postColSlotRemoved);
 
+		emit newCol(&m_cCols[i]);
 	}
 }
 
