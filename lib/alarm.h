@@ -72,6 +72,7 @@ public:
 	//static void clean(QList<Alarm> &list);
 	//template<typename T> static void mapFromIntList(T *parent, QMap<int, Alarm*> &map, QList<int> &list);
 	static void mapFromIntList(Timer *parent, QMap<int, Alarm*> &map, const QList<__u64> &list);
+	static void mapFromVariant(Timer *parent, QMap<int, Alarm*> &map, const QVariant &variant);
 	static void mapFromVariantList(Timer *parent, QMap<int, Alarm*> &map, const QList<QVariant> &list);
 	//static void mapFromIntList(T *parent, QMap<int, Alarm*> &map, const QList<int> &list);
 	//static QList<Alarm> fromVariant(QVariant var);
