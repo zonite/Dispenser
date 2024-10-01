@@ -109,6 +109,7 @@ private:
 	QMap<int, Alarm *> m_pAlarms; //Release timers!
 	//QMap<int, Alarm<UnitItem> *> m_pAlarms; //Release timers!
 	QSettings m_cSettings;
+	int m_iAlarmMinimumScheduling = ALARM_MIN_SCHEDULING;
 
 	QTimer nightStartTimer;
 	QTimer nightEndTimer;

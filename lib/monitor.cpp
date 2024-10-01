@@ -29,7 +29,8 @@ Monitor::Monitor(UnitItem *unit)
 	m_cRTMPrecLocation = m_cSettings.value("RTMPrecLocation", "/var/www/rec/").toString();
 	m_iClipDuration = m_cSettings.value("ClipDuration", 15).toUInt();
 	m_iInhibitTime = m_cSettings.value("SendEmailTimeout", 60000).toUInt(); //sendmessage timeout
-	m_iReleaseLeadTime = m_cSettings.value("PreRecordTime", 4000).toUInt(); //Time before release to start recording
+	m_iReleaseLeadTime = m_cSettings.value("PreRecordTime", PRE_RECORD_TIME).toUInt(); //Time before release to start recording
+	m_iAlarmMinimumScheduling = m_cSettings.value("AlarmMinSched", ALARM_MIN_SCHEDULING).toUInt(); //Minimum time to schedule alarm (min time between releases)
 	m_iSendTime = m_cSettings.value("SendEmailLag", 10000).toUInt(); //lag after last update before sending mail
 
 	m_cReleaseTimer.setTimerType(Qt::VeryCoarseTimer);

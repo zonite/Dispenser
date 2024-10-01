@@ -96,6 +96,8 @@ UnitItem::UnitItem(QObject *parent)
 		//m_pAlarms.insert(20 * 3600, new Alarm(this, 20 * 3600, EVERYDAY));
 	}
 
+	m_iAlarmMinimumScheduling = m_cSettings.value("AlarmMinSched", ALARM_MIN_SCHEDULING).toUInt(); //Minimum time to schedule alarm (min time between releases)
+
 	saveAlarms();
 
 	qDaemonLog(QString("Alarms are set. Count = %1").arg(m_pAlarms.count()), QDaemonLog::NoticeEntry);
@@ -375,7 +377,10 @@ QDateTime UnitItem::getNextRelease(QDateTime offset) const //DateTime of next re
 		int alarm_offset = alarm->getSeconds() * 1000;
 		int alarm_interval = alarm->getInterval() * 1000;
 		//int alarm_toGo = (((alarm_offset - offset_seconds) % alarm_interval) + alarm_interval) % alarm_interval;
-		int alarm_toGo = (((alarm_offset - offset_seconds) % alarm_interval) + alarm_interval - 1) % alarm_interval + 1;
+		int alarm_toGo = (((alarm_offset - offset_seconds) % alarm_interval) + alarm_interval) % alarm_interval;
+		if (alarm_toGo < m_iAlarmMinimumScheduling) {
+			alarm_toGo += alarm_interval;
+		}
 		if (alarm_toGo < toGoSec
 		                && ((1 << offset.addSecs(alarm_toGo).date().dayOfWeek()) & alarm->getDays())) {
 			toGoSec = alarm_toGo;

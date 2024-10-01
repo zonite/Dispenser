@@ -21,6 +21,12 @@
 //#define DOOR_TIMEOUT SEC_TO_MSEC(6)
 #define INT_DEBOUNCE 40
 #define POLL_INTERVAL SEC_TO_MSEC(60)
+// 30 000 msec = each alarm is considered same if they are less than 30 sec apart
+#define ALARM_MIN_INTERVAL 30000
+// video record leadtime (milli sec)
+#define PRE_RECORD_TIME 3000
+// alarm recalculation minimum time to release = minimum time between releases
+#define ALARM_MIN_SCHEDULING (PRE_RECORD_TIME + 1000)
 
 /**
  * Dispenser Generic Netlink Interface
