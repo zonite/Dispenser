@@ -367,7 +367,7 @@ void Alarm::setupInt(const __u64 *i)
 	if (i) {
 		setDays((enum weekdays) ((char) (*i) & 0xFF));
 		setInterval(((*i) >> 32) & 0xFFFFFFFF);
-		setSeconds(((*i) >> 8) & 0xFFFFFFFF);
+		setSeconds(((*i) >> 8) & 0xFFFFFF);
 	}
 }
 
