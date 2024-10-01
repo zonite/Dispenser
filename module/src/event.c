@@ -187,16 +187,22 @@ static void dispenser_release_event(struct dispenser_gpiod* dev, char new_val)
 	return;
     }
 
+    dispenser_slot_update(slot);
+
     if (new_val) { //Release event
-	if (slot->state->state == CLOSED ||
-	        (slot->state->state == FAILED && slot->state->up == 1)) {
-		slot->state->state = RELEASE;
-		printk("Dispenser: %s release.\n", dev->gpiod->name);
-	} else {
-		slot->state->state = FAILED;
-		printk("Dispenser: %s failed release: up = %i, down = %i, release = %i\n", dev->gpiod->name, slot->state->up, slot->state->down, slot->state->release);
-	}
-	dispenser_gpiod_set(dev, 1);
+	    if ((slot->state->state == OPEN) || (slot->state->state == FAILED && slot->state->down == 1)) {
+		    slot->state->state = OPEN;
+	    } else if (slot->state->state == CLOSED ||
+	                    (slot->state->state == FAILED && slot->state->up == 1)) {
+		    slot->state->state = RELEASE;
+		    printk("Dispenser: %s release.\n", dev->gpiod->name);
+	    } else if (slot->state->up == 0 && slot->state->down == 0) {
+		    slot->state->state = OPENING;
+	    } else {
+		    slot->state->state = FAILED;
+		    printk("Dispenser: %s failed release: up = %i, down = %i, release = %i\n", dev->gpiod->name, slot->state->up, slot->state->down, slot->state->release);
+	    }
+	    dispenser_gpiod_set(dev, 1);
     } else { //Release timeout
 	if (slot->state->state == OPEN) {
 		//Success
@@ -207,11 +213,17 @@ static void dispenser_release_event(struct dispenser_gpiod* dev, char new_val)
 		//Down failed or door stuck in middle position.
 		printk("Dispenser: Release %s OPENING, did not reach down in TMOUT.\n", dev->gpiod->name);
 		++slot->state->down_failed;
+	} else if (slot->state->state == RELEASE && slot->state->up == 1) {
+		printk("Dispenser: Lock failed to release %s or up-sensor failed, re-release!\n", dev->gpiod->name);
+		dispenser_gpiod_set(dev, 1);
+		if (slot->initialized) __dispenser_genl_post_slot_status(slot, NULL);
+		return;
 	} else {
 		//Failed
 		slot->state->state = FAILED;
 		printk("Dispenser: Release %s failed, re-release!\n", dev->gpiod->name);
 		dispenser_gpiod_set(dev, 1);
+		if (slot->initialized) __dispenser_genl_post_slot_status(slot, NULL);
 		return;
 	}
 	dispenser_gpiod_set_tmout(dev, 0, 0);
@@ -219,7 +231,7 @@ static void dispenser_release_event(struct dispenser_gpiod* dev, char new_val)
 		printk("Dispenser: Release %s success.\n", dev->gpiod->name);
 	}
 	slot->pendingRelease = 0;
-	if (slot->initialized) __dispenser_genl_post_slot_status(slot, NULL);
     }
+    if (slot->initialized) __dispenser_genl_post_slot_status(slot, NULL);
 }
 

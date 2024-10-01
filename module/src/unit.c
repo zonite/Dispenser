@@ -691,6 +691,31 @@ static void dispenser_unit_set_state(struct dispenser_mmap_unit *new_state)
 		++pDispenser_mmap->unit.counter;
 }
 
+static void dispenser_slot_update(struct dispenser_slot_list *slot)
+{
+	if (!slot) {
+		return;
+	}
+
+	dispenser_gpiod_read_value(slot->up);
+	dispenser_gpiod_read_value(slot->down);
+
+	if (slot->state->state == FAILED) {
+		if (slot->state->down == 1 && slot->state->up == 0) {
+			slot->state->state = OPEN;
+			if (slot->initialized) __dispenser_genl_post_slot_status(slot, NULL);
+		} else if (slot->state->down == 0 && slot->state->up == 1) {
+			if (slot->state->release == 1) {
+				slot->state->state = RELEASE;
+			} else {
+				slot->state->state = CLOSED;
+			}
+			if (slot->initialized) __dispenser_genl_post_slot_status(slot, NULL);
+		}
+	}
+}
+
+
 /*
 static u32 dispenser_unit_set_slot_state(struct dispenser_slot_list *slot, struct dispenser_mmap_slot *new_state, unsigned char *full)
 {

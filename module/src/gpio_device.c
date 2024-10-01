@@ -166,6 +166,26 @@ static void dispenser_gpiod_reset_timer(struct dispenser_gpiod *pgpiod, unsigned
     }
 }
 
+static int dispenser_gpiod_read_value(struct dispenser_gpiod *pgpiod)
+{
+	if (!pgpiod) {
+	    printk("GPIO read failed: GPIO NULL 0x%px\n", pgpiod);
+	    return 0;
+	}
+
+	int val = 0;
+
+	val = gpiod_get_value(pgpiod->gpiod);
+
+	if (val != *pgpiod->value) {
+		printk("Dispenser: %s actual value differs from cache. UPDATING -> event!\n", pgpiod->gpiod->name);
+		dispenser_gpiod_event(pgpiod, val);
+		return 1;
+	}
+
+	return 0;
+}
+
 /*
 static char dispenser_gpiod_get(struct dispenser_gpiod *pgpiod)
 {

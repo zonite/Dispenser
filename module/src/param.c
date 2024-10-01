@@ -43,10 +43,11 @@ void init_param(void)
     printk("Parameter initalization.\n");
     cDispenser.p_sDoor->timeout = p_DoorTimeout;
     cDispenser.p_sLed->timeout = p_LightTimeout;
-    cDispenser.iFailTimeout = p_FailTimeout;
+    //cDispenser.iFailTimeout = p_FailTimeout;
+    cDispenser.iFailTimeout = FAIL_TIMEOUT;
     /*
     struct dispenser_config *config = pDispenser;
-    
+
     config->charge = p_Charge;
     config->button = p_Button;
     config->door = p_Door;

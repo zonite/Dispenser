@@ -151,6 +151,8 @@ static void dispenser_unit_set_state(struct dispenser_mmap_unit *new_state);
 static void dispenser_unit_set_slot_up_failed(struct dispenser_slot_list *slot, s32 failed_up);
 static void dispenser_unit_set_slot_down_failed(struct dispenser_slot_list *slot, s32 failed_down);
 
+static void dispenser_slot_update(struct dispenser_slot_list *slot);
+
 
 /* GPIO */
 struct dispenser_gpiod {
@@ -183,6 +185,7 @@ static void dispenser_gpiod_out_tmr_callback(struct timer_list *timer);
 static void dispenser_gpiod_set_pointer(struct dispenser_gpiod *pgpiod, volatile char *p);
 //static void dispenser_gpiod_timer_door(struct timer_list *timer);
 static void dispenser_gpiod_rename(struct dispenser_gpiod *pgpiod, char *name);
+static int dispenser_gpiod_read_value(struct dispenser_gpiod *pgpiod);
 
 static inline struct dispenser_gpiod *dispenser_gpiod_open(struct device *dev, const char *name, enum gpiod_flags flags)
 { return dispenser_gpiod_open_index(dev, name, 0, flags); }
