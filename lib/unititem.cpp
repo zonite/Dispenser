@@ -514,7 +514,11 @@ void UnitItem::saveAlarms()
 	//m_cSettings.setValue("Unit", QVariant::fromValue(m_cAlarms));
 	//m_cSettings.setValue("Unit", Alarm::toVariant(m_cAlarms));
 	//m_cSettings.setValue("Unit", QVariant::fromValue(Alarm::toIntList(m_pAlarms)));
-	m_cSettings.setValue("Unit", QVariant::fromValue(Alarm::toVariantList(m_pAlarms)));
+	if (m_pAlarms.size() == 1) {
+		m_cSettings.setValue("Unit", m_pAlarms.first()->toInt());
+	} else {
+		m_cSettings.setValue("Unit", QVariant::fromValue(Alarm::toVariantList(m_pAlarms)));
+	}
 
 	m_cSettings.sync();
 }
