@@ -142,6 +142,21 @@ void Alarm::mapFromIntList(Timer *parent, QMap<int, Alarm *> &map, const QList<_
 	}
 }
 
+void Alarm::mapFromVariant(Timer *parent, QMap<int, Alarm *> &map, const QVariant &variant)
+{
+	QList<QVariant> list = variant.toList();
+
+	if (!variant.canConvert(QMetaType::QVariantList)) {
+		__u64 i = 0;
+		if (variant.canConvert<__u64>()) {
+			        i = variant.toULongLong();
+				list.append(i);
+		}
+	}
+
+	Alarm::mapFromVariantList(parent, map, list);
+}
+
 void Alarm::mapFromVariantList(Timer *parent, QMap<int, Alarm *> &map, const QList<QVariant> &list)
 {
 	for (const QVariant &var : list) {

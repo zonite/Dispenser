@@ -80,7 +80,9 @@ UnitItem::UnitItem(QObject *parent)
 	//m_cAlarms = Alarm::fromVariant(m_cSettings.value("Unit"));
 
 	//m_pAlarms.insert(0 * 3600, new Alarm(this, 0, EVERYDAY, 120));
-	Alarm::mapFromVariantList(this, m_pAlarms, m_cSettings.value("Unit").toList());
+
+	Alarm::mapFromVariant(this, m_pAlarms, m_cSettings.value("Unit"));
+
 	if (m_pAlarms.size() == 0) {
 		//Alarm<UnitItem> *new_alarm = new Alarm<UnitItem>(this);
 		//new_alarm->setDays(EVERYDAY);
