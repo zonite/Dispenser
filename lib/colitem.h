@@ -65,6 +65,7 @@ private:
 	void saveAlarms();
 
 	QSettings m_cSettings;
+	int m_iAlarmMinimumScheduling = ALARM_MIN_SCHEDULING;
 	QMap<int, Alarm *> m_pAlarms; //Release timer!
 	//QMap<int, Alarm<ColItem> *> m_pAlarms; //Release timer!
 
