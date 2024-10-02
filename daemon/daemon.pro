@@ -57,6 +57,7 @@ DISTFILES += \
 	skripts/camerastream.service \
 	skripts/captureCamera.sh \
 	skripts/createReport.sh \
+        skripts/dispenser.service \
 	skripts/reencode.sh \
 	skripts/rpistream.sh \
 	skripts/sendReport.sh \

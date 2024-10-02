@@ -569,12 +569,12 @@ void WebSocketClient::processUnitMessage(QDataStream &in, __u8 col, __u8 slot, D
 	case DISPENSER_GENL_UNIT_DOOR: //Unit door
 		in >> status;
 		m_pUnit->setDoor(status);
-		qDebug() << "Ignore DISPENSER_GENL_UNIT_DOOR.";
+		//qDebug() << "Ignore DISPENSER_GENL_UNIT_DOOR.";
 		break;
 	case DISPENSER_GENL_UNIT_CHARGING: //Unit charging
 		in >> status;
 		m_pUnit->setCharging(status);
-		qDebug() << "Ignore DISPENSER_GENL_UNIT_CHARGING.";
+		//qDebug() << "Ignore DISPENSER_GENL_UNIT_CHARGING.";
 		break;
 	case DISPENSER_GENL_UNIT_NIGHT: //Unit night
 		in >> status;

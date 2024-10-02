@@ -1,0 +1,21 @@
+[Unit]
+Description=Dispenser daemon
+Requires=camerastream.service
+
+[Service]
+Type=dbus
+BusName=daemon.dispenser.daemon
+ExecStart=/usr/sbin/dispenser
+RestartSec=2
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
+
+#/etc/systemd/system
+#systemctl enable camerastream.service
+#systemctl enable --now camerastream.service
+#systemctl daemon-reload
+#systemctl start camerastream.service
+
+#daemon.dispenser.daemon.conf daemon.dispenser.daemon
