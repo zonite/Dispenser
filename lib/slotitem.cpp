@@ -55,6 +55,8 @@ const char *SlotItem::stateToStr(slot_state state)
 		return "Closed";
 	case RELEASE:
 		return "Release";
+	case RELEASED:
+		return "Released";
 	case OPENING:
 		return "Opening";
 	case OPEN:
