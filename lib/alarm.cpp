@@ -417,6 +417,9 @@ void Alarm::startTimer()
 		return;
 
 	msecToRelease = (((m_iSeconds - QTime::currentTime().msecsSinceStartOfDay()) % m_iInterval) + m_iInterval) % m_iInterval;
+	if (msecToRelease < ALARM_MIN_SCHEDULING) {
+		msecToRelease = m_iInterval;
+	}
 	//if (msecToRelease < 0)
 	//	msecToRelease += 86400000;
 
@@ -486,7 +489,12 @@ bool cmp(const Alarm &a, const Alarm &b)
 }
 */
 void Alarm::timeout() {
-	m_cTimer.start((((m_iSeconds - QTime::currentTime().msecsSinceStartOfDay()) % m_iInterval) + m_iInterval) % m_iInterval);
+	int nextAlarm = ((((m_iSeconds - QTime::currentTime().msecsSinceStartOfDay()) % m_iInterval) + m_iInterval) % m_iInterval);
+	if (nextAlarm < ALARM_MIN_SCHEDULING) {
+		nextAlarm = m_iInterval;
+	}
+
+	m_cTimer.start(nextAlarm);
 	qDaemonLog(QString("Alarm timed out at %1.").arg(QTime::currentTime().toString("hh:mm:ss")), QDaemonLog::NoticeEntry);
 	if (checkDay())
 		emit releaseTimeout(this);
