@@ -46,6 +46,12 @@ SlotItem::~SlotItem()
 
 const char *SlotItem::stateToStr(slot_state state)
 {
+	if (!(state & VALID_MASK))
+		state = UNKNOWN;
+
+	if (state > FAILED)
+		state = FAILED;
+
 	switch (state) {
 	case UNKNOWN:
 		return "Unknown";

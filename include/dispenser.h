@@ -175,15 +175,25 @@ static_assert( sizeof(enum weekdays) == 1 );
 //Maximum 4 bits! = 0-7 = 8 states
 enum slot_state {
 	UNKNOWN  = 0x0, // 0000
-	CLOSING  = 0x8, // 1000
-	OPENING  = 0x9, // 1001
-	OPEN     = 0xa, // 1010
-	RELEASED = 0xb, // 1011
-	CLOSED   = 0xc, // 1100
-	RELEASE  = 0xd, // 1101
-	FAILED   = 0xe, // 1110 ->
+	CLOSING  = 0x8, // 1000 (VALID_MASK)
+	OPENING  = 0x9, // 1001 (VALID_MASK | RELEASE_MASK)
+	OPEN     = 0xa, // 1010 (VALID_MASK | DOWN_MASK)
+	RELEASED = 0xb, // 1011 (VALID_MASK | RELEASE_MASK | DOWN_MASK)
+	CLOSED   = 0xc, // 1100 (VALID_MASK | UP_MASK)
+	RELEASE  = 0xd, // 1101 (VALID_MASK | RELEASE_MASK)
+	FAILED   = 0xe, // 1110 -> (VALID_MASK | UP_MASK | DOWN_MASK)
 } __attribute__ ((__packed__));
 static_assert( sizeof(enum slot_state) == 1 );
+
+#define VALID_BIT 3
+#define UP_BIT 2
+#define DOWN_BIT 1
+#define RELEASE_BIT 0
+
+#define VALID_MASK (1 << VALID_BIT)
+#define UP_MASK (1 << UP_BIT)
+#define DOWN_MASK (1 << DOWN_BIT)
+#define RELEASE_MASK (1 << RELEASE_BIT)
 
 enum iocl_cmd {
 	RELEASE_ALL,
@@ -369,9 +379,10 @@ inline unsigned char dispenser_pack_slot_status(const struct dispenser_mmap_slot
 inline void dispenser_update_slot_status(struct dispenser_mmap_slot *state)
 {
 	__u8 bits = 8;
-	bits |= (state->up & 1) << 2;
-	bits |= (state->down & 1) << 1;
-	bits |= (state->release & 1);
+	bits |= (state->up & 1) << UP_BIT;
+	bits |= (state->down & 1) << DOWN_BIT;
+	bits |= (state->release & 1) << RELEASE_BIT;
+	bits &= 0xf;
 	state->state = (enum slot_state) bits;
 }
 
