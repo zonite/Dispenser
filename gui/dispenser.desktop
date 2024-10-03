@@ -1,0 +1,6 @@
+[Desktop Entry]
+Name=Dispenser Client
+Exec=/usr/bin/dispenser
+Type=Application
+
+#put in /etc/xdg/autostart

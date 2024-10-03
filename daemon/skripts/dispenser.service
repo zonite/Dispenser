@@ -1,6 +1,6 @@
 [Unit]
 Description=Dispenser daemon
-Requires=camerastream.service
+#Requires=camerastream.service
 
 [Service]
 Type=dbus
