@@ -20,7 +20,7 @@
 //#define FAIL_TIMEOUT SEC_TO_MSEC(12)
 //#define DOOR_TIMEOUT SEC_TO_MSEC(6)
 //#define INT_DEBOUNCE 40
-#define INT_DEBOUNCE 400
+#define INT_DEBOUNCE 200
 #define POLL_INTERVAL SEC_TO_MSEC(60)
 // 30 000 msec = each alarm is considered same if they are less than 30 sec apart
 #define ALARM_MIN_INTERVAL 30000

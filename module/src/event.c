@@ -154,8 +154,8 @@ static void dispenser_down_event(struct dispenser_gpiod* dev, char new_val)
 			dispenser_update_slot_status(slot->state); //update release bit
 		}
 
-		if (slot->next && slot->next->release_delayed)
-			dispenser_unit_release_slot(slot->next, 1, 0);
+		if (slot->next && slot->next->pendingRelease)
+			dispenser_unit_release_slot(slot->next, 0, 0);
 
 		dispenser_release_event(dev, 0); //Down. Stop timer.
 		slot->full = 0;
@@ -183,22 +183,34 @@ static void dispenser_release_event(struct dispenser_gpiod* dev, char new_val)
 
     dispenser_slot_update(slot);
     if (new_val) {
-	    //release
-	    dispenser_gpiod_set(dev, 1); //Open the lock
-	    dispenser_update_slot_status(slot->state); //update release bit
+	    if (slot->release_delayed) {
+		    //pending release
+		    dispenser_gpiod_set(dev, 0); //start lock timeout
+		    dispenser_update_slot_status(slot->state); //update release bit
+	    } else {
+		    //immediate release
+		    slot->pendingRelease = 0;
+		    dispenser_gpiod_set(dev, 1); //Open the lock
+		    dispenser_update_slot_status(slot->state); //update release bit
+	    }
     } else {
 	    //release timeout
-	    if (slot->state->release && slot->state->up && !slot->state->down) {
+	    if (slot->release_delayed) {
+		    //pending release
+		    slot->pendingRelease = 0;
+		    slot->release_delayed = 0;
+		    dispenser_gpiod_set(dev, 1); //start lock timeout
+		    dispenser_update_slot_status(slot->state); //update release bit
+	    } else if (slot->state->release && slot->state->up && !slot->state->down) {
 		    //release failed! re-release
 		    printk("Dispenser: Release %s failed, re-release!\n", dev->gpiod->name);
+		    slot->pendingRelease = 0;
 		    dispenser_gpiod_set(dev, 1);
 	    } else {
 		    //release success!
-		    dispenser_gpiod_set_tmout(dev, 0, 0);
-		    if (slot->pendingRelease) {
-			    printk("Dispenser: Release %s success.\n", dev->gpiod->name);
-		    }
 		    slot->pendingRelease = 0;
+		    dispenser_gpiod_set_tmout(dev, 0, 0);
+		    printk("Dispenser: Release %s success.\n", dev->gpiod->name);
 	    }
     }
 

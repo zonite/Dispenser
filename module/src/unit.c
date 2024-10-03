@@ -592,7 +592,7 @@ static void dispenser_unit_release_slot(struct dispenser_slot_list *slot, char c
 	}
 
 	if (slot->prev && !force)
-		prev_full = slot->prev->full;
+		prev_full = slot->pendingRelease;
 
 	if (slot->full) {
 		--next_count;
