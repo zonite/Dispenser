@@ -1,8 +1,37 @@
 import QtQuick 2.15
 import QtQuick.Controls 2.15
-import QtQuick.Layouts 1.3
+import QtQuick.Layouts 1.15
 import Dispenser 1.0
 
+
+TableView {
+    id: unitView
+    anchors.fill: parent
+    anchors.margins: 20
+    required property int num
+
+    rowSpacing: 5
+    columnSpacing: 5
+
+    clip: true
+
+    model: SlotModel {
+        id: unitModel
+        //unit: parent
+    }
+
+    delegate: Rectangle {
+        id: cell
+        implicitHeight: 15
+        implicitWidth: 15
+        required property var model
+        required property bool value
+
+        color: value ? "#f3f3f4" : "#b5b7bf"
+    }
+}
+
+/*
 Rectangle {
     id: unitManager
 
@@ -110,5 +139,5 @@ Rectangle {
         PropertyAction { property: "y"; value: popEnter.ViewTransition.item.pos }
     }
     */
-}
-
+//}
+//*/

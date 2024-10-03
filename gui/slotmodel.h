@@ -1,16 +1,33 @@
 #ifndef SLOTMODEL_H
 #define SLOTMODEL_H
 
+//#include <array>
+//#include <QHash>
 #include <QAbstractTableModel>
 #include <QObject>
+#include <QtQml/qqml.h>
 
 #include <unititem.h>
 
 class SlotModel : public QAbstractTableModel
 {
 	Q_OBJECT
+	QML_ELEMENT
 	Q_PROPERTY(UnitItem *unit READ unit WRITE setUnit NOTIFY unitChanged)
+	Q_PROPERTY(int num READ num WRITE setNum NOTIFY numChanged)
+
+	Q_ENUMS(Roles)
 public:
+	enum Roles {
+		CellRole
+	};
+
+	QHash<int, QByteArray> roleNames() const override {
+		return {
+			{ CellRole, "value" }
+		};
+	}
+
 	explicit SlotModel(QObject *parent = nullptr);
 
 	// Basic functionality:
@@ -26,17 +43,28 @@ public:
 
 	Qt::ItemFlags flags(const QModelIndex& index) const override;
 
-	virtual QHash<int, QByteArray> roleNames() const override;
+	//virtual QHash<int, QByteArray> roleNames() const override;
 
 	UnitItem *unit() const;
 	void setUnit(UnitItem *unit);
 	//void resetList();
+	int num() const { return m_iIndex;  }
+	void setNum(int i ) { m_iIndex = i; emit numChanged(); }
+
+
+	Q_INVOKABLE void nextStep();
+	Q_INVOKABLE bool loadFile(const QString &filename);
+	Q_INVOKABLE void loadPatter(const QString &plainText);
+	Q_INVOKABLE void clear();
+
 
 signals:
 	void unitChanged();
+	void numChanged();
 
 private:
 	UnitItem *m_pUnit;
+	int m_iIndex = 0;
 };
 
 #endif // SLOTMODEL_H

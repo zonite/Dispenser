@@ -48,9 +48,12 @@
 **
 ****************************************************************************/
 
-import QtQuick 2.7
-import QtQuick.Controls 2.0
-import QtQuick.Layouts 1.3
+import QtQuick 2.15
+import QtQuick.Controls 2.15
+//import QtQuick 2.0 as OldQuick
+//import QtQuick.Controls 1.4 as OldControls
+//import QtQuick.Layouts 1.3 as OldLayout
+import QtQuick.Layouts 1.15
 import Dispenser 1.0
 
 ApplicationWindow {
@@ -207,8 +210,23 @@ ApplicationWindow {
                 list: unitList
             }
 
-            delegate: Unit {
+            /*
+            delegate: TableView {
+                id: unitView
+                anchors.fill: parent
+                anchors.margins: 20
 
+                rowSpacing: 5
+                columnSpacing: 5
+
+                clip: true
+                model: SlotModel
+                delegate: cellDelegate
+            }
+            */
+            delegate: Unit {
+                //required property int index
+                //unitpointer: view.model.list
             }
         }
     //}

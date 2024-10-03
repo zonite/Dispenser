@@ -3,7 +3,7 @@
 SlotModel::SlotModel(QObject *parent)
         : QAbstractTableModel{parent}
 {
-
+	qDebug() << parent;
 }
 
 int SlotModel::rowCount(const QModelIndex &parent) const
@@ -33,8 +33,10 @@ QVariant SlotModel::data(const QModelIndex &index, int role) const
 	Q_UNUSED(slot);
 
 	switch (role) {
-	case Qt::DisplayRole:
-		return QVariant("Slot displayRole");
+	//case Qt::DisplayRole:
+	//	return QString("Slot displayRole");
+	case CellRole:
+		return QVariant(true);
 		/*
 	case DoneRole:
 		return QVariant(1);
@@ -100,9 +102,12 @@ Qt::ItemFlags SlotModel::flags(const QModelIndex &index) const
 	if (!index.isValid())
 		return Qt::NoItemFlags;
 
-	return Qt::ItemIsEditable;
+	//When editable:
+	//return Qt::ItemIsEditable;
+	return Qt::NoItemFlags;
 }
 
+/*
 QHash<int, QByteArray> SlotModel::roleNames() const
 {
 	QHash<int, QByteArray> names;
@@ -110,6 +115,7 @@ QHash<int, QByteArray> SlotModel::roleNames() const
 	//names[DescriptionRole] = "description";
 	return names;
 }
+*/
 
 UnitItem *SlotModel::unit() const
 {
@@ -160,4 +166,28 @@ void SlotModel::setUnit(UnitItem *unit)
 	endResetModel();
 
 	emit unitChanged();
+}
+
+void SlotModel::nextStep()
+{
+	return;
+}
+
+bool SlotModel::loadFile(const QString &filename)
+{
+	Q_UNUSED(filename)
+
+	return true;
+}
+
+void SlotModel::loadPatter(const QString &plainText)
+{
+	Q_UNUSED(plainText)
+
+	return;
+}
+
+void SlotModel::clear()
+{
+	return;
 }

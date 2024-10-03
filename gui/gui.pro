@@ -53,7 +53,8 @@ LIBS += -L".$$PRO_FILE_PWD/../lib/" -lDispenser
 
 TRANSLATIONS += \
     gui_en_US.ts
-CONFIG += lrelease
+CONFIG += debug
+#CONFIG += lrelease
 CONFIG += embed_translations
 
 # Default rules for deployment.
@@ -65,6 +66,6 @@ DISTFILES +=
 
 HEADERS += \
         manager.h \
-        slotmodel.h \
+	slotmodel.h \
 	unitlist.h \
 	unitmodel.h

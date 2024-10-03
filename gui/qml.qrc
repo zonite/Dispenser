@@ -16,5 +16,7 @@
         <file>DewP.qml</file>
         <file>Messages.qml</file>
         <file>Unit.qml</file>
+        <file>SlotDelegate.qml</file>
+        <file>GreenBox.qml</file>
     </qresource>
 </RCC>

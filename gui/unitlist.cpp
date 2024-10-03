@@ -10,6 +10,7 @@ UnitList::UnitList(QObject *parent)
 	mItems.append(default_unit);
 
 	//default_unit->setDataServer("wss://dispenser128.nykyri.wg:8080/");
+	qDebug() << "Connecting to defaul server";
 	server = settings.value("DefaultServer", "wss://dispenser128.nykyri.wg:8080/").toString();
 	default_unit->setDataServer(server);
 
