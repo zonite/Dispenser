@@ -704,6 +704,9 @@ static void dispenser_slot_update(struct dispenser_slot_list *slot)
 
 	dispenser_update_slot_status(slot->state);
 
+	if (slot->state->state == CLOSED)
+		slot->full = 1;
+
 	if (old != slot->state->state) {
 		if (slot->initialized) __dispenser_genl_post_slot_status(slot, NULL);
 	}
