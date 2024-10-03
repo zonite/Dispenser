@@ -19,7 +19,8 @@
 //#define LIGHT_TIMEOUT SEC_TO_MSEC(3)
 //#define FAIL_TIMEOUT SEC_TO_MSEC(12)
 //#define DOOR_TIMEOUT SEC_TO_MSEC(6)
-#define INT_DEBOUNCE 40
+//#define INT_DEBOUNCE 40
+#define INT_DEBOUNCE 400
 #define POLL_INTERVAL SEC_TO_MSEC(60)
 // 30 000 msec = each alarm is considered same if they are less than 30 sec apart
 #define ALARM_MIN_INTERVAL 30000
@@ -173,13 +174,14 @@ static_assert( sizeof(enum weekdays) == 1 );
 
 //Maximum 4 bits! = 0-7 = 8 states
 enum slot_state {
-	UNKNOWN,
-	FAILED,
-	CLOSED,
-	RELEASE,
-	OPENING,
-	OPEN,
-	CLOSING
+	UNKNOWN  = 0x0, // 0000
+	CLOSING  = 0x8, // 1000
+	OPENING  = 0x9, // 1001
+	OPEN     = 0xa, // 1010
+	RELEASED = 0xb, // 1011
+	CLOSED   = 0xc, // 1100
+	RELEASE  = 0xd, // 1101
+	FAILED   = 0xe, // 1110 ->
 } __attribute__ ((__packed__));
 static_assert( sizeof(enum slot_state) == 1 );
 
@@ -362,6 +364,15 @@ inline unsigned char dispenser_pack_slot_status(const struct dispenser_mmap_slot
 	}
 
 	return status;
+}
+
+inline void dispenser_update_slot_status(struct dispenser_mmap_slot *state)
+{
+	__u8 bits = 8;
+	bits |= (state->up & 1) << 2;
+	bits |= (state->down & 1) << 1;
+	bits |= (state->release & 1);
+	state->state = (enum slot_state) bits;
 }
 
 inline void dispenser_unpack_slot_status(unsigned char status, struct dispenser_mmap_slot *state, unsigned char *full)

@@ -117,27 +117,21 @@ static void dispenser_up_event(struct dispenser_gpiod* dev, char new_val)
 		return;
 	}
 
-	if (new_val) { //Locked up
-		if (slot->state->state == CLOSING ||
-		   (slot->state->state == FAILED && slot->state->down == 0 && slot->state->release == 0)) {
-			slot->state->state = CLOSED;
-			slot->full = 1;
-			printk("Dispenser: %s closed.\n", dev->gpiod->name);
-		} else {
-			slot->state->state = FAILED;
-			printk("Dispenser: %s failed up: up = %i, down = %i, release = %i\n", dev->gpiod->name, slot->state->up, slot->state->down, slot->state->release);
-		}
-	} else { //Released
-		slot->full = 0;
-		if (slot->state->state == RELEASE ||
-		   (slot->state->state == FAILED && slot->state->down == 0 && slot->state->release == 1)) {
-			slot->state->state = OPENING;
-			printk("Dispenser: %s opening.\n", dev->gpiod->name);
-		} else {
-			slot->state->state = FAILED;
-			printk("Dispenser: %s failed up release: up = %i, down = %i, release = %i\n", dev->gpiod->name, slot->state->up, slot->state->down, slot->state->release);
-		}
+	enum slot_state old = slot->state->state;
+
+	dispenser_slot_update(slot);
+	if (slot->state->release && !slot->state->up) {
+		//release == 1 && up == 0 -> release = 0
+		dispenser_gpiod_set_tmout(slot->release, 0, 0);
+		dispenser_update_slot_status(slot->state); //update release bit
 	}
+
+	enum slot_state new = slot->state->state;
+	printk("Dispenser: %s, up event new val = %i, old = %x, up=%i, dn=%i, rel=%i, new = %x, up=%i, dn=%i, rel=%i",
+	       dev->gpiod->name, new_val,
+	       old, (old >> 2) & 1, (old >> 1) & 1, old & 1,
+	       new, (new >> 2) & 1, (new >> 1) & 1, new & 1);
+
 	if (slot->initialized) __dispenser_genl_post_slot_status(slot, NULL);
 }
 
@@ -150,31 +144,29 @@ static void dispenser_down_event(struct dispenser_gpiod* dev, char new_val)
 		return;
 	}
 
-	if (new_val) { //Locked down
-		slot->full = 0;
-		if (slot->state->state == OPENING || slot->state->state == CLOSING ||
-		                (slot->state->state == FAILED && slot->state->up == 0)) {
-			slot->state->state = OPEN;
-			dispenser_release_event(dev, 0); //Down. Stop timer.
-			printk("Dispenser: %s open.\n", dev->gpiod->name);
-		} else {
-			slot->state->state = FAILED;
-			printk("Dispenser: %s failed down: up = %i, down = %i, release = %i\n", dev->gpiod->name, slot->state->up, slot->state->down, slot->state->release);
+	enum slot_state old = slot->state->state;
+
+	dispenser_slot_update(slot);
+	if (slot->state->down) {
+		if (slot->state->release) {
+			//release == 1 && up == 0 -> release = 0
+			dispenser_gpiod_set_tmout(slot->release, 0, 0);
+			dispenser_update_slot_status(slot->state); //update release bit
 		}
-		//If open next->inittiate
-		dispenser_gpiod_set_tmout(slot->release, 0, 0);
+
 		if (slot->next && slot->next->release_delayed)
 			dispenser_unit_release_slot(slot->next, 1, 0);
-	} else { //Closing
-		if (slot->state->state == OPEN ||
-		                (slot->state->state == FAILED && slot->state->up == 0 && slot->state->release == 0)) {
-			slot->state->state = CLOSING;
-			printk("Dispenser: %s closing.\n", dev->gpiod->name);
-		} else {
-			slot->state->state = FAILED;
-			printk("Dispenser: %s failed closing: up = %i, down = %i, release = %i\n", dev->gpiod->name, slot->state->up, slot->state->down, slot->state->release);
-		}
+
+		dispenser_release_event(dev, 0); //Down. Stop timer.
+		slot->full = 0;
 	}
+
+	enum slot_state new = slot->state->state;
+	printk("Dispenser: %s, down event new val = %i, old = %x, up=%i, dn=%i, rel=%i, new = %x, up=%i, dn=%i, rel=%i",
+	       dev->gpiod->name, new_val,
+	       old, (old >> 2) & 1, (old >> 1) & 1, old & 1,
+	       new, (new >> 2) & 1, (new >> 1) & 1, new & 1);
+
 	if (slot->initialized) __dispenser_genl_post_slot_status(slot, NULL);
 }
 
@@ -187,51 +179,35 @@ static void dispenser_release_event(struct dispenser_gpiod* dev, char new_val)
 	return;
     }
 
-    dispenser_slot_update(slot);
+    enum slot_state old = slot->state->state;
 
-    if (new_val) { //Release event
-	    if ((slot->state->state == OPEN) || (slot->state->state == FAILED && slot->state->down == 1)) {
-		    slot->state->state = OPEN;
-	    } else if (slot->state->state == CLOSED ||
-	                    (slot->state->state == FAILED && slot->state->up == 1)) {
-		    slot->state->state = RELEASE;
-		    printk("Dispenser: %s release.\n", dev->gpiod->name);
-	    } else if (slot->state->up == 0 && slot->state->down == 0) {
-		    slot->state->state = OPENING;
+    dispenser_slot_update(slot);
+    if (new_val) {
+	    //release
+	    dispenser_gpiod_set(dev, 1); //Open the lock
+	    dispenser_update_slot_status(slot->state); //update release bit
+    } else {
+	    //release timeout
+	    if (slot->state->release && slot->state->up && !slot->state->down) {
+		    //release failed! re-release
+		    printk("Dispenser: Release %s failed, re-release!\n", dev->gpiod->name);
+		    dispenser_gpiod_set(dev, 1);
 	    } else {
-		    slot->state->state = FAILED;
-		    printk("Dispenser: %s failed release: up = %i, down = %i, release = %i\n", dev->gpiod->name, slot->state->up, slot->state->down, slot->state->release);
+		    //release success!
+		    dispenser_gpiod_set_tmout(dev, 0, 0);
+		    if (slot->pendingRelease) {
+			    printk("Dispenser: Release %s success.\n", dev->gpiod->name);
+		    }
+		    slot->pendingRelease = 0;
 	    }
-	    dispenser_gpiod_set(dev, 1);
-    } else { //Release timeout
-	if (slot->state->state == OPEN) {
-		//Success
-	} else if (slot->state->state == FAILED && slot->state->up == 0 && slot->state->down == 1) {
-		//Failed, but now open
-		slot->state->state = OPEN;
-	} else if (slot->state->state == OPENING) {
-		//Down failed or door stuck in middle position.
-		printk("Dispenser: Release %s OPENING, did not reach down in TMOUT.\n", dev->gpiod->name);
-		++slot->state->down_failed;
-	} else if (slot->state->state == RELEASE && slot->state->up == 1) {
-		printk("Dispenser: Lock failed to release %s or up-sensor failed, re-release!\n", dev->gpiod->name);
-		dispenser_gpiod_set(dev, 1);
-		if (slot->initialized) __dispenser_genl_post_slot_status(slot, NULL);
-		return;
-	} else {
-		//Failed
-		slot->state->state = FAILED;
-		printk("Dispenser: Release %s failed, re-release!\n", dev->gpiod->name);
-		dispenser_gpiod_set(dev, 1);
-		if (slot->initialized) __dispenser_genl_post_slot_status(slot, NULL);
-		return;
-	}
-	dispenser_gpiod_set_tmout(dev, 0, 0);
-	if (slot->pendingRelease) {
-		printk("Dispenser: Release %s success.\n", dev->gpiod->name);
-	}
-	slot->pendingRelease = 0;
     }
+
+    enum slot_state new = slot->state->state;
+    printk("Dispenser: %s, down event new val = %i, old = %x, up=%i, dn=%i, rel=%i, new = %x, up=%i, dn=%i, rel=%i",
+           dev->gpiod->name, new_val,
+           old, (old >> 2) & 1, (old >> 1) & 1, old & 1,
+           new, (new >> 2) & 1, (new >> 1) & 1, new & 1);
+
     if (slot->initialized) __dispenser_genl_post_slot_status(slot, NULL);
 }
 

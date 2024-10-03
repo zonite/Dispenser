@@ -309,7 +309,7 @@ static int __dispenser_genl_post_slot_status(struct dispenser_slot_list *slot, s
 		return -ret;
 	}
 
-	if (slot->state->state != UNKNOWN) {
+	if (slot->state->state >= CLOSING) {
 		ret = nla_put_u32(reply_buffer, DISPENSER_GENL_SLOT_FAILED_UP, slot->state->up_failed);
 		if (ret) {
 			printk("Error adding failed up to message.\n");

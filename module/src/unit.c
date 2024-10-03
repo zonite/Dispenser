@@ -697,21 +697,15 @@ static void dispenser_slot_update(struct dispenser_slot_list *slot)
 		return;
 	}
 
+	enum slot_state old = slot->state->state;
+
 	dispenser_gpiod_read_value(slot->up);
 	dispenser_gpiod_read_value(slot->down);
 
-	if (slot->state->state == FAILED) {
-		if (slot->state->down == 1 && slot->state->up == 0) {
-			slot->state->state = OPEN;
-			if (slot->initialized) __dispenser_genl_post_slot_status(slot, NULL);
-		} else if (slot->state->down == 0 && slot->state->up == 1) {
-			if (slot->state->release == 1) {
-				slot->state->state = RELEASE;
-			} else {
-				slot->state->state = CLOSED;
-			}
-			if (slot->initialized) __dispenser_genl_post_slot_status(slot, NULL);
-		}
+	dispenser_update_slot_status(slot->state);
+
+	if (old != slot->state->state) {
+		if (slot->initialized) __dispenser_genl_post_slot_status(slot, NULL);
 	}
 }
 
