@@ -3,12 +3,15 @@ Description=Dispenser daemon
 #Requires=camerastream.service
 
 [Service]
+BusName=daemon.dispenser.dispenser
 Type=dbus
-BusName=daemon.dispenser.daemon
-ExecStart=/usr/sbin/dispenser -s
+ExecStart=/usr/sbin/dispenser -d
+#Type=forking
+#ExecStart=/usr/sbin/dispenser -s
 ExecStop=/usr/sbin/dispenser -t
-RestartSec=2
+RestartSec=30
 Restart=always
+#KillSignal=15 #signal sent when dbus of dispenser is dropped
 
 [Install]
 WantedBy=multi-user.target

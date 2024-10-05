@@ -157,7 +157,7 @@ static void dispenser_gpiod_reset_timer(struct dispenser_gpiod *pgpiod, unsigned
 
     if (tmout) {
 	//callback;
-	printk("Setup timeout %d to 0x%px.\n", tmout, pgpiod);
+	printk("Setup timeout %d to %s.\n", tmout, pgpiod->gpiod->name);
 
 	mod_timer(&pgpiod->timer, jiffies + msecs_to_jiffies(tmout));
     } else if (timer_pending(&pgpiod->timer)) {
@@ -224,7 +224,7 @@ static char dispenser_gpiod_get_debounce(struct dispenser_gpiod *pgpiod)
 static void dispenser_gpiod_out_tmr_callback(struct timer_list *timer)
 {
     struct dispenser_gpiod *pgpiod = from_timer(pgpiod, timer, timer);
-    printk("Timer callback on 0x%px.\n", pgpiod);
+    printk("Timer callback on %s.\n", pgpiod->gpiod->name);
 
     if (pgpiod->value) {
 	dispenser_gpiod_event(pgpiod, 0);

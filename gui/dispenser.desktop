@@ -3,4 +3,7 @@ Name=Dispenser Client
 Exec=/usr/bin/dispenser
 Type=Application
 
+#Terminal=true
+#StartupNotify=false
+
 #put in /etc/xdg/autostart
