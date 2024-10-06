@@ -1,13 +1,18 @@
 #include "slotmodel.h"
 
+#include <QDebug>
+
 SlotModel::SlotModel(QObject *parent)
         : QAbstractTableModel{parent}
 {
-	qDebug() << parent;
+	qDebug() << "Slot constractor" << parent;
 }
 
 int SlotModel::rowCount(const QModelIndex &parent) const
 {
+	//qDebug() << "rowCount: Parent row" << parent.row() << parent.model() << "Parent col" << parent.column();
+	qDebug() << "Parent is" << static_cast<UnitItem*>(parent.internalPointer());
+	//return 3;
 	// For list models only the root node (an invalid parent) should return the list's size. For all
 	// other (valid) parents, rowCount() should return 0 so that it does not become a tree model.
 	if (parent.isValid() || !m_pUnit)
@@ -18,6 +23,12 @@ int SlotModel::rowCount(const QModelIndex &parent) const
 
 int SlotModel::columnCount(const QModelIndex &parent) const
 {
+	//qDebug() << "columnCount: Parent row" << parent.row() << "Parent col" << parent.column();
+	qDebug() << "Parent is" << static_cast<UnitItem*>(parent.internalPointer());
+	//return 2;
+
+	//QAbstrackItemModel::rootItem.get();
+
 	if (parent.isValid() || !m_pUnit)
 		return 0;
 
@@ -131,6 +142,8 @@ void SlotModel::setUnit(UnitItem *unit)
 
 	if (m_pUnit)
 		m_pUnit->disconnect(this);
+
+	qDebug() << "Set unit!";
 
 	m_pUnit = unit;
 

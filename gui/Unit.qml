@@ -8,24 +8,31 @@ TableView {
     id: unitView
     anchors.fill: parent
     anchors.margins: 20
-    required property int num
+    required property UnitItem moodeli
 
     rowSpacing: 5
     columnSpacing: 5
 
     clip: true
 
+    //model: 4
+
+    Text {
+
+    }
+
     model: SlotModel {
-        id: unitModel
-        //unit: parent
+        id: slotModel
+        unit: moodeli
     }
 
     delegate: Rectangle {
         id: cell
         implicitHeight: 15
         implicitWidth: 15
-        required property var model
-        required property bool value
+        //required property var model
+        //required property bool value
+        property bool value: true
 
         color: value ? "#f3f3f4" : "#b5b7bf"
     }

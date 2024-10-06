@@ -103,6 +103,8 @@ ApplicationWindow {
             anchors.fill: parent
         }
 
+
+
         /*
         ListView {
             id: listView
@@ -174,7 +176,15 @@ ApplicationWindow {
 
 //        }
 
-        ListView {
+
+
+    Unit {
+        moodeli: unitItem
+        //unit: unitItem
+    }
+
+    /*
+    ListView {
             id: view
             //Layout.fillWidth: true
             //Layout.fillHeight: true
@@ -191,14 +201,14 @@ ApplicationWindow {
             clip: true
             orientation: Qt.Horizontal
 
-            /* Header as Drawer
+            // Header as Drawer
             //headerPositioning: ListView.PullBackHeader
-            headerPositioning: ListView.OverlayHeader
-            header: Status {
-                implicitHeight: parent.height
-                z: 2 //make above items
-            }
-            */
+            //headerPositioning: ListView.OverlayHeader
+            //header: Status {
+            //    implicitHeight: parent.height
+            //    z: 2 //make above items
+            //}
+            //
 
 
             //snapMode: ListView.SnapOneItem
@@ -207,10 +217,11 @@ ApplicationWindow {
             //spacing: 5
 
             model: UnitModel {
+                id: unitListModel
                 list: unitList
             }
 
-            /*
+
             delegate: TableView {
                 id: unitView
                 anchors.fill: parent
@@ -223,12 +234,42 @@ ApplicationWindow {
                 model: SlotModel
                 delegate: cellDelegate
             }
-            */
+
+
             delegate: Unit {
+                //parent: this
+                //moodeli: unitListModel.getUnit(index)
+                //moodeli: model
+
                 //required property int index
                 //unitpointer: view.model.list
             }
+
+
+            Component {
+                id: unitDelegate
+                property UnitItem unit
+
+                unitListModel.setUnit: UnitList.at(index)
+
+                Rectangle {
+                    id: wrapper
+                    required property int index
+                    //required property int number
+
+                    width: 40
+                    height: 40
+
+                    Text {
+                        anchors.centerIn: parent
+                        font.pixelSize: 10
+                        text: wrapper.index
+                    }
+                }
+            }
+
         }
+        */
     //}
 
     //ApplicationFlow {

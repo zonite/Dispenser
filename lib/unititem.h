@@ -24,12 +24,17 @@ class WebSocketClient;
 class LIB_EXPORT UnitItem : public Timer
 {
 	Q_OBJECT
+	//Q_PROPERTY(int number READ number WRITE setNumber NOTIFY numberChanged)
 public:
 	explicit UnitItem(QObject *parent = nullptr);
 	~UnitItem();
 
 	SlotItem *slot(int col, int slot);
 	ColItem *col(int col);
+
+
+	//int number() const { return mNumber; }
+	//void setNumber(int i) { mNumber = i; emit numberChanged(); }
 
 	const struct dispenser_mmap_unit *getUnitStatus() { return &m_sUnit; }
 
@@ -111,6 +116,9 @@ signals:
 	void preSlotRemoved(int index, int index2);
 	void postSlotRemoved();
 
+	//void numberChanged();
+
+
 private slots:
 	void nightEnds();
 	void nightStarts();
@@ -121,6 +129,8 @@ private slots:
 private:
 	void initCols();
 	void saveAlarms();
+
+	//int mNumber = 12;
 
 	WebSocketClient *m_pDataStream = nullptr;
 	struct dispenser_mmap_unit m_sUnit = { 0, 0, 0, 0, 0, 0, 0, 0, { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, 0, 0, 0, 0 };

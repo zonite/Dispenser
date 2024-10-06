@@ -347,9 +347,9 @@ ReEncoder::ReEncoder(Monitor *monitor)
 			m_cAddresses.append(newAddress);
 		}
 	} else  {
-		m_cAddresses.resize(1);
-		//m_cAddresses[0].email = m_cSettings.value("DestAddresses", "minna_mj@hotmail.com").toString();
-		//m_cAddresses[0].mask = (enum sendmask) m_cSettings.value("SendMasks", ALL).toInt();
+		m_cAddresses.resize(2);
+		m_cAddresses[0].email = m_cSettings.value("DestAddresses", "minna_mj@hotmail.com").toString();
+		m_cAddresses[0].mask = (enum sendmask) m_cSettings.value("SendMasks", ALL).toInt();
 		m_cAddresses[0].email = m_cSettings.value("DestAddresses", "zonite@icloud.com").toString();
 		m_cAddresses[0].mask = (enum sendmask) m_cSettings.value("SendMasks", ALL).toInt();
 	}

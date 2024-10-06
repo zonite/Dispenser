@@ -8,12 +8,14 @@
 #include <QtQml/qqml.h>
 
 #include <unititem.h>
+#include "unitlist.h"
 
 class SlotModel : public QAbstractTableModel
 {
 	Q_OBJECT
 	QML_ELEMENT
 	Q_PROPERTY(UnitItem *unit READ unit WRITE setUnit NOTIFY unitChanged)
+	//Q_PROPERTY(UnitList *parentUnitList READ unitList WRITE setUnitList NOTIFY unitListChanged)
 	Q_PROPERTY(int num READ num WRITE setNum NOTIFY numChanged)
 
 	Q_ENUMS(Roles)
@@ -45,6 +47,9 @@ public:
 
 	//virtual QHash<int, QByteArray> roleNames() const override;
 
+	UnitList *unitList() const { return m_pUnitList; }
+	void setUnitList(UnitList *list) { m_pUnitList = list; }
+
 	UnitItem *unit() const;
 	void setUnit(UnitItem *unit);
 	//void resetList();
@@ -59,10 +64,12 @@ public:
 
 
 signals:
+	void unitListChanged();
 	void unitChanged();
 	void numChanged();
 
 private:
+	UnitList *m_pUnitList;
 	UnitItem *m_pUnit;
 	int m_iIndex = 0;
 };

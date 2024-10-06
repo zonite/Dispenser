@@ -10,6 +10,7 @@ class UnitModel : public QAbstractListModel
 {
 	Q_OBJECT
 	Q_PROPERTY(UnitList *list READ list WRITE setList NOTIFY listChanged)
+	Q_PROPERTY(int number READ number WRITE setNumber NOTIFY numberChanged)
 	//Q_PROPERTY(UnitList *list READ list WRITE setList RESET resetList NOTIFY listChanged)
 
 public:
@@ -37,10 +38,18 @@ public:
 	void setList(UnitList *list);
 	//void resetList();
 
+	int number() const { return mNumber; }
+	void setNumber(int i) { mNumber = i; emit numberChanged(); }
+
+
+	Q_INVOKABLE UnitItem *getUnit(int i) const { return mList->items().at(i); }
+
 signals:
+	void numberChanged();
 	void listChanged();
 
 private:
+	int mNumber = 12;
 	UnitList *mList;
 };
 

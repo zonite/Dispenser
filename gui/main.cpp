@@ -38,13 +38,24 @@ int main(int argc, char *argv[])
 	qmlRegisterUncreatableType<UnitList>("Dispenser", 1, 0, "UnitList",
 	                                     QStringLiteral("UnitList should not be created in QML"));
 	qmlRegisterType<SlotModel>("Dispenser", 1, 0, "SlotModel");
+	qmlRegisterUncreatableType<UnitItem>("Dispenser", 1, 0, "UnitItem",
+	                                     QStringLiteral("UnitItem should not be created in QML"));
 
-	UnitList unitList;
+	QSettings settings;
+	QString server;
+	server = settings.value("DefaultServer", "wss://dispenser128.nykyri.wg:8080/").toString();
+	settings.setValue("DefaultServer", server);
+	settings.sync();
+
+	//UnitList unitList;
+	UnitItem unit;
+	unit.setDataServer(server);
 
 	QQmlApplicationEngine engine;
 	engine.addImportPath(":/imports");
 
-	engine.rootContext()->setContextProperty(QStringLiteral("unitList"), &unitList);
+	engine.rootContext()->setContextProperty(QStringLiteral("unitItem"), &unit);
+	//engine.rootContext()->setContextProperty(QStringLiteral("unitList"), &unitList);
 
 	engine.load(QUrl(QLatin1String("qrc:/main.qml")));
 	if (engine.rootObjects().isEmpty())
