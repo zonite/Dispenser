@@ -122,7 +122,7 @@ static void dispenser_up_event(struct dispenser_gpiod* dev, char new_val)
 	dispenser_slot_update(slot);
 	if (slot->state->release && !slot->state->up) {
 		//release == 1 && up == 0 -> release = 0
-		dispenser_gpiod_set_tmout(slot->release, 0, 0);
+		//dispenser_gpiod_set_tmout(slot->release, 0, 0);
 		dispenser_update_slot_status(slot->state); //update release bit
 	}
 
