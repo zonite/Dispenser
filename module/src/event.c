@@ -23,7 +23,7 @@ static void dispenser_gpiod_event(struct dispenser_gpiod* dev, char new_val)
 
 static void dispenser_door_event(struct dispenser_gpiod* dev, char closed)
 {
-	static unsigned long opened = -1;
+	//static unsigned long opened = -1;
 
 	if (dev != cDispenser.p_sDoor) {
 		printk("Dispenser: Door event, GPIOD != p_sDoor, 0x%px != 0x%px\n", dev, cDispenser.p_sDoor);
@@ -33,14 +33,14 @@ static void dispenser_door_event(struct dispenser_gpiod* dev, char closed)
 		//Door closed!
 		printk("Door event: Closed %i -> %i. GPIO value = %i\n", !closed, closed, *dev->value);
 		dispenser_gpiod_set_tmout(cDispenser.p_sLed, 0, 0);
-		if (jiffies > msecs_to_jiffies(opened + FILL_TIMEOUT))
-			dispenser_unit_filled();
+		//if (jiffies > msecs_to_jiffies(opened + FILL_TIMEOUT))
+		//	dispenser_unit_filled();
 	} else {
 		//Door opened!
 		printk("Door event: Opened %i -> %i. GPIO value = %i\n", !closed, closed, *dev->value);
-		opened = jiffies;
+		//opened = jiffies;
 		dispenser_gpiod_set_tmout(cDispenser.p_sLed, 1, cDispenser.p_sDoor->timeout);
-		dispenser_unit_locks_on();
+		//dispenser_unit_locks_on();
 	}
 	if (cDispenser.initialized) __dispenser_genl_post_unit_status(NULL);
 	dispenser_post_event(DOOR, "Door event", &pDispenser_mmap->unit.door);
@@ -57,6 +57,7 @@ static void dispenser_button_event(struct dispenser_gpiod* dev, char pressed)
 	printk("Button event: Pressed = %i. GPIO value = %i.\n", pressed, *dev->value);
 
 	if (*cDispenser.p_sLed->value) {
+		dispenser_unit_locks_on();
 		dispenser_unit_filled();
 	}
 

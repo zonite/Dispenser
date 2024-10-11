@@ -627,16 +627,17 @@ static void dispenser_unit_filled(void)
 	for (i = 0; i < cDispenser.slot_count; ++i) {
 		s = &slots[i];
 
-		s->full = 1;
-		s->state->state = CLOSED;
+		//s->full = 1;
+		dispenser_slot_update(s);
+		//s->state->state = CLOSED;
 
 		if (s->state->up)
 			s->state->up_failed = 0;
 		else
-			s->state->up_failed = 1;
+			s->state->up_failed += 1;
 
 		if (s->state->down)
-			s->state->down_failed = 1;
+			s->state->down_failed += 1;
 		else
 			s->state->down_failed = 0;
 	}
