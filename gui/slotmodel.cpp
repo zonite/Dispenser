@@ -44,10 +44,10 @@ QVariant SlotModel::data(const QModelIndex &index, int role) const
 	Q_UNUSED(slot);
 
 	switch (role) {
-	//case Qt::DisplayRole:
-	//	return QString("Slot displayRole");
-	case CellRole:
-		return QVariant(true);
+	case Qt::DisplayRole:
+		return QString("displayRole");
+	//case CellRole:
+		//return QVariant(true);
 		/*
 	case DoneRole:
 		return QVariant(1);

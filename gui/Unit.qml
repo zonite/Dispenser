@@ -4,37 +4,68 @@ import QtQuick.Layouts 1.15
 import Dispenser 1.0
 
 
-TableView {
-    id: unitView
-    anchors.fill: parent
-    anchors.margins: 20
+Rectangle {
     required property UnitItem moodeli
 
-    rowSpacing: 5
-    columnSpacing: 5
+    height: parent.height
+    anchors.fill: parent
 
-    clip: true
+    color: "#00ff00"
 
-    //model: 4
 
-    Text {
+    TableView {
+        id: unitView
+        anchors.fill: parent
+        anchors.margins: 20
 
-    }
+        rowSpacing: 5
+        columnSpacing: 5
 
-    model: SlotModel {
-        id: slotModel
-        unit: moodeli
-    }
+        clip: true
 
-    delegate: Rectangle {
-        id: cell
-        implicitHeight: 15
-        implicitWidth: 15
-        //required property var model
-        //required property bool value
-        property bool value: true
+        //model: 4
 
-        color: value ? "#f3f3f4" : "#b5b7bf"
+        Rectangle {
+            implicitHeight: 40
+            implicitWidth: 40
+            color: "#ff0000"
+        }
+
+        Text {
+            text: "testiiiiiiiiiiiiiii"
+        }
+
+        model: SlotModel {
+            id: slotModel
+            unit: moodeli
+        }
+
+
+        delegate: Rectangle {
+            id: cell
+            implicitHeight: 15
+            implicitWidth: 15
+            //required property var model
+            //required property bool value
+            property bool value: true
+
+            color: value ? "#f3f3f4" : "#b5b7bf"
+
+            Text {
+                id: test
+                anchors.centerIn: parent
+                anchors.fill: parent
+                width: parent.width
+
+                text: model.display //
+                //text: column + "" + row //Toimii ->  00 -> 22
+                //text: row //Toimii -> row 0 -> 2
+                //text: column //Toimii -> column 0 -> 1
+                //text: index //Toimii -> index 0 -> 5
+                //text: model.num
+                //text: slotModel.data(index)
+            }
+        }
     }
 }
 

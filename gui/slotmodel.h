@@ -21,11 +21,14 @@ class SlotModel : public QAbstractTableModel
 	Q_ENUMS(Roles)
 public:
 	enum Roles {
-		CellRole
+		CellRole = Qt::UserRole,
+
 	};
 
 	QHash<int, QByteArray> roleNames() const override {
 		return {
+			{ Qt::DisplayRole, "display" },
+			{ Qt::ToolTipRole, "tooltip" },
 			{ CellRole, "value" }
 		};
 	}
