@@ -31,6 +31,10 @@ public:
 	void setReleaseTime(QDateTime time);
 	void setParentNid(ColItem *parent, __s8 i);
 
+	bool getUp() const { return m_sSlot.up; }
+	bool getDown() const { return m_sSlot.down; }
+	bool getRel() const { return m_sSlot.release; }
+
 	ColItem *getCol() const;
 	__s8 getId() const { return m_iSlotId; }
 	bool getInitialized() const { return m_bInitialized; }
@@ -38,6 +42,7 @@ public:
 	QString getStateStr() const;
 	inline bool getFull() const { return m_bFull; }
 	QDateTime getRelease() const { return m_cReleaseTime; }
+	QString guiState() const;
 
 	const struct dispenser_mmap_slot *getSlotStatus() { return &m_sSlot; }
 	__s32 getFailedUp() { return m_sSlot.up_failed; }

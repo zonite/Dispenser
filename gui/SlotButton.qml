@@ -72,8 +72,10 @@ import Dispenser 1.0
 
 Rectangle {
     id: root
-    width: Constants.buttonW
-    height: Constants.buttonH
+    implicitWidth: Constants.buttonW
+    implicitHeight: Constants.buttonH
+    //width: Constants.buttonW
+    //height: Constants.buttonH
     color: "transparent"
 
     signal clicked
@@ -102,6 +104,7 @@ Rectangle {
 
         color: Constants.backgroundColor
         border.color: Constants.upColor
+        border.width: Constants.borderW
 
         Label {
             id: labelUP
@@ -125,6 +128,7 @@ Rectangle {
         radius: Constants.buttonH / 2
         color: Constants.backgroundColor
         border.color: Constants.downColor
+        border.width: Constants.borderW
 
         Label {
             id: labelDN
@@ -142,8 +146,10 @@ Rectangle {
 
     Shape {
         id: transit
+        visible: false
         ShapePath {
-            strokeWidth: 1
+            //strokeWidth: 1
+            strokeWidth: Constants.borderW
             strokeColor: "orange"
             fillColor: "transparent"
 
@@ -185,6 +191,25 @@ Rectangle {
             PathLine { x: 10; y: 150 }
         }
     }
+
+    states: [
+        State {
+            name: "unknown"
+            //PropertyChanges { target: transit; visible: true }
+        },
+        State {
+            name: "up"
+            PropertyChanges { target: up; visible: true }
+        },
+        State {
+            name: "down"
+            PropertyChanges { target: down; visible: true }
+        },
+        State {
+            name: "transit"
+            PropertyChanges { target: transit; visible: true }
+        }
+    ]
 }
 
 /*

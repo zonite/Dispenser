@@ -11,7 +11,7 @@ SlotModel::SlotModel(QObject *parent)
 int SlotModel::rowCount(const QModelIndex &parent) const
 {
 	//qDebug() << "rowCount: Parent row" << parent.row() << parent.model() << "Parent col" << parent.column();
-	qDebug() << "Parent is" << static_cast<UnitItem*>(parent.internalPointer());
+	//qDebug() << "Parent is" << static_cast<UnitItem*>(parent.internalPointer());
 	//return 3;
 	// For list models only the root node (an invalid parent) should return the list's size. For all
 	// other (valid) parents, rowCount() should return 0 so that it does not become a tree model.
@@ -24,7 +24,7 @@ int SlotModel::rowCount(const QModelIndex &parent) const
 int SlotModel::columnCount(const QModelIndex &parent) const
 {
 	//qDebug() << "columnCount: Parent row" << parent.row() << "Parent col" << parent.column();
-	qDebug() << "Parent is" << static_cast<UnitItem*>(parent.internalPointer());
+	//qDebug() << "Parent is" << static_cast<UnitItem*>(parent.internalPointer());
 	//return 2;
 
 	//QAbstrackItemModel::rootItem.get();
@@ -42,10 +42,21 @@ QVariant SlotModel::data(const QModelIndex &index, int role) const
 
 	const SlotItem *slot = m_pUnit->slot(index.column(), index.row());
 	Q_UNUSED(slot);
+	assert(slot);
+	qDebug() << QStringLiteral("Slot is %1/%2: state=%3, release=%4, up=%5, down=%6, full=%7")
+	            .arg(QString::number(slot->getCol()->getId()))
+	            .arg(QString::number(slot->getId()))
+	            .arg(slot->getStateStr())
+	            .arg(QString::number(slot->getRel()))
+	            .arg(QString::number(slot->getUp()))
+	            .arg(QString::number(slot->getDown()))
+	            .arg(QString::number(slot->getFull()));
 
 	switch (role) {
 	case Qt::DisplayRole:
 		return QString("displayRole");
+	case StateRole:
+		return slot->guiState();
 	//case CellRole:
 		//return QVariant(true);
 		/*
@@ -174,6 +185,7 @@ void SlotModel::setUnit(UnitItem *unit)
 		connect(m_pUnit, &UnitItem::postSlotRemoved, this, [=]() {
 			endRemoveRows();
 		});
+		connect(m_pUnit, &UnitItem::newCol, this, &SlotModel::newCol);
 	}
 
 	endResetModel();
@@ -203,4 +215,26 @@ void SlotModel::loadPatter(const QString &plainText)
 void SlotModel::clear()
 {
 	return;
+}
+
+void SlotModel::newCol(ColItem *col)
+{
+	connect(col, &ColItem::newSlot, this, &SlotModel::newSlot);
+}
+
+void SlotModel::newSlot(SlotItem *slot)
+{
+	connect(slot, &SlotItem::fullChanged, this, &SlotModel::slotDataChanged);
+	connect(slot, &SlotItem::releaseChanged, this, &SlotModel::slotDataChanged);
+	connect(slot, &SlotItem::upChanged, this, &SlotModel::slotDataChanged);
+	connect(slot, &SlotItem::downChanged, this, &SlotModel::slotDataChanged);
+	connect(slot, &SlotItem::stateChanged, this, &SlotModel::slotDataChanged);
+}
+
+void SlotModel::slotDataChanged(SlotItem *slot)
+{
+	//QModelIndex index = createIndex(slot->getCol()->getId(), slot->getId());
+	QModelIndex index = createIndex(slot->getId(), slot->getCol()->getId());
+
+	emit dataChanged(index, index);
 }

@@ -208,7 +208,7 @@ void WebSocketClient::getSlotCount(ColItem *col)
 	QDataStream out(&data, QIODevice::WriteOnly);
 	NEW_COL_CMD(cmd, DISPENSER_GENL_SLOT_NUM, col->getId());
 
-	if (col->getSlotCount() < 0) {
+	if (col->getSlotCount() == 0) {
 		qDebug() << "Col not initialized -> connect signals";
 
 		connect(col, &ColItem::newSlot, this, &WebSocketClient::getSlotState);
@@ -267,7 +267,8 @@ void WebSocketClient::getSlotReleaseTime(SlotItem *slot)
 
 void WebSocketClient::processSlotMessage(QDataStream &in, __u8 col, __u8 slot, DISPENSER_GENL_ATTRIBUTE attr)
 {
-	__u8 status = 0;
+	struct dispenser_mmap_slot new_slot_state = { UNKNOWN, 0, 0, 0, 0, 0 };
+	__u8 status = 0, full = 0;
 	__u16 val16 = 0;
 	__u32 val32 = 0;
 	__u64 val64 = 0;
@@ -303,8 +304,15 @@ void WebSocketClient::processSlotMessage(QDataStream &in, __u8 col, __u8 slot, D
 		break;
 	case DISPENSER_GENL_SLOT_STATUS: //bitfield up,down,release,+enum state (5bits) (settable)
 		in >> status;
+
+		dispenser_unpack_slot_status(status, &new_slot_state, &full);
+
+		pSlot->setFull(full);
+		pSlot->setUp(new_slot_state.up);
+		pSlot->setDown(new_slot_state.down);
+		pSlot->setRelease(new_slot_state.release);
 		pSlot->setState(status);
-		qDebug() << "DISPENSER_GENL_SLOT_STATUS: Slot state is" << pSlot->getStateStr();
+		qDebug() << "DISPENSER_GENL_SLOT_STATUS: Slot" << col << "/" << slot << "state is" << pSlot->getStateStr() << "raw state=" << status << "up =" << new_slot_state.up << "down =" << new_slot_state.down << "release =" << new_slot_state.release << "full =" << full;
 		break;
 	case DISPENSER_GENL_SLOT_FAILED_UP: //u32 attr
 		in >> val32;
@@ -344,8 +352,11 @@ void WebSocketClient::processSlotMessage(QDataStream &in, __u8 col, __u8 slot, D
 		break;
 	case DISPENSER_GENL_SLOT_STATE: //enum slot_state
 		in >> status;
+		pSlot->setUp(status >> UP_BIT & 1);
+		pSlot->setDown(status >> DOWN_BIT & 1);
+		pSlot->setRelease(status >> RELEASE_BIT & 1);
 		pSlot->setState(status);
-		qDebug() << "DISPENSER_GENL_SLOT_STATE: Slot state is" << pSlot->getStateStr();
+		qDebug() << "DISPENSER_GENL_SLOT_STATE: Slot" << col << "/" << slot << "state is" << pSlot->getStateStr() << "raw state=" << status << ", up =" << pSlot->getUp() << ", down =" << pSlot->getDown() << ", release =" << pSlot->getRel();
 		break;
 	case DISPENSER_GENL_UNIT_LIGHT: //Unit light
 		in >> status;

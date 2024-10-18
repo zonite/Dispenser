@@ -22,6 +22,7 @@ class SlotModel : public QAbstractTableModel
 public:
 	enum Roles {
 		CellRole = Qt::UserRole,
+		StateRole
 
 	};
 
@@ -29,7 +30,8 @@ public:
 		return {
 			{ Qt::DisplayRole, "display" },
 			{ Qt::ToolTipRole, "tooltip" },
-			{ CellRole, "value" }
+			{ CellRole, "value" },
+			{ StateRole, "state" }
 		};
 	}
 
@@ -65,6 +67,10 @@ public:
 	Q_INVOKABLE void loadPatter(const QString &plainText);
 	Q_INVOKABLE void clear();
 
+public slots:
+	void newCol(ColItem *col);
+	void newSlot(SlotItem *slot);
+	void slotDataChanged(SlotItem *slot);
 
 signals:
 	void unitListChanged();

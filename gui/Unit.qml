@@ -16,12 +16,12 @@ Rectangle {
     TableView {
         id: unitView
         anchors.fill: parent
-        anchors.margins: 20
+        anchors.margins: 30
 
-        rowSpacing: 5
-        columnSpacing: 5
+        rowSpacing: 10
+        columnSpacing: 10
 
-        clip: true
+        //clip: true
 
         //model: 4
 
@@ -41,7 +41,14 @@ Rectangle {
         }
 
 
-        delegate: Rectangle {
+        delegate: SlotButton {
+            //state: "up"
+            state: model.state
+            //state: "transit"
+        }
+
+            /*
+Rectangle {
             id: cell
             implicitHeight: 15
             implicitWidth: 15
@@ -66,6 +73,7 @@ Rectangle {
                 //text: slotModel.data(index)
             }
         }
+        */
     }
 }
 
