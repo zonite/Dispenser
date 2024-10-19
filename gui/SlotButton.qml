@@ -93,7 +93,7 @@ Rectangle {
         onPressed: {
             //up.visible = true
             //down.visible = false
-            transit.visible = true
+            //transit.visible = true
             //animation1.start()
             //animation2.start()
         }
