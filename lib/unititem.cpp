@@ -306,6 +306,9 @@ void UnitItem::assingReleases()
 	for (ColItem &col : m_cCols) {
 		col.assingReleases(releases.at(col.getId()));
 	}
+
+	return;
+	printReleases(releases);
 }
 
 int UnitItem::countFull()
