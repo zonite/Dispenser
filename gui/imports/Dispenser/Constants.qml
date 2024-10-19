@@ -69,8 +69,8 @@ QtObject {
     readonly property int spacing: 6
     readonly property int borderW: 4
 
-    readonly property int buttonW: 170
-    readonly property int buttonH: 150
+    readonly property int buttonW: 160
+    readonly property int buttonH: 140
 
     readonly property color upColor: "#FFFFFF"
     readonly property color downColor: "#00FF00"

@@ -9,6 +9,7 @@ RowLayout {
     id: alarm
 
     property date date: new Date
+    property color textColor: "#ffffff"
 
     //anchors.fill: parent
 
@@ -19,22 +20,32 @@ RowLayout {
     Layout.alignment: Qt.AlignHCenter
 
     Label {
+        color: textColor
+        text: " "
+    }
+
+    Label {
+        color: textColor
         text: date.toLocaleTimeString(Qt.locale(), "hh")
     }
 
     Label {
+        color: textColor
         text: ":"
     }
 
     Label {
+        color: textColor
         text: date.toLocaleTimeString(Qt.locale(), "mm")
     }
 
     Label {
+        color: textColor
         text: ":"
     }
 
     Label {
+        color: textColor
         text: date.toLocaleTimeString(Qt.locale(), "ss")
         //text: date.getSeconds().toString()
     }

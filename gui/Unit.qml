@@ -16,7 +16,7 @@ Rectangle {
     TableView {
         id: unitView
         anchors.fill: parent
-        anchors.margins: 30
+        anchors.margins: 10
 
         rowSpacing: 10
         columnSpacing: 10

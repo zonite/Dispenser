@@ -84,6 +84,7 @@ Rectangle {
     property int duration: 250
     property real h: 3
     property real w: 3
+    property color stateColor: "#ffffff"
     //property alias text: label.text
 
     MouseArea {
@@ -92,7 +93,7 @@ Rectangle {
         onPressed: {
             //up.visible = true
             //down.visible = false
-            //transit.visible = false
+            transit.visible = true
             //animation1.start()
             //animation2.start()
         }
@@ -119,7 +120,7 @@ Rectangle {
             anchors.verticalCenter: parent.verticalCenter
             color: Constants.upColor
             font.family: Constants.fontFamily
-            font.pixelSize: Constants.buttonH / 2
+            font.pixelSize: Constants.buttonH / 3
         }
     }
 
@@ -144,7 +145,7 @@ Rectangle {
             anchors.verticalCenter: parent.verticalCenter
             color: Constants.downColor
             font.family: Constants.fontFamily
-            font.pixelSize: Constants.buttonH / 3
+            font.pixelSize: Constants.buttonH / 4
         }
     }
 
@@ -153,10 +154,20 @@ Rectangle {
         id: transit
         visible: false
         ShapePath {
+            id: p
             //strokeWidth: 1
             strokeWidth: Constants.borderW
             strokeColor: "orange"
             fillColor: "transparent"
+
+            property real w: Constants.buttonW     //170
+            property real h: Constants.buttonH     //150
+            property real s: Constants.borderW / 2 //4
+            property real wmulti: Constants.buttonW / 4.25 //40
+            property real wadd: Constants.buttonW / 17     //10
+            property real hmulti: Constants.buttonH / 3.75 //40
+            property real hadd: Constants.buttonH / 15     //10
+            property real start: w / 8.5     //10
 
             /*
         fillGradient: LinearGradient {
@@ -171,6 +182,32 @@ Rectangle {
         */
             //strokeStyle: ShapePath.DashLine
             //dashPattern: [ 1, 4 ]
+            //startX: 20; startY: 0
+            startX: start; startY: s
+            PathLine { x: p.w - p.s; y: p.h - p.s }
+            PathLine { x: p.w - p.s; y: 3 * p.hmulti - p.hadd }
+            PathLine { x: p.wmulti + 2 * p.wadd; y: p.s }
+            PathLine { x: 2 * p.wmulti + 2 * p.wadd; y: p.s }
+            PathLine { x: p.w - p.s; y: 2 * p.hmulti - p.hadd }
+            PathLine { x: p.w - p.s; y: p.hmulti - p.hadd }
+            PathLine { x: 3 * p.wmulti + 2 * p.wadd; y: p.s }
+            PathLine { x: p.w - p.s; y: p.s }
+            PathLine { x: p.w - p.s; y: p.h - p.s }
+            PathLine { x: 3 * p.wmulti + p.wadd; y: p.h - p.s }
+            PathLine { x: p.s; y: p.hmulti - 2 * p.hadd }
+            PathLine { x: p.s; y: 2 * p.hmulti - 2 * p.hadd }
+            PathLine { x: 2 * p.wmulti + p.wadd; y: p.h - p.s }
+            PathLine { x: p.wmulti + p.wadd; y: p.h - p.s }
+            PathLine { x: p.s; y: 3 * p.hmulti - 2 * p.hadd }
+            PathLine { x: p.s; y: 4 * p.hmulti - 2 * p.hadd }
+            PathLine { x: p.wadd; y: p.h - p.s }
+            PathLine { x: p.s; y: p.h - p.s }
+            PathLine { x: p.s; y: p.s }
+            PathLine { x: p.w - p.s; y: p.s }
+            PathLine { x: p.w - p.s; y: p.h - p.s }
+            PathLine { x: p.wadd; y: p.h - p.s }
+
+/*
             startX: 20; startY: 0
             PathLine { x: 170; y: 150 }
             PathLine { x: 170; y: 110 }
@@ -194,6 +231,7 @@ Rectangle {
             PathLine { x: 170; y: 0 }
             PathLine { x: 170; y: 150 }
             PathLine { x: 10; y: 150 }
+*/
         }
     }
 
@@ -205,18 +243,25 @@ Rectangle {
         Layout.alignment: Qt.AlignBottom
 
         Rectangle {
-            implicitHeight: Constants.buttonH / 3 * 2
+            implicitHeight: Constants.buttonH / 6
         }
 
         Alarm {
-            y: parent.verticalCenter + 200
+            //y: parent.verticalCenter + 200
             //anchors.horizontalCenter: parent.horizontalCenter
             //anchors.top: transit.bottom
             date: root.alarm
-            Layout.fillHeight: true
+            textColor: stateColor
+            //Layout.fillHeight: true
         }
+
+        Rectangle {
+            implicitHeight: Constants.buttonH / 4
+        }
+
         TimeDiff {
             rel: root.alarm
+            textColor: stateColor
         }
     }
 
@@ -232,10 +277,12 @@ Rectangle {
         State {
             name: "down"
             PropertyChanges { target: down; visible: true }
+            PropertyChanges { target: root; stateColor: Constants.downColor }
         },
         State {
             name: "transit"
             PropertyChanges { target: transit; visible: true }
+            PropertyChanges { target: root; stateColor: Constants.transitColor }
         }
     ]
 }

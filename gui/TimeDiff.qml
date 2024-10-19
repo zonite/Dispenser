@@ -11,8 +11,10 @@ RowLayout {
     property alias running: timer.running
     property date rel
     property date date: new Date()
+    property color textColor: "#ffffff"
 
 
+    property string sign
     property int hour
     property int min
     property int sec
@@ -22,7 +24,12 @@ RowLayout {
         id : timer
         interval: 500; running: true; repeat: true
 //        onTriggered: date = new Date;
-        onTriggered: { hour = Math.floor((rel - new Date)/(3600*1000)); min = ((Math.floor((rel - new Date)/(60*1000))) % 60 + 60) % 60; sec = ((Math.floor((rel - new Date)/(1000))) % 60 + 60) % 60 ; }
+        onTriggered: {
+            sign = (new Date - rel) > 0 ? " " : "-";
+            hour = (new Date - rel)/(3600*1000);
+            min = Math.abs(((new Date - rel)/(60*1000)) % 60);
+            sec = Math.abs(((Math.floor((new Date - rel)/(1000))) % 60));
+        }
     }
 
 
@@ -33,26 +40,36 @@ RowLayout {
     Layout.alignment: Qt.AlignHCenter
 
     Label {
+        color: textColor
+        text: sign
+    }
+
+    Label {
+        color: textColor
         //text: date.toLocaleTimeString(Qt.locale(), "hh")
-        text: hour
+        text: hour.toString().padStart(2, '0')
     }
 
     Label {
+        color: textColor
         text: ":"
     }
 
     Label {
+        color: textColor
         //text: date.toLocaleTimeString(Qt.locale(), "mm")
-        text: min
+        text: min.toString().padStart(2, '0')
     }
 
     Label {
+        color: textColor
         text: ":"
     }
 
     Label {
+        color: textColor
         //text: date.toLocaleTimeString(Qt.locale(), "ss")
-        text: sec
+        text: sec.toString().padStart(2, '0')
         //text: date.getSeconds().toString()
     }
 }
