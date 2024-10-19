@@ -26,7 +26,7 @@ RowLayout {
 //        onTriggered: date = new Date;
         onTriggered: {
             sign = (new Date - rel) > 0 ? " " : "-";
-            hour = (new Date - rel)/(3600*1000);
+            hour = Math.abs((new Date - rel)/(3600*1000));
             min = Math.abs(((new Date - rel)/(60*1000)) % 60);
             sec = Math.abs(((Math.floor((new Date - rel)/(1000))) % 60));
         }
