@@ -211,7 +211,7 @@ QDateTime ColItem::getNextReleaseTime(QDateTime offset) //DateTime of next relea
 			alarm_toGo += alarm_interval;
 		}
 		if (alarm_toGo < toGoSec
-		                && ((1 << offset.addSecs(alarm_toGo).date().dayOfWeek()) & alarm->getDays())) {
+		                && ((1 << (offset.addMSecs(alarm_toGo).date().dayOfWeek() - 1)) & alarm->getDays())) {
 			toGoSec = alarm_toGo;
 		}
 	}
