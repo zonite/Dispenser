@@ -80,21 +80,25 @@ Rectangle {
 
     signal clicked
 
+    property date alarm
     property int duration: 250
+    property real h: 3
+    property real w: 3
     //property alias text: label.text
 
     MouseArea {
         anchors.fill: parent
         onClicked: root.clicked()
         onPressed: {
-            up.visible = true
-            down.visible = false
-            transit.visible = false
+            //up.visible = true
+            //down.visible = false
+            //transit.visible = false
             //animation1.start()
             //animation2.start()
         }
     }
 
+    //ColumnLayout {
     //anchors.centerIn: parent
     Rectangle {
         id: up
@@ -190,6 +194,29 @@ Rectangle {
             PathLine { x: 170; y: 0 }
             PathLine { x: 170; y: 150 }
             PathLine { x: 10; y: 150 }
+        }
+    }
+
+    ColumnLayout {
+        //fillWidth: true
+        anchors.horizontalCenter: parent.horizontalCenter
+        //preferredHeight: Constants.buttonH
+        Layout.preferredHeight: Constants.buttonH
+        Layout.alignment: Qt.AlignBottom
+
+        Rectangle {
+            implicitHeight: Constants.buttonH / 3 * 2
+        }
+
+        Alarm {
+            y: parent.verticalCenter + 200
+            //anchors.horizontalCenter: parent.horizontalCenter
+            //anchors.top: transit.bottom
+            date: root.alarm
+            Layout.fillHeight: true
+        }
+        TimeDiff {
+            rel: root.alarm
         }
     }
 

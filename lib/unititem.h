@@ -81,6 +81,8 @@ public:
 
 	const QStringList toStatusStr() const;
 
+	static void printReleases(QVector<QVector <QDateTime>> releases);
+
 public slots:
 	void releaseTimeout(Alarm *alarm);
 	void timerStarted(Alarm *alarm);

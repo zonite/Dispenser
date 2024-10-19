@@ -253,6 +253,8 @@ SlotItem *UnitItem::getNextSlot()
 	return slot;
 }
 
+
+
 void UnitItem::assingReleases()
 {
 	int fullCount = m_iFullCount, i = 0;
@@ -503,6 +505,18 @@ const QStringList UnitItem::toStatusStr() const
 		list << line;
 	}
 	return list;
+}
+
+void UnitItem::printReleases(QVector<QVector<QDateTime>> releases)
+{
+	for (int i = 0; i < releases.size(); ++i) {
+		for (int k = 0; k < releases.at(i).size(); ++k) {
+			qDebug() << QStringLiteral("Alarms %1/%2: at %3")
+			          .arg(i)
+			          .arg(k)
+			          .arg(releases.at(i).at(k).toString());
+		}
+	}
 }
 
 void UnitItem::releaseTimeout(Alarm *alarm)

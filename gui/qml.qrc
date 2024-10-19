@@ -18,5 +18,7 @@
         <file>Unit.qml</file>
         <file>SlotDelegate.qml</file>
         <file>GreenBox.qml</file>
+        <file>Alarm.qml</file>
+        <file>TimeDiff.qml</file>
     </qresource>
 </RCC>

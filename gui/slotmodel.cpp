@@ -57,6 +57,13 @@ QVariant SlotModel::data(const QModelIndex &index, int role) const
 		return QString("displayRole");
 	case StateRole:
 		return slot->guiState();
+	case AlarmRole:
+		qDebug() << QStringLiteral("Slot %1/%2 set to release at %3")
+		            .arg(QString::number(slot->getCol()->getId()))
+		            .arg(QString::number(slot->getId()))
+		            .arg(slot->getRelease().toString());
+		return slot->getRelease();
+		//return QDateTime::currentDateTime();
 	//case CellRole:
 		//return QVariant(true);
 		/*
@@ -225,10 +232,11 @@ void SlotModel::newCol(ColItem *col)
 void SlotModel::newSlot(SlotItem *slot)
 {
 	connect(slot, &SlotItem::fullChanged, this, &SlotModel::slotDataChanged);
-	connect(slot, &SlotItem::releaseChanged, this, &SlotModel::slotDataChanged);
+	connect(slot, &SlotItem::releaseChanged, this, &SlotModel::slotDataChanged); //lock control bit
 	connect(slot, &SlotItem::upChanged, this, &SlotModel::slotDataChanged);
 	connect(slot, &SlotItem::downChanged, this, &SlotModel::slotDataChanged);
 	connect(slot, &SlotItem::stateChanged, this, &SlotModel::slotDataChanged);
+	connect(slot, &SlotItem::releaseTimeChanged, this, &SlotModel::slotDataChanged); //release time
 }
 
 void SlotModel::slotDataChanged(SlotItem *slot)

@@ -22,8 +22,8 @@ class SlotModel : public QAbstractTableModel
 public:
 	enum Roles {
 		CellRole = Qt::UserRole,
-		StateRole
-
+		StateRole,
+		AlarmRole
 	};
 
 	QHash<int, QByteArray> roleNames() const override {
@@ -31,7 +31,8 @@ public:
 			{ Qt::DisplayRole, "display" },
 			{ Qt::ToolTipRole, "tooltip" },
 			{ CellRole, "value" },
-			{ StateRole, "state" }
+			{ StateRole, "state" },
+			{ AlarmRole, "alarm" }
 		};
 	}
 

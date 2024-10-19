@@ -9,15 +9,20 @@ RowLayout {
     id: time
 
     property alias running: timer.running
+    property date rel
     property date date: new Date()
 
+
+    property int hour
+    property int min
+    property int sec
     //anchors.fill: parent
 
     Timer {
         id : timer
         interval: 500; running: true; repeat: true
 //        onTriggered: date = new Date;
-        onTriggered: date = new Date;
+        onTriggered: { hour = Math.floor((rel - new Date)/(3600*1000)); min = ((Math.floor((rel - new Date)/(60*1000))) % 60 + 60) % 60; sec = ((Math.floor((rel - new Date)/(1000))) % 60 + 60) % 60 ; }
     }
 
 
@@ -28,7 +33,8 @@ RowLayout {
     Layout.alignment: Qt.AlignHCenter
 
     Label {
-        text: date.toLocaleTimeString(Qt.locale(), "hh")
+        //text: date.toLocaleTimeString(Qt.locale(), "hh")
+        text: hour
     }
 
     Label {
@@ -36,7 +42,8 @@ RowLayout {
     }
 
     Label {
-        text: date.toLocaleTimeString(Qt.locale(), "mm")
+        //text: date.toLocaleTimeString(Qt.locale(), "mm")
+        text: min
     }
 
     Label {
@@ -44,7 +51,8 @@ RowLayout {
     }
 
     Label {
-        text: date.toLocaleTimeString(Qt.locale(), "ss")
+        //text: date.toLocaleTimeString(Qt.locale(), "ss")
+        text: sec
         //text: date.getSeconds().toString()
     }
 }

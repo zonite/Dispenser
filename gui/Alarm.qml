@@ -6,20 +6,11 @@ import QtQml 2.15
 import Dispenser 1.0
 
 RowLayout {
-    id: time
+    id: alarm
 
-    property alias running: timer.running
-    property date date: new Date()
+    property date date: new Date
 
     //anchors.fill: parent
-
-    Timer {
-        id : timer
-        interval: 500; running: true; repeat: true
-//        onTriggered: date = new Date;
-        onTriggered: date = new Date;
-    }
-
 
     //Rectangle {
     //    Layout.fillWidth: true

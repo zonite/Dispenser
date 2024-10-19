@@ -21,6 +21,10 @@ Rectangle {
         rowSpacing: 10
         columnSpacing: 10
 
+        //rowsMoved: rowCount()
+        property real heightFactor: height / rows
+        property real widthFactor: width / columns
+
         //clip: true
 
         //model: 4
@@ -46,8 +50,11 @@ Rectangle {
         delegate: SlotButton {
             //state: "up"
             state: model.state
+            alarm: model.alarm
             //state: "transit"
         }
+
+        //Shortcut { sequence: StandardKey.Quit; onActivated: Qt.quit() }
 
             /*
 Rectangle {

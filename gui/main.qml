@@ -289,5 +289,9 @@ ApplicationWindow {
     //maximumHeight: mainWindow.Layout.maximumHeight
 
 
-
+    Shortcut { sequence: StandardKey.Quit; context: Qt.ApplicationShortcut; onActivated: Qt.quit() }
+    Shortcut { sequence: StandardKey.FullScreen; context: Qt.ApplicationShortcut; onActivated: appWindow.visibility = ApplicationWindow.Windowed }
+    //Shortcut { sequence: StandardKey.Cancel; context: Qt.ApplicationShortcut; onActivated: appWindow.visibility = ApplicationWindow.Maximized }
+    //StandardKey.Cancel == ecs
+    //StandardKey.FullScreen == F11, Ctrl+Shift+F
 }
