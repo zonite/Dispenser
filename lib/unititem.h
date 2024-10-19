@@ -29,6 +29,7 @@ public:
 	explicit UnitItem(QObject *parent = nullptr);
 	~UnitItem();
 
+	SlotItem *viewSlot(int col, int row);
 	SlotItem *slot(int col, int slot);
 	ColItem *col(int col);
 

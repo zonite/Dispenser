@@ -124,6 +124,7 @@ Rectangle {
         visible: false
         implicitWidth: Constants.buttonH
         implicitHeight: Constants.buttonH
+        anchors.horizontalCenter: parent.horizontalCenter
 
         radius: Constants.buttonH / 2
         color: Constants.backgroundColor

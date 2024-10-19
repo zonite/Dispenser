@@ -59,7 +59,7 @@ import Dispenser 1.0
 ApplicationWindow {
     id: appWindow
     visible: true
-    //visibility: "FullScreen"
+    visibility: "FullScreen"
     width: Constants.width
     height: Constants.height
     title: qsTr("Dispenser")
@@ -88,7 +88,7 @@ ApplicationWindow {
         id: drawer
 
         //y: overlayHeader.height
-        width: appWindow.width / 2
+        width: appWindow.width / 4
         height: appWindow.height //no ToolBar
         //height: appWindow.height - overlayHeader.height
 
@@ -179,6 +179,7 @@ ApplicationWindow {
 
 
     Unit {
+        anchors.leftMargin: !inPortrait ? drawer.width : undefined
         moodeli: unitItem
         //unit: unitItem
     }

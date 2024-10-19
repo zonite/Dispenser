@@ -206,6 +206,11 @@ ColItem *SlotItem::getCol() const
 	return m_pCol;
 }
 
+__s8 SlotItem::getViewRow() const
+{
+	return m_pCol->getSlotCount() - 1 - m_iSlotId;
+}
+
 void SlotItem::setParentNid(ColItem *parent, __s8 i)
 {
 	m_pCol = parent;

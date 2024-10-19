@@ -10,7 +10,7 @@ Rectangle {
     height: parent.height
     anchors.fill: parent
 
-    color: "#00ff00"
+    color: "#111111"
 
 
     TableView {
@@ -25,6 +25,7 @@ Rectangle {
 
         //model: 4
 
+        /*
         Rectangle {
             implicitHeight: 40
             implicitWidth: 40
@@ -34,6 +35,7 @@ Rectangle {
         Text {
             text: "testiiiiiiiiiiiiiii"
         }
+*/
 
         model: SlotModel {
             id: slotModel

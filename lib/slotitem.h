@@ -37,6 +37,7 @@ public:
 
 	ColItem *getCol() const;
 	__s8 getId() const { return m_iSlotId; }
+	__s8 getViewRow() const;
 	bool getInitialized() const { return m_bInitialized; }
 	enum slot_state getState() const { return m_sSlot.state; };
 	QString getStateStr() const;

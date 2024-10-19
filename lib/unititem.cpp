@@ -128,6 +128,16 @@ UnitItem::~UnitItem()
 	}
 }
 
+SlotItem *UnitItem::viewSlot(int column, int row)
+{
+	ColItem *pCol = col(column);
+
+	if (pCol)
+		return pCol->slot(pCol->getSlotCount() - 1 - row);
+
+	return nullptr;
+}
+
 
 SlotItem *UnitItem::slot(int column, int slot)
 {

@@ -40,7 +40,7 @@ QVariant SlotModel::data(const QModelIndex &index, int role) const
 	if (!index.isValid() || !m_pUnit)
 		return QVariant();
 
-	const SlotItem *slot = m_pUnit->slot(index.column(), index.row());
+	const SlotItem *slot = m_pUnit->viewSlot(index.column(), index.row());
 	Q_UNUSED(slot);
 	assert(slot);
 	qDebug() << QStringLiteral("Slot is %1/%2: state=%3, release=%4, up=%5, down=%6, full=%7")
@@ -234,7 +234,7 @@ void SlotModel::newSlot(SlotItem *slot)
 void SlotModel::slotDataChanged(SlotItem *slot)
 {
 	//QModelIndex index = createIndex(slot->getCol()->getId(), slot->getId());
-	QModelIndex index = createIndex(slot->getId(), slot->getCol()->getId());
+	QModelIndex index = createIndex(slot->getViewRow(), slot->getCol()->getId());
 
 	emit dataChanged(index, index);
 }
