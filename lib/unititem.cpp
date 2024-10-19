@@ -300,6 +300,7 @@ void UnitItem::assingReleases()
 			++(colReleased[releaseFrom->getId()]); //increase release count
 			time = nextRelease.addMSecs(1); //advance time
 		}
+		printReleases(releases); //DEBUG!!!
 	}
 
 	//times counted -> assing!
