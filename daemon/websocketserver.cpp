@@ -320,7 +320,7 @@ void WebSocketServer::bcastSlotReleaseTime(SlotItem *slot)
 	NEW_SLOT_CMD(cmd, DISPENSER_GENL_UNIT_ALARM, slot->getCol()->getId(), slot->getId());
 
 	out << cmd.toInt;
-	out << slot->getRelease();
+	out << (QDateTime::currentDateTime().msecsTo(slot->getRelease()));
 
 	bcastBinaryMessage(data);
 }

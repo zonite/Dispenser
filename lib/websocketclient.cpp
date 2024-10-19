@@ -272,6 +272,7 @@ void WebSocketClient::processSlotMessage(QDataStream &in, __u8 col, __u8 slot, D
 	__u16 val16 = 0;
 	__u32 val32 = 0;
 	__u64 val64 = 0;
+	qint64 relOffset = 0;
 	QDateTime releaseTime;
 	SlotItem *pSlot = m_pUnit->slot(col, slot);
 	qDebug() << "processSlotMessage col =" << col << "slot =" << slot;
@@ -375,8 +376,10 @@ void WebSocketClient::processSlotMessage(QDataStream &in, __u8 col, __u8 slot, D
 		qDebug() << "Ignore DISPENSER_GENL_UNIT_NIGHT.";
 		break;
 	case DISPENSER_GENL_UNIT_ALARM: //Unit alarm
-		in >> releaseTime;
-		pSlot->setReleaseTime(releaseTime);
+		//in >> releaseTime;
+		//pSlot->setReleaseTime(releaseTime);
+		in >> relOffset;
+		pSlot->setReleaseTime(QDateTime::currentDateTime().addMSecs(relOffset));
 		qDebug() << "Ignore DISPENSER_GENL_UNIT_ALARM.";
 		break;
 	case __DISPENSER_GENL_ATTR_MAX:
