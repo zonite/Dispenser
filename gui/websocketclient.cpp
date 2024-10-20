@@ -199,7 +199,6 @@ void WebSocketClient::binaryMessageReceived(QByteArray message)
 	}
 }
 
-
 void WebSocketClient::modifyAlarm(Alarm *alarm)
 {
 	QByteArray data;
