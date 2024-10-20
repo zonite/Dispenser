@@ -51,6 +51,7 @@ int main(int argc, char *argv[])
 	//UnitList unitList;
 	UnitItem unit;
 	//unit.setDataServer(server);
+	unit.disconnectAlarms();
 	new WebSocketClient(&unit, server);
 
 	QQmlApplicationEngine engine;

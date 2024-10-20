@@ -29,6 +29,7 @@ WebSocketClient::WebSocketClient(UnitItem *unit, QString server)
 	worker = new WebSocketWorker(this);
 	worker->moveToThread(&m_cWorker);
 	connect(this, &WebSocketClient::newData, worker, &WebSocketWorker::wakeScreen);
+	m_cWorker.start();
 }
 
 WebSocketClient::~WebSocketClient()
