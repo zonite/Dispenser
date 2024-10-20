@@ -12,6 +12,12 @@ Rectangle {
 
     color: "#111111"
 
+    RowLayout {
+
+        Rectangle {
+            implicitHeight: parent.height
+            implicitWidth: 10
+        }
 
     TableView {
         id: unitView
@@ -83,6 +89,7 @@ Rectangle {
             }
         }
         */
+    }
     }
 }
 
