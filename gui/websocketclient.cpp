@@ -150,6 +150,7 @@ void WebSocketClient::binaryMessageReceived(QByteArray message)
 	__u8 cmd, col, slot;
 
 	qDebug() << "Message from server" << m_webSocket.peerAddress();
+	emit newData();
 
 	while (!in.atEnd() && --i > 0) {
 		in >> command.toInt;
