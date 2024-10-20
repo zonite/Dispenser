@@ -122,10 +122,10 @@ UnitItem::~UnitItem()
 
 	m_pAlarms.clear();
 
-	if (m_pDataStream) {
-		delete m_pDataStream;
-		m_pDataStream = nullptr;
-	}
+	//if (m_pDataStream) {
+	//	delete m_pDataStream;
+	//	m_pDataStream = nullptr;
+	//}
 }
 
 SlotItem *UnitItem::viewSlot(int column, int row)
@@ -157,16 +157,24 @@ ColItem *UnitItem::col(int col)
 	return &m_cCols[col];
 }
 
-void UnitItem::setDataServer(QString server)
+//void UnitItem::setDataServer(QString server)
+//{
+//	if (m_pDataStream) {
+//		delete m_pDataStream;
+//	}
+
+//	m_pDataStream = new WebSocketClient(this, server);
+
+//	connect(m_pDataStream, &WebSocketClient::connected, this, &UnitItem::serverReady);
+
+        //disable alarms:
+//	for (Alarm *alarm : m_pAlarms) {
+//		alarm->disconnectTimer();
+//	}
+//}
+
+void UnitItem::disconnectAlarms()
 {
-	if (m_pDataStream) {
-		delete m_pDataStream;
-	}
-
-	m_pDataStream = new WebSocketClient(this, server);
-
-	connect(m_pDataStream, &WebSocketClient::connected, this, &UnitItem::serverReady);
-
 	//disable alarms:
 	for (Alarm *alarm : m_pAlarms) {
 		alarm->disconnectTimer();
@@ -589,11 +597,12 @@ void UnitItem::nightStarts()
 	setNight(1);
 }
 
-void UnitItem::serverReady()
-{
-	m_pDataStream->getColCount();
-	m_pDataStream->getDoor();
-	m_pDataStream->getLight();
-	m_pDataStream->getNight();
-	m_pDataStream->getCharging();
-}
+//void UnitItem::serverReady()
+//{
+        //Moved to WebSocketClient
+        //m_pDataStream->getColCount();
+        //m_pDataStream->getDoor();
+        //m_pDataStream->getLight();
+        //m_pDataStream->getNight();
+        //m_pDataStream->getCharging();
+//}

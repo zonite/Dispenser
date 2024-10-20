@@ -2,8 +2,11 @@
 
 #include <QWebSocket>
 #include <QDataStream>
+#include <QProcess>
+#include <QCoreApplication>
 
 WebSocketClient::WebSocketClient(UnitItem *unit, QString server)
+        : QObject(unit)
 {
 	m_cDispenserAddress = server;
 	m_pUnit = unit;
@@ -21,6 +24,11 @@ WebSocketClient::WebSocketClient(UnitItem *unit, QString server)
 	m_webSocket.ignoreSslErrors();
 	m_webSocket.open(m_cDispenserAddress);
 	m_webSocket.ignoreSslErrors();
+
+	WebSocketWorker *worker;
+	worker = new WebSocketWorker(this);
+	worker->moveToThread(&m_cWorker);
+	connect(this, &WebSocketClient::newData, worker, &WebSocketWorker::wakeScreen);
 }
 
 WebSocketClient::~WebSocketClient()
@@ -98,6 +106,12 @@ void WebSocketClient::onConnected()
 	//m_webSocket.sendTextMessage(QStringLiteral("Hello, world!"));
 
 	emit connected();
+
+	getColCount();
+	getDoor();
+	getLight();
+	getNight();
+	getCharging();
 }
 
 void WebSocketClient::closed()
@@ -604,4 +618,38 @@ void WebSocketClient::processUnitMessage(QDataStream &in, __u8 col, __u8 slot, D
 		break;
 	}
 
+}
+
+WebSocketWorker::WebSocketWorker(WebSocketClient *client)
+{
+	m_pClient = client;
+
+	QCoreApplication::setOrganizationName(ORGANIZATION);
+	QCoreApplication::setOrganizationDomain(DOMAIN);
+	QCoreApplication::setApplicationName(APPNAME);
+
+	//m_cSettings.value("DestAddresses");
+}
+
+WebSocketWorker::~WebSocketWorker()
+{
+
+}
+
+void WebSocketWorker::wakeScreen()
+{
+	static QDateTime lastRun = QDateTime::currentDateTime();
+
+	if (lastRun.secsTo(QDateTime::currentDateTime()) < 600) {
+		//not yet at sleep
+		return;
+	}
+
+	QProcess encode;
+	QStringList args;
+	args << QStringLiteral("dpms") << QStringLiteral("force") << QStringLiteral("on");
+
+	encode.start(QStringLiteral("/usr/bin/xset"), args);
+	encode.waitForFinished(2000); //recored control timeout
+	encode.readAll();
 }

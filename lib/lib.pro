@@ -20,8 +20,7 @@ SOURCES += \
 	monitor.cpp \
     slotitem.cpp \
         timer.cpp \
-    unititem.cpp \
-        websocketclient.cpp
+    unititem.cpp
 
 HEADERS += \
         alarm.h \
@@ -32,8 +31,7 @@ HEADERS += \
 	monitor.h \
     slotitem.h \
         timer.h \
-    unititem.h \
-        websocketclient.h
+    unititem.h
 
 CONFIG += link_pkgconfig
 CONFIG += debug

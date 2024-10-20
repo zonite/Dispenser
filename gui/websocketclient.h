@@ -3,12 +3,35 @@
 
 #include <QObject>
 #include <QWebSocket>
+#include <QThread>
 
 #include "unititem.h"
 #include "colitem.h"
 #include "slotitem.h"
 
 class UnitItem;
+class WebSocketClient;
+
+class WebSocketWorker : public QObject
+{
+	Q_OBJECT
+
+public:
+	WebSocketWorker(WebSocketClient *client);
+	~WebSocketWorker();
+
+public slots:
+	void wakeScreen();
+	//void doSend();
+
+signals:
+	//void done(int result);
+
+private:
+
+	WebSocketClient *m_pClient = nullptr;
+};
+
 
 class WebSocketClient : public QObject
 {
@@ -26,6 +49,7 @@ public:
 
 signals:
 	void connected();
+	void newData();
 
 private slots:
 	void onConnected();
@@ -50,6 +74,7 @@ private:
 	void processColMessage(QDataStream &in, __u8 col, __u8 slot, enum DISPENSER_GENL_ATTRIBUTE attr);
 	void processUnitMessage(QDataStream &in, __u8 col, __u8 slot, enum DISPENSER_GENL_ATTRIBUTE attr);
 
+	QThread m_cWorker;
 	QWebSocket m_webSocket;
 	QUrl m_cDispenserAddress;
 	UnitItem *m_pUnit;

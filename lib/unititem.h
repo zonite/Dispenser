@@ -8,7 +8,7 @@
 
 #include "lib_global.h"
 
-#include "websocketclient.h"
+//#include "websocketclient.h"
 #include "colitem.h"
 #include "slotitem.h"
 #include "alarm.h"
@@ -19,7 +19,7 @@
 //class Alarm;
 //template <typename T> class Alarm;
 
-class WebSocketClient;
+//class WebSocketClient;
 
 class LIB_EXPORT UnitItem : public Timer
 {
@@ -39,7 +39,8 @@ public:
 
 	const struct dispenser_mmap_unit *getUnitStatus() { return &m_sUnit; }
 
-	void setDataServer(QString server);
+	//void setDataServer(QString server);
+	void disconnectAlarms();
 
 	void setCounter(__u8);
 
@@ -127,7 +128,7 @@ private slots:
 	void nightStarts();
 
 	//Websocket interface:
-	void serverReady();
+	//void serverReady();
 
 private:
 	void initCols();
@@ -135,7 +136,7 @@ private:
 
 	//int mNumber = 12;
 
-	WebSocketClient *m_pDataStream = nullptr;
+//	WebSocketClient *m_pDataStream = nullptr;
 	struct dispenser_mmap_unit m_sUnit = { 0, 0, 0, 0, 0, 0, 0, 0, { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, 0, 0, 0, 0 };
 	QVector<ColItem> m_cCols;
 	__s8 m_iRows = 0;

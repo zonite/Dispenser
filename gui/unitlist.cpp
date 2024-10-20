@@ -1,4 +1,5 @@
 #include "unitlist.h"
+#include "websocketclient.h"
 
 UnitList::UnitList(QObject *parent)
         : QObject{parent}
@@ -12,7 +13,8 @@ UnitList::UnitList(QObject *parent)
 	//default_unit->setDataServer("wss://dispenser128.nykyri.wg:8080/");
 	qDebug() << "Connecting to defaul server";
 	server = settings.value("DefaultServer", "wss://dispenser128.nykyri.wg:8080/").toString();
-	default_unit->setDataServer(server);
+	new WebSocketClient(default_unit, server);
+	//default_unit->setDataServer(server);
 
 	settings.setValue("DefaultServer", server);
 	settings.sync();

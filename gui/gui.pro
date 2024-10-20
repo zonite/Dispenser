@@ -36,7 +36,8 @@ SOURCES += \
     qdaemonlog.cpp \
     slotmodel.cpp \
     unitlist.cpp \
-    unitmodel.cpp
+    unitmodel.cpp \
+    websocketclient.cpp
 #    mainwindow.cpp
 
 INCLUDEPATH += \
@@ -69,4 +70,5 @@ HEADERS += \
         manager.h \
 	slotmodel.h \
 	unitlist.h \
-	unitmodel.h
+	unitmodel.h \
+        websocketclient.h

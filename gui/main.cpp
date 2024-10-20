@@ -13,6 +13,7 @@
 #include "unitmodel.h"
 #include "unitlist.h"
 #include "slotmodel.h"
+#include "websocketclient.h"
 
 int main(int argc, char *argv[])
 {
@@ -49,7 +50,8 @@ int main(int argc, char *argv[])
 
 	//UnitList unitList;
 	UnitItem unit;
-	unit.setDataServer(server);
+	//unit.setDataServer(server);
+	new WebSocketClient(&unit, server);
 
 	QQmlApplicationEngine engine;
 	engine.addImportPath(":/imports");

@@ -10,6 +10,25 @@
 #include <unititem.h>
 #include "unitlist.h"
 
+/*
+class SlotModelWorker : public QObject
+{
+	Q_OBJECT
+
+public:
+
+public slots:
+	void doReEncode();
+	void doSend();
+
+signals:
+	void done(int result);
+
+private:
+
+};
+*/
+
 class SlotModel : public QAbstractTableModel
 {
 	Q_OBJECT
