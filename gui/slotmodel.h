@@ -37,12 +37,23 @@ class SlotModel : public QAbstractTableModel
 	//Q_PROPERTY(UnitList *parentUnitList READ unitList WRITE setUnitList NOTIFY unitListChanged)
 	Q_PROPERTY(int num READ num WRITE setNum NOTIFY numChanged)
 
+	Q_PROPERTY(int charging READ getCharging NOTIFY chargingChanged)
+	Q_PROPERTY(int door READ getDoor NOTIFY doorChanged)
+	Q_PROPERTY(int night READ getNight NOTIFY nightChanged)
+	Q_PROPERTY(int light READ getLight NOTIFY lightChanged)
+
+
 	Q_ENUMS(Roles)
 public:
 	enum Roles {
 		CellRole = Qt::UserRole,
 		StateRole,
 		AlarmRole
+		//LightRole,
+		//DoorRole,
+		//NightRole,
+		//ChargingRole,
+		//ConnRole
 	};
 
 	QHash<int, QByteArray> roleNames() const override {
@@ -52,6 +63,11 @@ public:
 			{ CellRole, "value" },
 			{ StateRole, "state" },
 			{ AlarmRole, "alarm" }
+			//{ LightRole, "light" },
+			//{ DoorRole, "door" },
+			//{ NightRole, "night" },
+			//{ ChargingRole, "charging" },
+			//{ ConnRole, "conn" },
 		};
 	}
 
@@ -82,20 +98,36 @@ public:
 	void setNum(int i ) { m_iIndex = i; emit numChanged(); }
 
 
+	//Q_INVOKABLE bool getCharging();
+
 	Q_INVOKABLE void nextStep();
 	Q_INVOKABLE bool loadFile(const QString &filename);
 	Q_INVOKABLE void loadPatter(const QString &plainText);
 	Q_INVOKABLE void clear();
+
+	bool getCharging() const;
+	bool getDoor() const;
+	bool getNight() const;
+	bool getLight() const;
 
 public slots:
 	void newCol(ColItem *col);
 	void newSlot(SlotItem *slot);
 	void slotDataChanged(SlotItem *slot);
 
+	void chargingUnit();
+	void doorUnit();
+	void nightUnit();
+	void lightUnit();
+
 signals:
 	void unitListChanged();
 	void unitChanged();
 	void numChanged();
+	void chargingChanged();
+	void doorChanged();
+	void nightChanged();
+	void lightChanged();
 
 private:
 	UnitList *m_pUnitList;

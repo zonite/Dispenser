@@ -6,6 +6,7 @@ import Dispenser 1.0
 
 Rectangle {
     required property UnitItem moodeli
+    id: root
 
     height: parent.height
     anchors.fill: parent
@@ -13,15 +14,80 @@ Rectangle {
     color: "#111111"
 
     RowLayout {
+        anchors.fill: parent
+        anchors.margins: 10
+        //spacing: 10
 
         Rectangle {
-            implicitHeight: parent.height
-            implicitWidth: 10
+            Layout.fillHeight: true
+            Layout.preferredWidth: parent.width * 0.3
+            //implicitHeight: root.height
+            //implicitWidth: 10
+            border.width: Constants.borderW
+            border.color: Constants.borderColor
+            color: Constants.backgroundColor
+
+            ColumnLayout {
+                anchors.fill: parent
+                anchors.margins: 10
+
+                Label {
+                    text: "DOOR SERV FWD OPEN"
+                    color: Constants.warning
+                    visible: slotModel.door
+                }
+
+                Label {
+                    text: "BATT 1 DISCHARGING"
+                    color: Constants.caution
+                    visible: slotModel.charging
+                }
+
+                Label {
+                    text: "DATALINK 1 FAIL"
+                    color: Constants.advisory
+                    visible: false
+                }
+
+                Label {
+                    text: "LIGHT ON"
+                    color: Constants.advisory
+                    visible: slotModel.light
+                }
+
+                Label {
+                    text: "NIGHT MODE"
+                    color: Constants.advisory
+                    visible: slotModel.night
+                }
+
+                Label {
+                    text: "TEST"
+                    color: Constants.advisory
+                    visible: false
+                }
+
+                Label {
+                    text: "END"
+                    //Layout.fillWidth: true
+                    Layout.alignment: Qt.AlignHCenter
+                    //anchors.horizontalCenter: parent.horizontalCenter
+                    color: Constants.info
+                }
+
+                Rectangle {
+                    Layout.fillHeight: true
+                }
+            }
         }
 
     TableView {
         id: unitView
-        anchors.fill: parent
+        //anchors.fill: root
+        //implicitHeight: root.height
+        //implicitWidth: Constants.buttonW * columns
+        Layout.fillHeight: true
+        Layout.fillWidth: true
         anchors.margins: 10
 
         rowSpacing: 10

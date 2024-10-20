@@ -63,6 +63,19 @@ QVariant SlotModel::data(const QModelIndex &index, int role) const
 		            .arg(QString::number(slot->getId()))
 		            .arg(slot->getRelease().toString());
 		return slot->getRelease();
+		/*
+	case LightRole:
+		return m_pUnit->getLight();
+	case DoorRole:
+		return m_pUnit->getDoor();
+	case NightRole:
+		return m_pUnit->getNight();
+	case ChargingRole:
+		return m_pUnit->getCharging() ? false : true;
+	case ConnRole:
+		return m_pUnit->getCharging();
+*/
+
 		//return QDateTime::currentDateTime();
 	//case CellRole:
 		//return QVariant(true);
@@ -193,11 +206,36 @@ void SlotModel::setUnit(UnitItem *unit)
 			endRemoveRows();
 		});
 		connect(m_pUnit, &UnitItem::newCol, this, &SlotModel::newCol);
+
+		connect(m_pUnit, &UnitItem::chargingChanged, this, &SlotModel::chargingUnit);
+		connect(m_pUnit, &UnitItem::doorChanged, this, &SlotModel::doorUnit);
+		connect(m_pUnit, &UnitItem::nightChanged, this, &SlotModel::nightUnit);
+		connect(m_pUnit, &UnitItem::lightChanged, this, &SlotModel::lightUnit);
 	}
 
 	endResetModel();
 
 	emit unitChanged();
+}
+
+bool SlotModel::getCharging() const
+{
+	return !m_pUnit->getCharging();
+}
+
+bool SlotModel::getDoor() const
+{
+	return m_pUnit->getDoor();
+}
+
+bool SlotModel::getNight() const
+{
+	return m_pUnit->getNight();
+}
+
+bool SlotModel::getLight() const
+{
+	return m_pUnit->getLight();
 }
 
 void SlotModel::nextStep()
@@ -245,4 +283,24 @@ void SlotModel::slotDataChanged(SlotItem *slot)
 	QModelIndex index = createIndex(slot->getViewRow(), slot->getCol()->getId());
 
 	emit dataChanged(index, index);
+}
+
+void SlotModel::chargingUnit()
+{
+	emit chargingChanged();
+}
+
+void SlotModel::doorUnit()
+{
+	emit doorChanged();
+}
+
+void SlotModel::nightUnit()
+{
+	emit nightChanged();
+}
+
+void SlotModel::lightUnit()
+{
+	emit lightChanged();
 }

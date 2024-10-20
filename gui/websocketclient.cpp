@@ -34,7 +34,9 @@ WebSocketClient::WebSocketClient(UnitItem *unit, QString server)
 
 WebSocketClient::~WebSocketClient()
 {
+	m_cWorker.quit();
 	m_webSocket.close();
+	m_cWorker.wait();
 }
 
 void WebSocketClient::getColCount()

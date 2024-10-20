@@ -78,6 +78,10 @@ QtObject {
     readonly property color borderColor: "gray"
     readonly property color name: "gray"
     readonly property color value: "green"
+    readonly property color warning: "red"
+    readonly property color caution: "orange"
+    readonly property color advisory: "cyan"
+    readonly property color info: "white"
 
     readonly property color backgroundColor: "#000000"
     readonly property int defaultMargin: 8
