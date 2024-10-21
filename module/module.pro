@@ -44,7 +44,7 @@ INCLUDEPATH += \
 
 DEFINES += \
     __KERNEL__ \
-    BME280_64BIT_ENABLE \
+#    BME280_64BIT_ENABLE \
     KBUILD_MODNAME=\"\\\"\\\"\"
 
 

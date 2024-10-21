@@ -307,7 +307,7 @@ static int8_t sensor_update(struct env_data *env)
 	//Reads data from sensor
 
 	//bme280_get_sensor_data(uint8_t sensor_comp, struct bme280_data *comp_data, struct bme280_dev *dev);
-	bme280_get_sensor_data(BME280_ALL, &env->data, &env->dev);
+	return bme280_get_sensor_data(BME280_ALL, &env->data, &env->dev);
 }
 
 static int8_t sensor_init(struct env_data *env)

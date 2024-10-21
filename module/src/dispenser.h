@@ -35,7 +35,7 @@
 #define DEVICE_PATH "/dispenser/dispense_unit"
 #define MMAP_SLOT(A) (cDispenser.col_count + 1 + A)
 #define MMAP_COL(A) (1 + A)
-//#define BME280_64BIT_ENABLE
+#define BME280_64BIT_ENABLE
 #define I2C_BUS_AVAILABLE 1        // i2c bus available on RPI
 
 
