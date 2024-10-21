@@ -225,7 +225,7 @@ bool SlotModel::getCharging() const
 
 bool SlotModel::getDoor() const
 {
-	return m_pUnit->getDoor();
+	return !m_pUnit->getDoor();
 }
 
 bool SlotModel::getNight() const

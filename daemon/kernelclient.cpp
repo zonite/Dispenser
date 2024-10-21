@@ -528,8 +528,9 @@ void KernelClient::process_dispenser_message(Buffer &in)
 		qDaemonLog(QStringLiteral("Unit Status Info"), QDaemonLog::NoticeEntry);
 		parse_unit_cmd(attrs);
 		break;
-	case DISPENSER_GENL_CMD_ENVIRONMENT: //u32 attr //raw temperature
+	case DISPENSER_GENL_CMD_ENVIRONMENT: //s32, u32, u32 attr //compensated temperature, press, hum
 		qDaemonLog(QStringLiteral("Environment Info"), QDaemonLog::NoticeEntry);
+		parse_environment_cmd(attrs);
 		break;
 	case DISPENSER_GENL_CMD_TEMPERATURE_CALIBRATION: //calibration data
 		qDaemonLog(QStringLiteral("Calibration Temperature Data"), QDaemonLog::NoticeEntry);
@@ -762,6 +763,38 @@ void KernelClient::parse_unit_cmd(nlattr *attrs[])
 	}
 }
 
+void KernelClient::parse_environment_cmd(nlattr *attrs[])
+{
+	//struct dispenser_mmap_unit received_unit_data = { 0, 0, 0, 0, 0, 0, 0, 0, { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, 0, 0, 0, 0 };
+	__u32 *counter = 0;
+	//__u8 *status = 0, *num_cols = 0, *num_slots = 0, *initialized = 0;
+	__s32 *temperature = 0;
+	__u32 *pressure = 0;
+	__u32 *humidity = 0;
+
+	if (attrs[DISPENSER_GENL_TEMPERATURE]) {
+		get_nlattr_data(attrs[DISPENSER_GENL_TEMPERATURE], &temperature);
+		m_cUnit.setTemperature(*temperature / 100);
+	}
+
+	if (attrs[DISPENSER_GENL_PRESSURE]) {
+		get_nlattr_data(attrs[DISPENSER_GENL_PRESSURE], &pressure);
+		m_cUnit.setPressure(*pressure / 25600); //to hehtopascals
+	}
+
+	if (attrs[DISPENSER_GENL_HUMIDITY]) {
+		get_nlattr_data(attrs[DISPENSER_GENL_HUMIDITY], &humidity);
+		m_cUnit.setHumidity(*humidity);
+	}
+	qDaemonLog(QString("Environment data temp=%1, press=%2, hum=%3."));
+
+	if (attrs[DISPENSER_GENL_MEM_COUNTER]) {
+		get_nlattr_data(attrs[DISPENSER_GENL_MEM_COUNTER], &counter);
+		m_cUnit.setCounter(*counter);
+	}
+}
+
+
 /**
  * enum nlmsgerr_attrs - nlmsgerr attributes
  * @NLMSGERR_ATTR_UNUSED: unused
@@ -965,6 +998,12 @@ ssize_t KernelClient::get_nlattr_data(nlattr *attr, __u32 **i)
 	return attr->nla_len - NLA_HDRLEN;
 };
 
+ssize_t KernelClient::get_nlattr_data(nlattr *attr, __s32 **i)
+{
+	*i = (__s32 *) NLA_DATA(attr);
+
+	return attr->nla_len - NLA_HDRLEN;
+};
 
 /**
  * nl_attr_put - add an attribute to netlink message

@@ -35,6 +35,11 @@ private slots:
 	void connectCol(ColItem *newCol);
 	void connectSlot(SlotItem *newslot);
 
+	//Env data:
+	void bcastTemp(double temp);
+	void bcastPres(double pres);
+	void bcastHumi(double humi);
+
 	//Unit Slots:
 	void bcastLight(__u8 light);
 	void bcastDoor(__u8 door);

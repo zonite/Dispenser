@@ -201,7 +201,7 @@ private:
 	void parse_slot_cmd(struct nlattr *attrs[]); //Parse slot status CMD
 	void parse_col_cmd(struct nlattr *attrs[]); //Parse col status CMD
 	void parse_unit_cmd(struct nlattr *attrs[]); //Parse unit status CMD
-
+	void  parse_environment_cmd(struct nlattr *attrs[]); //Parse environment CMD
 
 	ssize_t process_error_message(Buffer &in);
 	ssize_t process_control_message(Buffer &in);
@@ -213,6 +213,7 @@ private:
 	ssize_t get_nlattr_data(struct nlattr *attr, __u8 **i);
 	ssize_t get_nlattr_data(struct nlattr *attr, __u16 **i);
 	ssize_t get_nlattr_data(struct nlattr *attr, __u32 **i);
+	ssize_t get_nlattr_data(struct nlattr *attr, __s32 **i);
 
 	int open_and_bind_socket();
 	int resolve_family_id_by_name();

@@ -49,6 +49,15 @@ public:
 	void setLight(char state);
 	void setCharging(char state);
 	void setInitialized(qint8 init);
+	void setTemperature(double temp);
+	void setPressure(double pres);
+	void setHumidity(double humi);
+	void setQNH(double pres);
+
+	double getTemperature();
+	double getQNH();
+	double getHumidity();
+	double getDewpoint();
 
 	__u8 getDoor() { return m_sUnit.door; }
 	__u8 getNight() { return m_sUnit.night; }
@@ -108,6 +117,10 @@ signals:
 	void releaseEvent(UnitItem *unit);
 	void alarmsChanged(UnitItem *unit);
 
+	void tempChanged(double temp);
+	void humiChanged(double humi);
+	void presChanged(double pres);
+
 	void preColAppended();
 	void postColAppended();
 
@@ -146,6 +159,11 @@ private:
 	//QMap<int, Alarm<UnitItem> *> m_pAlarms; //Release timers!
 	QSettings m_cSettings;
 	int m_iAlarmMinimumScheduling = ALARM_MIN_SCHEDULING;
+
+	double m_dTemperature = -300;
+	double m_dPressure = -1;
+	double m_dHumidity = -1;
+	double m_dPressElev = 0;
 
 	QTimer nightStartTimer;
 	QTimer nightEndTimer;

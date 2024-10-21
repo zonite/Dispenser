@@ -146,7 +146,7 @@ enum DISPENSER_GENL_COMMAND {
 	DISPENSER_GENL_CMD_SLOT_STATUS, //u8 col, u8 slot, u8 state attr, u32 counter
 	DISPENSER_GENL_CMD_COL_STATUS, //u8 col, u8 slot, u32 counter
 	DISPENSER_GENL_CMD_UNIT_STATUS, //u8 col, u8 slot, u8 state attr, u32 counter
-	DISPENSER_GENL_CMD_ENVIRONMENT, //u32 temp, u32 press, u32 humid, u32 counter //raw temperature
+	DISPENSER_GENL_CMD_ENVIRONMENT, //s32 temp, u32 press, u32 humid, u32 counter //compensated temperature
 	DISPENSER_GENL_CMD_TEMPERATURE_CALIBRATION, //u32 C0, u32 counter //calibration data: u16 t1, s16 t2, s16 t3
 	DISPENSER_GENL_CMD_PRESSURE_CALIBRATION, //u32 C0-1, u32 counter //calibration data: u16 p1, s16 p2-9
 	DISPENSER_GENL_CMD_HUMIDITY_CALIBRATION, //u32 C0, u32 counter //calibration data: u8 h1, s16 h2, u8 h3, s16 h4-5, u8 h6

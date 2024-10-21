@@ -44,6 +44,7 @@ INCLUDEPATH += \
 
 DEFINES += \
     __KERNEL__ \
+    BME280_64BIT_ENABLE \
     KBUILD_MODNAME=\"\\\"\\\"\"
 
 
@@ -57,3 +58,5 @@ QMAKE_EXTRA_COMPILERS += makedriver
 PRE_TARGETDEPS += compiler_makedriver_make_all
 
 #Automatic below...
+
+SOURCES +=

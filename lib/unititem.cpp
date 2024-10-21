@@ -2,6 +2,7 @@
 
 #include <QTime>
 #include <QDaemonLog>
+#include <QtMath>
 
 #include <localinfo.h>
 
@@ -45,6 +46,9 @@ UnitItem::UnitItem(QObject *parent)
 
 	nightStartTimer.start(msetToSunset);
 	nightEndTimer.start(msetToSunrise);
+
+	m_dPressElev = m_cSettings.value("PressureElevation", 0).toDouble();
+	m_cSettings.setValue("PressureElevation", QVariant::fromValue(m_dPressElev));
 
 	//qRegisterMetaTypeStreamOperators<QList<QVariant>>("QList<QVariant>");
 	//qRegisterMetaTypeStreamOperators<QList<int>>("QList<int>");
@@ -236,6 +240,50 @@ void UnitItem::setCharging(char state)
 void UnitItem::setInitialized(qint8 init)
 {
 	m_sUnit.initialized = init;
+}
+
+void UnitItem::setTemperature(double temp)
+{
+	if (temp != m_dTemperature) {
+		m_dTemperature = temp;
+		emit tempChanged(m_dTemperature);
+	}
+}
+
+void UnitItem::setPressure(double pres)
+{
+	if (pres != m_dPressure) {
+		m_dPressure = pres;
+		emit presChanged(getQNH());
+	}
+}
+
+void UnitItem::setHumidity(double humi)
+{
+	if (humi != m_dHumidity) {
+		m_dHumidity = humi;
+		emit humiChanged(m_dHumidity);
+	}
+}
+
+void UnitItem::setQNH(double pres)
+{
+	setPressure(pres + m_dPressElev);
+}
+
+double UnitItem::getTemperature()
+{
+	return m_dTemperature;
+}
+
+double UnitItem::getQNH()
+{
+	return m_dPressure - m_dPressElev;
+}
+
+double UnitItem::getDewpoint()
+{
+	return (m_dTemperature - (14.55 + 0.114 * m_dTemperature) * (1 - (0.01 * m_dHumidity)) - qPow(((2.5 + 0.007 * m_dTemperature) * (1 - (0.01 * m_dHumidity))),3) - (15.9 + 0.117 * m_dTemperature) * qPow((1 - (0.01 * m_dHumidity)), 14));
 }
 
 Alarm *UnitItem::getAlarm(int i)

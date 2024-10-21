@@ -2,6 +2,7 @@
 #include "dispenser.h"
 
 #include <linux/i2c.h>
+#include <linux/delay.h>
 //#include <asm/fpu/api.h>
 
 #include "bme280.h"
@@ -20,9 +21,9 @@
 //crypt 766 MB/s read
 
 //BME280 addresses:
-#define I2C_BUS 1
+//#define I2C_BUS 1
 #define SLAVE_NAME "BMP280"
-#define BMP280_ADDRESS 0x76
+//#define BMP280_ADDRESS 0x76
 //#define BME280_32BIT_ENABLE
 //#define BME280_64BIT_ENABLE //__aeabi_ldivmod undef
 //#define BME280_FLOAT_ENABLE //__aeabi_dcmpgt undef
@@ -186,6 +187,7 @@ static double BME280_compensate_H_double(s32 adc_H)
 static s8 sensor_read(u8 reg_address, u8 *reg_data, u32 len, void *i2c_addr)
 {
 	s8 ret = 0;
+	struct i2c_client *sensor = i2c_addr;
 
 	/**
 	 * Data on the bus should be like
@@ -203,12 +205,32 @@ static s8 sensor_read(u8 reg_address, u8 *reg_data, u32 len, void *i2c_addr)
 	 * |------------+---------------------|
 	 */
 
-	return ret;
+	if (len > 1) {
+		ret = i2c_smbus_read_i2c_block_data(sensor, reg_address, len, reg_data);
+		// < 0 == error
+		if ( ret < 0) {
+			printk("i2c read block error %i.", ret);
+		}
+	} else {
+		ret = i2c_smbus_read_byte_data(sensor, reg_address);
+
+		if (ret < 0) {
+			//error
+			if ( ret < 0) {
+				printk("i2c read byte error %i.", ret);
+			}
+			return ret;
+		}
+		*reg_data = ret;
+	}
+
+	return BME280_INTF_RET_SUCCESS;
 }
 
 static s8 sensor_write(u8 reg_address, const u8 *reg_data, u32 len, void *i2c_addr)
 {
 	s8 ret = 0;
+	struct i2c_client *sensor = i2c_addr;
 
 	/**
 	 * Data on the bus should be like
@@ -224,35 +246,169 @@ static s8 sensor_write(u8 reg_address, const u8 *reg_data, u32 len, void *i2c_ad
 	 * |------------+---------------------|
 	 */
 
-	return ret;
+	//BUG in BME280 driver... reg data longer than 1 is interleaved with addresses!
+
+	if (len > 1) {
+		printk("i2c write block not supported, %i.", len);
+		return -1;
+
+		ret = i2c_smbus_write_i2c_block_data(sensor, reg_address, len, reg_data);
+		if ( ret < 0) {
+			printk("i2c write block error %i.", ret);
+		}
+	} else {
+		ret = i2c_smbus_write_byte_data(sensor, reg_address, *reg_data);
+
+		if (ret < 0) {
+			//error
+			printk("i2c write byte error %i.", ret);
+			return ret;
+		}
+	}
+
+	return BME280_INTF_RET_SUCCESS;
 }
 
 static void sensor_delay(u32 period, void *i2c_addr)
 {
-
+	usleep_range(period, 2 * period);
 }
 
-static struct bme280_dev dev = {0};
 
-static int8_t sensor_init(void)
+//static struct bme280_dev dev = {0};
+/*
+static struct i2c_driver bme280_i2c_driver = {
+	.driver = {
+		.name = SLAVE_NAME,
+		.owner = THIS_MODULE
+	}
+};
+*/
+//#define BMP280_ADDRESS 0x76
+
+static void sensor_tmr_callback(struct timer_list *timer)
+{
+	int powered = 1;
+	if (pDispenser_mmap) {
+		powered = pDispenser_mmap->unit.charging;
+	}
+
+	sensor_update(cDispenser.env);
+
+	dispenser_environment_event(cDispenser.env->data.temperature,
+	                            cDispenser.env->data.pressure,
+	                            cDispenser.env->data.humidity);
+
+	mod_timer(timer, jiffies + msecs_to_jiffies(powered ? 60000 : 600000));
+}
+
+static int8_t sensor_update(struct env_data *env)
+{
+	//Reads data from sensor
+
+	//bme280_get_sensor_data(uint8_t sensor_comp, struct bme280_data *comp_data, struct bme280_dev *dev);
+	bme280_get_sensor_data(BME280_ALL, &env->data, &env->dev);
+}
+
+static int8_t sensor_init(struct env_data *env)
 {
 	int8_t rslt = BME280_OK;
 	uint8_t dev_addr = BME280_I2C_ADDR_PRIM;
+	struct bme280_dev *dev = NULL;
+	struct i2c_driver *bme280_i2c_driver = NULL;
+	struct bme280_settings *settings = NULL;
 
-	dev.intf_ptr = &dev_addr;
-	dev.intf = BME280_I2C_INTF;
-	dev.read = sensor_read;
-	dev.write = sensor_write;
-	dev.delay_us = sensor_delay;
+	if (!env)
+		return -1;
 
-	rslt = bme280_init(&dev);
+	//env->i2c_driver_data = bme280_i2c_driver;
+	//env->i2c_driver_data.driver.;
+	env->i2c_driver_data.driver.name = SLAVE_NAME;
+	env->i2c_driver_data.driver.owner = THIS_MODULE;
+	dev_addr = env->addr;
+	bme280_i2c_driver = &env->i2c_driver_data;
+	dev = &env->dev;
+
+	struct i2c_board_info bme280_i2c_board_info = {
+		.type = SLAVE_NAME,
+		.addr = dev_addr
+	};
+
+	//static struct i2c_board_info bme280_i2c_board_info2 = {
+	//	I2C_BOARD_INFO(SLAVE_NAME, BME280_I2C_ADDR_PRIM)};
+
+	struct i2c_adapter *bme280_i2c_adapter = i2c_get_adapter(I2C_BUS_AVAILABLE);
+	struct i2c_client *bme280_i2c_client = NULL;
+
+	if (bme280_i2c_adapter != NULL)
+	{
+		bme280_i2c_client = i2c_new_client_device(bme280_i2c_adapter, &bme280_i2c_board_info);
+		if (bme280_i2c_client != NULL)
+		{
+
+			int add_i2c = i2c_add_driver(bme280_i2c_driver);
+			if (add_i2c != -1)
+			{
+				rslt = 0;
+			}
+			else
+			{
+				pr_err("bme250: failed to add i2c driver \n");
+			}
+		}
+		i2c_put_adapter(bme280_i2c_adapter);
+	} else {
+		//Failed!
+		return -2;
+	}
+
+	dev->intf_ptr = bme280_i2c_client; //struct i2c_client *
+	dev->intf = BME280_I2C_INTF;
+	dev->read = sensor_read;
+	dev->write = sensor_write;
+	dev->delay_us = sensor_delay;
+	settings = &dev->settings;
+
+	rslt = bme280_init(dev);
+
+	// set ctrl_meas register at 0xF4
+	// set normal mode (b11)
+	settings->filter = 0; //(7 << 2) BME280_FILTER_MSK
+	// set XX register at 0xF2
+	settings->osr_h = 0x3; // set ctrl_hum (humidity oversampling)
+	settings->osr_p = 0x5; // set pressure oversampling to max (b101)
+	settings->osr_t = 0x5; // set temperature oversampling to max (b101)
+
+	// set config register at 0xF5
+	// set t_standby time 0xf5, 0x3 << 5 == 0x60 == 96
+	settings->standby_time = 0x3; // set t_standby time
+
+	//(BME280_OSR_PRESS_SEL | BME280_OSR_TEMP_SEL | BME280_OSR_HUM_SEL | BME280_FILTER_SEL | BME280_STANDBY_SEL == BME280_ALL_SETTINGS_SEL)
+	bme280_set_sensor_settings(BME280_ALL_SETTINGS_SEL, dev);
+	//set_osr_press_temp_settings(BME280_ALL_SETTINGS_SEL);
+
+	// set ctrl_meas register at 0xF4
+	bme280_set_sensor_mode(BME280_NORMAL_MODE, dev); // set normal mode (b11)
+
+	//bme280_set_regs(uint8_t *reg_addr, const uint8_t *reg_data, uint8_t len, struct bme280_dev *dev);
+	//bme280_get_regs(uint8_t reg_addr, uint8_t *reg_data, uint8_t len, struct bme280_dev *dev);
 
 	//rslt = stream_sensor_data_forced_mode(&dev); //Not found!!!
+
+	timer_setup(&env->timer, sensor_tmr_callback, 0);
+	mod_timer(&env->timer, jiffies + msecs_to_jiffies(5000)); //initial 5 sec delay
 
 	return rslt;
 }
 
-static void sensor_close(void)
+static void sensor_close(struct env_data *env)
 {
+	if (!env) {
+		return;
+	}
 
+	i2c_del_driver(&env->i2c_driver_data);
+	i2c_unregister_device((struct i2c_client *)env->dev.intf_ptr);
+	//i2c_del_driver(&bme280_i2c_driver);
+	//i2c_unregister_device(bme280_i2c_client);
 }

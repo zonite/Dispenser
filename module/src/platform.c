@@ -98,6 +98,7 @@ static int dt_probe(struct platform_device *pdev)
     const char *label;
     int ret;
     unsigned int value;
+    unsigned int bme280_address = 0;
 
     printk("Dispenser probing device tree.\n");
 
@@ -171,6 +172,31 @@ static int dt_probe(struct platform_device *pdev)
     if (ret) {
 	printk("Dispenser: Could not read 'value'\n");
 	return FAIL;
+    }
+
+    ret = device_property_read_u32(dev, "bme280", &bme280_address);
+    if (ret) {
+	printk("Dispenser: Could not read BME280 address\n");
+	bme280_address = 0;
+	//return FAIL;
+    }
+
+    if (bme280_address) {
+	    cDispenser.env = (struct env_data *) kzalloc(sizeof(struct env_data), GFP_KERNEL);
+	    if (cDispenser.env) {
+		    printk("Mem allocation failed: slot_list.\n");
+		    return FAIL;
+	    }
+
+	    cDispenser.env->addr = bme280_address;
+
+	    ret = sensor_init(cDispenser.env);
+	    if (ret < 0) {
+		    printk("ENV sensor failed.\n");
+
+		    kfree(cDispenser.env);
+		    cDispenser.env = NULL;
+	    }
     }
 
     cDispenser.p_sLed = dispenser_gpiod_open(dev, "led", GPIOD_OUT_LOW);
@@ -250,15 +276,15 @@ static int dt_probe_slot(struct platform_device *pdev)
 
 static int dt_remove(struct platform_device *pdev)
 {
-    /*
+	/*
     int ret;
     const char *compatible = NULL;
     struct device *dev = &pdev->dev;
 */
 
-    printk("Dispenser: Removing device tree\n");
+	printk("Dispenser: Removing device tree\n");
 
-    /*
+	/*
     ret = device_property_read_string(dev, "compatible", &compatible);
     if (ret) {
 	printk("Dispenser: Could not read 'compatible'\n");
@@ -268,7 +294,13 @@ static int dt_remove(struct platform_device *pdev)
     if (!strcasecmp(compatible, COMPAT)) {
 	printk("Process %s\n", compatible);
 */
-        dispenser_unit_close();
+	if (cDispenser.env) {
+		sensor_close(cDispenser.env);
+		cDispenser.env = NULL;
+	}
+
+
+	dispenser_unit_close();
 
 	if (cDispenser.p_sLed)
 		dispenser_gpiod_close(cDispenser.p_sLed);
@@ -288,5 +320,5 @@ static int dt_remove(struct platform_device *pdev)
     }
     */
 
-    return 0;
+	return 0;
 }

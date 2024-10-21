@@ -40,6 +40,10 @@ WebSocketServer::WebSocketServer(quint16 port, UnitItem *datamodel)
 	connect(m_pUnit, &UnitItem::nightChanged, this, &WebSocketServer::bcastNight, Qt::QueuedConnection);
 	connect(m_pUnit, &UnitItem::chargingChanged, this, &WebSocketServer::bcastCharging, Qt::QueuedConnection);
 	connect(m_pUnit, &UnitItem::alarmsChanged, this, &WebSocketServer::bcastAlarms, Qt::QueuedConnection);
+
+	connect(m_pUnit, &UnitItem::tempChanged, this, &WebSocketServer::bcastTemp, Qt::QueuedConnection);
+	connect(m_pUnit, &UnitItem::presChanged, this, &WebSocketServer::bcastPres, Qt::QueuedConnection);
+	connect(m_pUnit, &UnitItem::humiChanged, this, &WebSocketServer::bcastHumi, Qt::QueuedConnection);
 }
 
 WebSocketServer::~WebSocketServer()
@@ -188,6 +192,41 @@ void WebSocketServer::bcastDoor(__u8 door)
 	bcastBinaryMessage(data);
 }
 
+void WebSocketServer::bcastTemp(double temp)
+{
+	QByteArray data;
+	QDataStream out(&data, QIODevice::WriteOnly);
+	NEW_UNIT_CMD(cmd, DISPENSER_GENL_TEMPERATURE);
+
+	out << cmd.toInt;
+	out << temp;
+
+	bcastBinaryMessage(data);
+}
+
+void WebSocketServer::bcastPres(double pres)
+{
+	QByteArray data;
+	QDataStream out(&data, QIODevice::WriteOnly);
+	NEW_UNIT_CMD(cmd, DISPENSER_GENL_PRESSURE);
+
+	out << cmd.toInt;
+	out << pres;
+
+	bcastBinaryMessage(data);
+}
+
+void WebSocketServer::bcastHumi(double humi)
+{
+	QByteArray data;
+	QDataStream out(&data, QIODevice::WriteOnly);
+	NEW_UNIT_CMD(cmd, DISPENSER_GENL_HUMIDITY);
+
+	out << cmd.toInt;
+	out << humi;
+
+	bcastBinaryMessage(data);
+}
 
 void WebSocketServer::bcastNight(__u8 night)
 {
@@ -578,6 +617,9 @@ void WebSocketServer::processUnitRequest(QDataStream &in, __u8 col, __u8 slot, D
 	case DISPENSER_GENL_COL_NUM: //u8 attr
 		in >> colCount;
 		bcastColCount(m_pUnit);
+		bcastTemp(m_pUnit->getTemperature());
+		bcastPres(m_pUnit->getQNH());
+		bcastHumi(m_pUnit->getDewpoint());
 		break;
 	case DISPENSER_GENL_SLOT_NUM: //u8 attr
 		in >> status;

@@ -15,15 +15,16 @@ WebSocketClient::WebSocketClient(UnitItem *unit, QString server)
 
 
 	connect(&m_webSocket, &QWebSocket::connected, this, &WebSocketClient::onConnected);
-	connect(&m_webSocket, &QWebSocket::disconnected, this, &WebSocketClient::closed);
+	connect(&m_webSocket, &QWebSocket::disconnected, this, &WebSocketClient::onClosed);
 
 	connect(&m_webSocket, QOverload<QAbstractSocket::SocketError>::of(&QWebSocket::error),
 	        [=](QAbstractSocket::SocketError error){ this->error(error); });
 	connect(&m_webSocket, &QWebSocket::sslErrors, this, &WebSocketClient::sslError);
 
-	m_webSocket.ignoreSslErrors();
-	m_webSocket.open(m_cDispenserAddress);
-	m_webSocket.ignoreSslErrors();
+	connectServer();
+	//m_webSocket.ignoreSslErrors();
+	//m_webSocket.open(m_cDispenserAddress);
+	//m_webSocket.ignoreSslErrors();
 
 	WebSocketWorker *worker;
 	worker = new WebSocketWorker(this);
@@ -35,7 +36,8 @@ WebSocketClient::WebSocketClient(UnitItem *unit, QString server)
 WebSocketClient::~WebSocketClient()
 {
 	m_cWorker.quit();
-	m_webSocket.close();
+	disconnectServer();
+	//m_webSocket.close();
 	m_cWorker.wait();
 }
 
@@ -99,6 +101,23 @@ void WebSocketClient::getCharging()
 	m_webSocket.sendBinaryMessage(data);
 }
 
+void WebSocketClient::connectServer()
+{
+	m_webSocket.ignoreSslErrors();
+	m_webSocket.open(m_cDispenserAddress);
+	m_webSocket.ignoreSslErrors();
+}
+
+void WebSocketClient::disconnectServer()
+{
+	m_webSocket.close();
+}
+
+bool WebSocketClient::isConnected()
+{
+	return m_webSocket.state() == QAbstractSocket::ConnectedState;
+}
+
 void WebSocketClient::onConnected()
 {
 	qDebug() << "WebSocket connected";
@@ -117,8 +136,9 @@ void WebSocketClient::onConnected()
 	getCharging();
 }
 
-void WebSocketClient::closed()
+void WebSocketClient::onClosed()
 {
+	emit closed();
 	qDebug() << "WebSocket closed";
 }
 
@@ -181,9 +201,9 @@ void WebSocketClient::binaryMessageReceived(QByteArray message)
 			qDebug() << "Unit status cmd" << cmd;
 			processUnitMessage(in, col, slot, attr);
 			break;
-		case DISPENSER_GENL_CMD_ENVIRONMENT: //u32 temp, u32 press, u32 humid, u32 counter //raw temperature
-			qDebug() << "Ignore environment cmd" << cmd;
-			processUnitMessage(in, col, slot, attr);
+		case DISPENSER_GENL_CMD_ENVIRONMENT: //double temp, qnh, dewpoint
+			qDebug() << "Environment msg" << cmd;
+			processEnvMessage(in, col, slot, attr);
 			break;
 		case DISPENSER_GENL_CMD_TEMPERATURE_CALIBRATION: //u32 C0, u32 counter //calibration data: u16 t1, s16 t2, s16 t3
 			qDebug() << "Ignore temp calibration cmd" << cmd;
@@ -623,6 +643,117 @@ void WebSocketClient::processUnitMessage(QDataStream &in, __u8 col, __u8 slot, D
 	}
 
 }
+
+void WebSocketClient::processEnvMessage(QDataStream &in, __u8 col, __u8 slot, DISPENSER_GENL_ATTRIBUTE attr)
+{
+	__u8 status = 0, colCount = 0;
+	__u16 val16 = 0;
+	__u32 val32 = 0;
+	__u64 val64 = 0;
+	__s32 alarm = 0;
+	double envData = 0;
+	qDebug() << "processEnvMessage";
+
+	Q_UNUSED(col);
+	Q_UNUSED(slot);
+
+	switch (attr) {
+	case DISPENSER_GENL_ATTR_UNSPEC:
+		in >> status;
+		qDebug() << "Ignore DISPENSER_GENL_ATTR_UNSPEC.";
+		break;
+	case DISPENSER_GENL_MEM_COUNTER: //u32 attr
+		in >> val32;
+		qDebug() << "Ignore DISPENSER_GENL_MEM_COUNTER.";
+		break;
+	case DISPENSER_GENL_RELEASE_COUNT: //u8 attr
+		in >> status;
+		qDebug() << "Ignore DISPENSER_GENL_RELEASE_COUNT.";
+		break;
+	case DISPENSER_GENL_COL_NUM: //u8 attr
+		in >> colCount;
+		break;
+	case DISPENSER_GENL_SLOT_NUM: //u8 attr
+		in >> status;
+		qDebug() << "Ignore DISPENSER_GENL_SLOT_NUM.";
+		break;
+	case DISPENSER_GENL_SLOT_STATUS: //bitfield up,down,release,+enum state (5bits) (settable)
+		in >> status;
+		qDebug() << "Ignore DISPENSER_GENL_SLOT_STATUS.";
+		break;
+	case DISPENSER_GENL_SLOT_FAILED_UP: //u32 attr
+		in >> val32;
+		qDebug() << "Ignore DISPENSER_GENL_SLOT_FAILED_UP.";
+		break;
+	case DISPENSER_GENL_SLOT_FAILED_DOWN: //u32 attr
+		in >> val32;
+		qDebug() << "Ignore DISPENSER_GENL_SLOT_FAILED_DOWN.";
+		break;
+	case DISPENSER_GENL_UNIT_STATUS: //bitfield door,power,night,light (night+light settable)
+		in >> status;
+		qDebug() << "Ignore DISPENSER_GENL_UNIT_STATUS.";
+		break;
+	case DISPENSER_GENL_TEMPERATURE: //u32 attr //raw temperature
+		in >> envData;
+		m_pUnit->setTemperature(envData);
+		qDebug() << "Received DISPENSER_GENL_TEMPERATURE.";
+		break;
+	case DISPENSER_GENL_PRESSURE: //u32 attr //raw pressure
+		in >> envData;
+		m_pUnit->setQNH(envData);
+		qDebug() << "Received DISPENSER_GENL_PRESSURE.";
+		break;
+	case DISPENSER_GENL_HUMIDITY: //u32 attr //raw humidity
+		in >> envData;
+		m_pUnit->setHumidity(envData);
+		qDebug() << "Received DISPENSER_GENL_HUMIDITY.";
+		break;
+	case DISPENSER_GENL_CALIBRATION0: //calibration data u64
+		in >> val64;
+		qDebug() << "Ignore DISPENSER_GENL_CALIBRATION0.";
+		break;
+	case DISPENSER_GENL_CALIBRATION1: //calibration data s16
+		in >> val16;
+		qDebug() << "Ignore DISPENSER_GENL_CALIBRATION1.";
+		break;
+	case DISPENSER_GENL_INITIALIZED: //calibration data u8
+		in >> status;
+		qDebug() << "Ignore DISPENSER_GENL_INITIALIZED.";
+		break;
+	case DISPENSER_GENL_SLOT_STATE: //enum slot_state
+		in >> status;
+		qDebug() << "Ignore DISPENSER_GENL_SLOT_STATE.";
+		break;
+	case DISPENSER_GENL_UNIT_LIGHT: //Unit light
+		in >> status;
+		m_pUnit->setLight(status);
+		break;
+	case DISPENSER_GENL_UNIT_DOOR: //Unit door
+		in >> status;
+		m_pUnit->setDoor(status);
+		//qDebug() << "Ignore DISPENSER_GENL_UNIT_DOOR.";
+		break;
+	case DISPENSER_GENL_UNIT_CHARGING: //Unit charging
+		in >> status;
+		m_pUnit->setCharging(status);
+		//qDebug() << "Ignore DISPENSER_GENL_UNIT_CHARGING.";
+		break;
+	case DISPENSER_GENL_UNIT_NIGHT: //Unit night
+		in >> status;
+		m_pUnit->setNight(status);
+		break;
+	case DISPENSER_GENL_UNIT_ALARM: //Unit alarm
+		in >> val32;
+		m_pUnit->setAlarm(alarm);
+		break;
+	case __DISPENSER_GENL_ATTR_MAX:
+		in >> status;
+		qDebug() << "Ignore .";
+		break;
+	}
+
+}
+
 
 WebSocketWorker::WebSocketWorker(WebSocketClient *client)
 {

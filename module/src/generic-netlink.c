@@ -23,7 +23,6 @@ static int dispenser_genl_environment(struct sk_buff *sender_buffer, struct  gen
 static int __dispenser_genl_post_slot_status(struct dispenser_slot_list *slot, struct  genl_info *info);
 static int __dispenser_genl_post_col_status(struct dispenser_col_list *col, struct  genl_info *info);
 static int __dispenser_genl_post_unit_status(struct  genl_info *info);
-static int __dispenser_genl_post_environment(struct  genl_info *info);
 
 static struct net *sender_net = &init_net;
 static unsigned int sender_portid = 0;

@@ -46,14 +46,18 @@ public:
 	void getNight();
 	void getCharging();
 
+	void connectServer();
+	void disconnectServer();
+	bool isConnected();
 
 signals:
 	void connected();
+	void closed();
 	void newData();
 
 private slots:
 	void onConnected();
-	void closed();
+	void onClosed();
 	void error(QAbstractSocket::SocketError error);
 	void sslError(const QList<QSslError> &error);
 	void textMessageReceived(QString message);
@@ -73,6 +77,7 @@ private:
 	void processSlotMessage(QDataStream &in, __u8 col, __u8 slot, enum DISPENSER_GENL_ATTRIBUTE attr);
 	void processColMessage(QDataStream &in, __u8 col, __u8 slot, enum DISPENSER_GENL_ATTRIBUTE attr);
 	void processUnitMessage(QDataStream &in, __u8 col, __u8 slot, enum DISPENSER_GENL_ATTRIBUTE attr);
+	void processEnvMessage(QDataStream &in, __u8 col, __u8 slot, enum DISPENSER_GENL_ATTRIBUTE attr);
 
 	QThread m_cWorker;
 	QWebSocket m_webSocket;

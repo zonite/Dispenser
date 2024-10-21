@@ -9,6 +9,7 @@
 #include <linux/kernel.h>
 #include <linux/interrupt.h>
 #include <linux/platform_device.h>
+#include <linux/i2c.h>
 
 #include <linux/gpio/consumer.h>
 #include <drivers/gpio/gpiolib.h>
@@ -20,6 +21,7 @@
 #include <dispenser.h>
 
 #include "dt-bindings/dispenser.h"
+#include "bme280.h"
 
 #define DRIVER_AUTHOR "Matti Nykyri <matti@nykyri.eu>"
 #define DRIVER_DESC "Pet food dispenser"
@@ -33,7 +35,8 @@
 #define DEVICE_PATH "/dispenser/dispense_unit"
 #define MMAP_SLOT(A) (cDispenser.col_count + 1 + A)
 #define MMAP_COL(A) (1 + A)
-#define BME280_64BIT_ENABLE
+//#define BME280_64BIT_ENABLE
+#define I2C_BUS_AVAILABLE 1        // i2c bus available on RPI
 
 
 MODULE_LICENSE("GPL");
@@ -66,6 +69,7 @@ struct dispenser_private {
 	unsigned char col_count;
 	unsigned char slot_count;
 	unsigned char initialized;
+	struct env_data *env;
 };
 
 struct dispenser_col_list {
@@ -228,11 +232,21 @@ static void dispenser_genl_exit(void);
 //send events to userspace.
 static int __dispenser_genl_post_unit_status(struct genl_info *info);
 static int __dispenser_genl_post_slot_status(struct dispenser_slot_list *slot, struct  genl_info *info);
+static int __dispenser_genl_post_environment(struct  genl_info *info);
 
 
 /* Env */
-static int8_t sensor_init(void);
-static void sensor_close(void);
+struct env_data {
+	struct bme280_dev dev;
+	struct bme280_data data;
+	struct i2c_driver i2c_driver_data;
+	struct timer_list timer;
+	uint8_t addr;
+};
+
+static void sensor_close(struct env_data *env);
+static int8_t sensor_init(struct env_data *env);
+static int8_t sensor_update(struct env_data *env);
 
 /*
 static void gpio_init(struct io *io);

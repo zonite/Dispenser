@@ -12,5 +12,5 @@ Rectangle {
     Layout.fillHeight: true
     Layout.minimumHeight: 50
 
-    color: "cyan"
+    color: Constants.backgroundColor
 }
