@@ -256,6 +256,9 @@ static void dispenser_gpiod_tmr_callback(struct timer_list *timer)
 
 static void dispenser_gpiod_set_pointer(struct dispenser_gpiod *pgpiod, volatile char *p)
 {
+	if (!pgpiod)
+		return;
+
 	volatile char *old = pgpiod->value;
 
 	printk("dispenser_gpiod_set_pointer: if");
