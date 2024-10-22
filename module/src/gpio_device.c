@@ -261,7 +261,7 @@ static void dispenser_gpiod_set_pointer(struct dispenser_gpiod *pgpiod, volatile
 
 	volatile char *old = pgpiod->value;
 
-	printk("dispenser_gpiod_set_pointer: if");
+	//printk("dispenser_gpiod_set_pointer: if");
 	if (p)
 		pgpiod->value = p;
 	else
@@ -269,7 +269,7 @@ static void dispenser_gpiod_set_pointer(struct dispenser_gpiod *pgpiod, volatile
 
 	*pgpiod->value = gpiod_get_value(pgpiod->gpiod);
 
-	printk("dispenser_gpiod_set_pointer: sec if");
+	//printk("dispenser_gpiod_set_pointer: sec if");
 	if (old && *old != *pgpiod->value)
 		printk("GPIOparent %px value changed during value pointer update %u => %u.", pgpiod->parent, *old, *pgpiod->value);
 }
