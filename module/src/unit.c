@@ -322,7 +322,7 @@ static void dispenser_unit_mmap_set(void)
 static void dispenser_unit_mmap_reset(void)
 {
 	static struct dispenser_mmap_slot state = { 0 };
-	static volatile char val = 0;
+	//static volatile char val = 0;
 	//static char n = 0;
 	struct dispenser_col_list *c = cDispenser.cols;
 	printk("dispenser_unit_mmap_reset");
@@ -338,10 +338,14 @@ static void dispenser_unit_mmap_reset(void)
 		cDispenser.p_sButton->value = &n;
 	*/
 
-	dispenser_gpiod_set_pointer(cDispenser.p_sLed, NULL);
-	dispenser_gpiod_set_pointer(cDispenser.p_sDoor, NULL);
-	dispenser_gpiod_set_pointer(cDispenser.p_sCharge, &val);
-	dispenser_gpiod_set_pointer(cDispenser.p_sButton, &val);
+	if (cDispenser.p_sLed)
+		dispenser_gpiod_set_pointer(cDispenser.p_sLed, NULL);
+	if (cDispenser.p_sDoor)
+		dispenser_gpiod_set_pointer(cDispenser.p_sDoor, NULL);
+	if (cDispenser.p_sCharge)
+		dispenser_gpiod_set_pointer(cDispenser.p_sCharge, NULL);
+	if (cDispenser.p_sButton)
+		dispenser_gpiod_set_pointer(cDispenser.p_sButton, NULL);
 
 	printk("dispenser_unit_mmap_reset: while");
 	while (c) {
@@ -356,9 +360,12 @@ static void dispenser_unit_mmap_reset(void)
 			s->down->value = &s->state->down;
 			s->release->value = &s->state->release;
 			*/
-			dispenser_gpiod_set_pointer(s->up, &val);
-			dispenser_gpiod_set_pointer(s->down, &val);
-			dispenser_gpiod_set_pointer(s->release, &val);
+			if (s->up)
+				dispenser_gpiod_set_pointer(s->up, NULL);
+			if (s->down)
+				dispenser_gpiod_set_pointer(s->down, NULL);
+			if (s->release)
+				dispenser_gpiod_set_pointer(s->release, NULL);
 
 			s = s->next;
 		}
