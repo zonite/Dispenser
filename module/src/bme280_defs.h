@@ -85,6 +85,8 @@
 
 /********************************************************/
 
+#define BME280_64BIT_ENABLE
+
 #ifndef BME280_64BIT_ENABLE /*< Check if 64-bit integer (using BME280_64BIT_ENABLE) is enabled */
 #ifndef BME280_32BIT_ENABLE /*< Check if 32-bit integer (using BME280_32BIT_ENABLE) is enabled */
 #ifndef BME280_FLOAT_ENABLE /*< If any of the integer data types not enabled then enable BME280_FLOAT_ENABLE */
@@ -167,7 +169,7 @@
      (data & bitname##_MSK))
 
 #define BME280_GET_BITS(reg_data, bitname)        ((reg_data & (bitname##_MSK)) >> \
-                                                   (bitname##_POS))
+	                                           (bitname##_POS))
 #define BME280_GET_BITS_POS_0(reg_data, bitname)  (reg_data & (bitname##_MSK))
 
 /**\name Macros for bit masking */
