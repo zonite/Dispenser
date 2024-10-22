@@ -370,6 +370,10 @@ static int8_t sensor_init(struct env_data *env)
 	settings = &dev->settings;
 
 	rslt = bme280_init(dev);
+	if (rslt != BME280_OK) {
+		printk("BME280 sensor not found.");
+		return rslt;
+	}
 
 	// set ctrl_meas register at 0xF4
 	// set normal mode (b11)
@@ -405,6 +409,11 @@ static void sensor_close(struct env_data *env)
 {
 	if (!env) {
 		return;
+	}
+
+	if (timer_pending(&env->timer)) {
+		printk("Deleting ENV pending timer!\n");
+		del_timer(&env->timer);
 	}
 
 	i2c_del_driver(&env->i2c_driver_data);

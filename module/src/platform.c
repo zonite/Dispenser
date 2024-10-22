@@ -296,6 +296,7 @@ static int dt_remove(struct platform_device *pdev)
 */
 	if (cDispenser.env) {
 		sensor_close(cDispenser.env);
+		kfree(cDispenser.env);
 		cDispenser.env = NULL;
 	}
 

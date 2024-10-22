@@ -17,7 +17,7 @@
 		//pinctrl-0 = <&push_buttons>;
 		label = "Food Dispenser";
 		value = <12>;
-		bme280 = <0x77>;
+		bme280 = <0x76>;
 		charge-gpios = <&gpio 8 GPIO_ACTIVE_LOW>;
 		button-gpio = <&gpio 9 GPIO_ACTIVE_LOW>;
 		led-gpio = <&gpio 10 GPIO_ACTIVE_HIGH>;
