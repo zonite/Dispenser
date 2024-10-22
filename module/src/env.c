@@ -290,6 +290,9 @@ static void sensor_tmr_callback(struct timer_list *timer)
 		printk("ENV disabled, but called.");
 	}
 
+	printk("ENV timer callback.");
+	return;
+
 	int powered = 1;
 	if (pDispenser_mmap) {
 		powered = pDispenser_mmap->unit.charging;
