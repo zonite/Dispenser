@@ -186,7 +186,7 @@ static double BME280_compensate_H_double(s32 adc_H)
 
 static s8 sensor_read(u8 reg_address, u8 *reg_data, u32 len, void *i2c_addr)
 {
-	s8 ret = 0;
+	s32 ret = 0;
 	struct i2c_client *sensor = i2c_addr;
 
 	/**
@@ -216,9 +216,7 @@ static s8 sensor_read(u8 reg_address, u8 *reg_data, u32 len, void *i2c_addr)
 
 		if (ret < 0) {
 			//error
-			if ( ret < 0) {
-				printk("i2c read byte error %i.", ret);
-			}
+			printk("i2c read byte error %i.", ret);
 			return ret;
 		}
 		*reg_data = ret;
@@ -229,7 +227,7 @@ static s8 sensor_read(u8 reg_address, u8 *reg_data, u32 len, void *i2c_addr)
 
 static s8 sensor_write(u8 reg_address, const u8 *reg_data, u32 len, void *i2c_addr)
 {
-	s8 ret = 0;
+	s32 ret = 0;
 	struct i2c_client *sensor = i2c_addr;
 
 	/**
@@ -288,6 +286,10 @@ static struct i2c_driver bme280_i2c_driver = {
 
 static void sensor_tmr_callback(struct timer_list *timer)
 {
+	if (!cDispenser.env) {
+		printk("ENV disabled, but called.");
+	}
+
 	int powered = 1;
 	if (pDispenser_mmap) {
 		powered = pDispenser_mmap->unit.charging;
@@ -371,9 +373,10 @@ static int8_t sensor_init(struct env_data *env)
 
 	rslt = bme280_init(dev);
 	if (rslt != BME280_OK) {
-		printk("BME280 sensor not found.");
+		printk("BME280 sensor not initialized.");
 		return rslt;
 	}
+	printk("BME280 sensor found and initialized.");
 
 	// set ctrl_meas register at 0xF4
 	// set normal mode (b11)

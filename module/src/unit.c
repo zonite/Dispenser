@@ -347,11 +347,11 @@ static void dispenser_unit_mmap_reset(void)
 	if (cDispenser.p_sButton)
 		dispenser_gpiod_set_pointer(cDispenser.p_sButton, NULL);
 
-	printk("dispenser_unit_mmap_reset: while");
+	//printk("dispenser_unit_mmap_reset: while");
 	while (c) {
 		struct dispenser_slot_list *s = c->first;
 
-		printk("dispenser_unit_mmap_reset: slots");
+		//printk("dispenser_unit_mmap_reset: slots");
 		while (s) {
 			s->state = &state;
 
