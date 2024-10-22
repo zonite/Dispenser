@@ -324,6 +324,7 @@ static void dispenser_unit_mmap_reset(void)
 	static struct dispenser_mmap_slot state = { 0 };
 	//static char n = 0;
 	struct dispenser_col_list *c = cDispenser.cols;
+	printk("dispenser_unit_mmap_reset");
 
 	/*
 	if (cDispenser.p_sLed)
@@ -341,9 +342,11 @@ static void dispenser_unit_mmap_reset(void)
 	dispenser_gpiod_set_pointer(cDispenser.p_sCharge, NULL);
 	dispenser_gpiod_set_pointer(cDispenser.p_sButton, NULL);
 
+	printk("dispenser_unit_mmap_reset: while");
 	while (c) {
 		struct dispenser_slot_list *s = c->first;
 
+		printk("dispenser_unit_mmap_reset: slots");
 		while (s) {
 			s->state = &state;
 
