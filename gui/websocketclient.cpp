@@ -173,7 +173,6 @@ void WebSocketClient::binaryMessageReceived(QByteArray message)
 	__u8 cmd, col, slot;
 
 	qDebug() << "Message from server" << m_webSocket.peerAddress();
-	emit newData();
 
 	while (!in.atEnd() && --i > 0) {
 		in >> command.toInt;
@@ -200,6 +199,7 @@ void WebSocketClient::binaryMessageReceived(QByteArray message)
 		case DISPENSER_GENL_CMD_UNIT_STATUS: //u8 col, u8 slot, u8 state attr, u32 counter
 			qDebug() << "Unit status cmd" << cmd;
 			processUnitMessage(in, col, slot, attr);
+			emit newData();
 			break;
 		case DISPENSER_GENL_CMD_ENVIRONMENT: //double temp, qnh, dewpoint
 			qDebug() << "Environment msg" << cmd;
