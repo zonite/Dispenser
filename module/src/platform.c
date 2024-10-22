@@ -184,7 +184,7 @@ static int dt_probe(struct platform_device *pdev)
     if (bme280_address) {
 	    cDispenser.env = (struct env_data *) kzalloc(sizeof(struct env_data), GFP_KERNEL);
 	    if (!cDispenser.env) {
-		    printk("Mem allocation failed: slot_list.\n");
+		    printk("Mem allocation failed: BME280.\n");
 		    return FAIL;
 	    }
 
