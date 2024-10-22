@@ -338,8 +338,8 @@ static void dispenser_unit_mmap_reset(void)
 		cDispenser.p_sButton->value = &n;
 	*/
 
-	dispenser_gpiod_set_pointer(cDispenser.p_sLed, &val);
-	dispenser_gpiod_set_pointer(cDispenser.p_sDoor, &val);
+	dispenser_gpiod_set_pointer(cDispenser.p_sLed, NULL);
+	dispenser_gpiod_set_pointer(cDispenser.p_sDoor, NULL);
 	dispenser_gpiod_set_pointer(cDispenser.p_sCharge, &val);
 	dispenser_gpiod_set_pointer(cDispenser.p_sButton, &val);
 
