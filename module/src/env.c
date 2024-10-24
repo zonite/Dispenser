@@ -18,7 +18,8 @@
 
 void env_update_fn(struct work_struct *work);
 
-DECLARE_WORK(workqueue, env_update_fn);
+//DECLARE_WORK(workqueue, env_update_fn);
+DECLARE_DELAYED_WORK(workqueue, env_update_fn);
 
 //plain 135 MB/s write
 //plain 682 MB/s read
@@ -289,6 +290,7 @@ static struct i2c_driver bme280_i2c_driver = {
 */
 //#define BMP280_ADDRESS 0x76
 
+/*
 static void sensor_tmr_callback(struct timer_list *timer)
 {
 	int powered = 1;
@@ -300,11 +302,18 @@ static void sensor_tmr_callback(struct timer_list *timer)
 
 	mod_timer(timer, jiffies + msecs_to_jiffies(powered ? 60000 : 600000));
 }
+*/
 
 void env_update_fn(struct work_struct *work) {
+	int powered = 1;
+
 	if (!cDispenser.env) {
 		printk("ENV disabled, but called.");
 		return;
+	}
+
+	if (pDispenser_mmap) {
+		powered = pDispenser_mmap->unit.charging;
 	}
 
 	printk("ENV update callback.");
@@ -314,6 +323,9 @@ void env_update_fn(struct work_struct *work) {
 	dispenser_environment_event(cDispenser.env->data.temperature,
 	                            cDispenser.env->data.pressure,
 	                            cDispenser.env->data.humidity);
+
+	schedule_delayed_work(&workqueue, msecs_to_jiffies(powered ? 60000 : 15000));
+	//schedule_delayed_work(&workqueue, msecs_to_jiffies(powered ? 60000 : 600000));
 }
 
 static int8_t sensor_update(struct env_data *env)
@@ -414,9 +426,10 @@ static int8_t sensor_init(struct env_data *env)
 
 	//rslt = stream_sensor_data_forced_mode(&dev); //Not found!!!
 
-	timer_setup(&env->timer, sensor_tmr_callback, 0);
-	mod_timer(&env->timer, jiffies + msecs_to_jiffies(5000)); //initial 5 sec delay
-	schedule_work(&workqueue);
+	//timer_setup(&env->timer, sensor_tmr_callback, 0);
+	//mod_timer(&env->timer, jiffies + msecs_to_jiffies(5000)); //initial 5 sec delay
+	schedule_delayed_work(&workqueue, msecs_to_jiffies(5000));
+	//schedule_work(&workqueue);
 
 	return rslt;
 }
@@ -427,10 +440,14 @@ static void sensor_close(struct env_data *env)
 		return;
 	}
 
-	if (timer_pending(&env->timer)) {
-		printk("Deleting ENV pending timer!\n");
-		del_timer(&env->timer);
-	}
+	//if (timer_pending(&env->timer)) {
+	//	printk("Deleting ENV pending timer!\n");
+	//	del_timer(&env->timer);
+	//}
+
+	//cancel_work_sync(&workqueue);
+	cancel_delayed_work_sync(&workqueue);
+	//flush_scheduled_work(); //deprecated!
 
 	i2c_del_driver(&env->i2c_driver_data);
 	i2c_unregister_device((struct i2c_client *)env->dev.intf_ptr);
