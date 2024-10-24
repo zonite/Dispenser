@@ -62,6 +62,8 @@ private:
 	void processColRequest(QDataStream &in, __u8 col, __u8 slot, enum DISPENSER_GENL_ATTRIBUTE attr);
 	void processUnitRequest(QDataStream &in, __u8 col, __u8 slot, enum DISPENSER_GENL_ATTRIBUTE attr);
 
+	void resetNetwork() const;
+
 	UnitItem *m_pUnit = nullptr;
 	QWebSocketServer *m_pWebSocketServer = nullptr;
 	QList<QWebSocket *> m_cClients;

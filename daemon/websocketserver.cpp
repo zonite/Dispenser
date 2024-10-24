@@ -67,13 +67,7 @@ void WebSocketServer::onNewConnection()
 
 	m_cClients << pSocket;
 
-	QProcess resetNet;
-	QString cmd = QStringLiteral("/usr/local/bin/wgtest");
-	QStringList args;
-
-	resetNet.start(cmd, args);
-	resetNet.waitForFinished(5000); //recored control timeout
-	resetNet.readAll();
+	resetNetwork();
 }
 
 void WebSocketServer::processTextMessage(QString message)
@@ -709,6 +703,21 @@ void WebSocketServer::processUnitRequest(QDataStream &in, __u8 col, __u8 slot, D
 		qDebug() << "Ignore .";
 		break;
 	}
+}
+
+void WebSocketServer::resetNetwork() const
+{
+	QProcess resetNet;
+	QString cmd = QStringLiteral("/usr/local/bin/wgtest");
+	QStringList args;
+
+	qDaemonLog(QStringLiteral("Check network"), QDaemonLog::NoticeEntry);
+
+	resetNet.start(cmd, args);
+	resetNet.waitForFinished(5000);
+	resetNet.readAll();
+
+	qDaemonLog(QStringLiteral("Result %1").arg(resetNet.exitStatus()), QDaemonLog::NoticeEntry);
 }
 
 void WebSocketServer::listen(UnitItem *unit)
