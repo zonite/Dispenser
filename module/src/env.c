@@ -3,6 +3,7 @@
 
 #include <linux/i2c.h>
 #include <linux/delay.h>
+#include <linux/workqueue.h>
 //#include <asm/fpu/api.h>
 
 #include "bme280.h"
@@ -14,6 +15,10 @@
  *  https://www.bosch-sensortec.com/media/boschsensortec/downloads/datasheets/bst-bme280-ds002.pdf
  *
  **/
+
+void env_update_fn(struct work_struct *work);
+
+DECLARE_WORK(workqueue, env_update_fn);
 
 //plain 135 MB/s write
 //plain 682 MB/s read
@@ -286,25 +291,29 @@ static struct i2c_driver bme280_i2c_driver = {
 
 static void sensor_tmr_callback(struct timer_list *timer)
 {
-	if (!cDispenser.env) {
-		printk("ENV disabled, but called.");
-	}
-
-	printk("ENV timer callback.");
-	return;
-
 	int powered = 1;
 	if (pDispenser_mmap) {
 		powered = pDispenser_mmap->unit.charging;
 	}
+
+	schedule_work(&workqueue);
+
+	mod_timer(timer, jiffies + msecs_to_jiffies(powered ? 60000 : 600000));
+}
+
+void env_update_fn(struct work_struct *work) {
+	if (!cDispenser.env) {
+		printk("ENV disabled, but called.");
+		return;
+	}
+
+	printk("ENV update callback.");
 
 	sensor_update(cDispenser.env);
 
 	dispenser_environment_event(cDispenser.env->data.temperature,
 	                            cDispenser.env->data.pressure,
 	                            cDispenser.env->data.humidity);
-
-	mod_timer(timer, jiffies + msecs_to_jiffies(powered ? 60000 : 600000));
 }
 
 static int8_t sensor_update(struct env_data *env)
@@ -407,6 +416,7 @@ static int8_t sensor_init(struct env_data *env)
 
 	timer_setup(&env->timer, sensor_tmr_callback, 0);
 	mod_timer(&env->timer, jiffies + msecs_to_jiffies(5000)); //initial 5 sec delay
+	schedule_work(&workqueue);
 
 	return rslt;
 }

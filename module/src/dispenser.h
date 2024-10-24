@@ -225,6 +225,7 @@ static void dispenser_gpiod_event(struct dispenser_gpiod* dev, char new_val);
 static void dispenser_up_event(struct dispenser_gpiod* dev, char new_val);
 static void dispenser_down_event(struct dispenser_gpiod* dev, char new_val);
 static void dispenser_release_event(struct dispenser_gpiod* dev, char new_val);
+static void dispenser_environment_event(int32_t temp, uint32_t press, uint32_t hum);
 
 /* Netlink Generic */
 static int dispenser_genl_init(void);
