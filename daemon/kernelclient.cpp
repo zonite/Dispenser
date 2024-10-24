@@ -779,7 +779,7 @@ void KernelClient::parse_environment_cmd(nlattr *attrs[])
 
 	if (attrs[DISPENSER_GENL_PRESSURE]) {
 		get_nlattr_data(attrs[DISPENSER_GENL_PRESSURE], &pressure);
-		m_cUnit.setPressure(*pressure / 1000.0); //to hehtopascals
+		m_cUnit.setPressure(*pressure / 10000.0); //to hehtopascals
 	}
 
 	if (attrs[DISPENSER_GENL_HUMIDITY]) {
