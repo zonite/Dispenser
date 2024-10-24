@@ -786,7 +786,10 @@ void KernelClient::parse_environment_cmd(nlattr *attrs[])
 		get_nlattr_data(attrs[DISPENSER_GENL_HUMIDITY], &humidity);
 		m_cUnit.setHumidity(*humidity);
 	}
-	qDaemonLog(QString("Environment data temp=%1, press=%2, hum=%3."));
+	qDaemonLog(QString("Environment data temp=%1, press=%2, hum=%3.")
+	           .arg(m_cUnit.getTemperature())
+	           .arg(m_cUnit.getQNH())
+	           .arg(m_cUnit.getDewpoint()));
 
 	if (attrs[DISPENSER_GENL_MEM_COUNTER]) {
 		get_nlattr_data(attrs[DISPENSER_GENL_MEM_COUNTER], &counter);
