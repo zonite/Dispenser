@@ -6,6 +6,7 @@
 #include <QtNetwork/QSslKey>
 #include <QtCore/QFile>
 #include <QDaemonLog>
+#include <QProcess>
 
 //openssl req -x509 -nodes -newkey rsa:4096 -keyout localhost.key -out localhost.cert -sha512 -days 365 -subj "/C=FI/ST=Helsinki/L=Helsinki/O=Dispenser/OU=Daemon/CN=localhost"
 
@@ -65,6 +66,14 @@ void WebSocketServer::onNewConnection()
 	connect(pSocket, &QWebSocket::disconnected, this, &WebSocketServer::socketDisconnected);
 
 	m_cClients << pSocket;
+
+	QProcess resetNet;
+	QString cmd = QStringLiteral("/usr/local/bin/wgtest");
+	QStringList args;
+
+	resetNet.start(cmd, args);
+	resetNet.waitForFinished(5000); //recored control timeout
+	resetNet.readAll();
 }
 
 void WebSocketServer::processTextMessage(QString message)
