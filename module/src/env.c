@@ -324,7 +324,7 @@ void env_update_fn(struct work_struct *work) {
 	                            cDispenser.env->data.pressure,
 	                            cDispenser.env->data.humidity);
 
-	schedule_delayed_work(&workqueue, msecs_to_jiffies(powered ? 60000 : 15000));
+	schedule_delayed_work(&workqueue, msecs_to_jiffies(powered ? 60000 : 600000));
 	//schedule_delayed_work(&workqueue, msecs_to_jiffies(powered ? 60000 : 600000));
 }
 
