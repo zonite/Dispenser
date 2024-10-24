@@ -13,7 +13,8 @@
 //static void *pDispenser = NULL;
 //static struct dispenser_config cConfig = { 0 };
 
-MODULE_SOFTDEP("pre: i2c_dev");
+//MODULE_SOFTDEP("pre: i2c_dev");
+MODULE_SOFTDEP("pre: i2c-bcm2835");
 
 static int dispenser_alloc_mmap(void)
 {
