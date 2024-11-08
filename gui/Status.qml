@@ -10,6 +10,7 @@ Frame {
     Layout.fillHeight: true
     //color: "#202020"
 
+    required property SlotModel slot
     /*
     background: Rectangle {
         anchors.fill: parent
@@ -22,11 +23,7 @@ Frame {
     //border.style: ridge
     //border.width: Constants.borderW
 
-
     ColumnLayout {
-        anchors.fill: parent
-        anchors.topMargin: 5
-        //Layout.alignment: Qt.AlignHCenter
 
         Label {
             text: qsTr("Dispenser")
@@ -35,38 +32,127 @@ Frame {
             font.pixelSize: 24
         }
 
-        Time {
-            Layout.fillWidth: true
-            //anchors.centerIn: parent
-            //Layout.alignment: Qt.AlignHCenter
-        }
+        RowLayout {
+            //anchors.fill: parent
+            spacing: Constants.spacing
 
 
-        Temp {
-            Layout.fillWidth: true
+            ColumnLayout {
+                //anchors.fill: parent
+                anchors.topMargin: 5
+                //Layout.alignment: Qt.AlignHCenter
+
+
+                Time {
+                    Layout.fillWidth: true
+                    //anchors.centerIn: parent
+                    //Layout.alignment: Qt.AlignHCenter
+                }
+
+
+                Temp {
+                    Layout.fillWidth: true
+                }
+
+                QNH {
+                    Layout.fillWidth: true
+                }
+
+                DewP {
+                    Layout.fillWidth: true
+                }
+
+                /*
+                Messages {
+                    Layout.fillWidth: true
+                }
+*/
+                Button {
+                    text: qsTr("Add Connection")
+                    Layout.fillWidth: true
+                    onClicked: unitList.appendItem()
+                }
+                Button {
+                    text: qsTr("Remove")
+                    Layout.fillWidth: true
+                    onClicked: unitList.removeCompletedItems()
+                }
+            }
+
+            Rectangle {
+                Layout.fillHeight: true
+                Layout.fillWidth: true
+                //Layout.minimumWidth: childrenRect.width
+                Layout.minimumWidth: door.contentWidth + 2 * Constants.margins
+                //Layout.preferredWidth: parent.width * 0.3
+                //implicitHeight: root.height
+                //implicitWidth: 10
+                //implicitWidth: childrenRect.width
+                border.width: Constants.borderW
+                border.color: Constants.borderColor
+                color: Constants.backgroundColor
+
+                ColumnLayout {
+                    id: col
+                    anchors.fill: parent
+                    anchors.margins: Constants.margins
+
+                    Label {
+                        id: door
+                        text: "DOOR SERV FWD OPEN"
+                        color: Constants.warning
+                        visible: slotModel.door
+                    }
+
+                    Label {
+                        text: "BATT 1 DISCHARGING"
+                        color: Constants.caution
+                        visible: slotModel.charging
+                    }
+
+                    Label {
+                        text: "DATALINK 1 FAIL"
+                        color: Constants.advisory
+                        visible: false
+                    }
+
+                    Label {
+                        text: "LIGHT ON"
+                        color: Constants.advisory
+                        visible: slotModel.light
+                    }
+
+                    Label {
+                        text: "NIGHT MODE"
+                        color: Constants.advisory
+                        visible: slotModel.night
+                    }
+
+                    Label {
+                        text: "TEST"
+                        color: Constants.advisory
+                        visible: false
+                    }
+
+                    Label {
+                        text: "END"
+                        //Layout.fillWidth: true
+                        Layout.alignment: Qt.AlignHCenter
+                        //anchors.horizontalCenter: parent.horizontalCenter
+                        color: Constants.info
+                    }
+
+                    Rectangle {
+                        Layout.fillHeight: true
+                    }
+                }
+            }
         }
 
-        QNH {
-            Layout.fillWidth: true
+        Image {
+            id: varsa
+            source: "qrc:///varsa.png"
         }
 
-        DewP {
-            Layout.fillWidth: true
-        }
-
-        Messages {
-            Layout.fillWidth: true
-        }
-
-        Button {
-            text: qsTr("Add Connection")
-            Layout.fillWidth: true
-            onClicked: unitList.appendItem()
-        }
-        Button {
-            text: qsTr("Remove")
-            Layout.fillWidth: true
-            onClicked: unitList.removeCompletedItems()
-        }
     }
 }

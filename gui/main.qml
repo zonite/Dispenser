@@ -88,7 +88,8 @@ ApplicationWindow {
         id: drawer
 
         //y: overlayHeader.height
-        width: appWindow.width / 4
+        //width: appWindow.width / 3
+        width: appWindow.width - unit.moodeli.width
         height: appWindow.height //no ToolBar
         //height: appWindow.height - overlayHeader.height
 
@@ -100,6 +101,7 @@ ApplicationWindow {
 
         Status {
             //implicitHeight: parent.height
+            slot: unit.slots
             anchors.fill: parent
         }
 
@@ -179,6 +181,7 @@ ApplicationWindow {
 
 
     Unit {
+        id: unit
         anchors.leftMargin: !inPortrait ? drawer.width : undefined
         moodeli: unitItem
         //unit: unitItem
@@ -292,6 +295,6 @@ ApplicationWindow {
     Shortcut { sequence: StandardKey.Quit; context: Qt.ApplicationShortcut; onActivated: Qt.quit() }
     Shortcut { sequence: StandardKey.FullScreen; context: Qt.ApplicationShortcut; onActivated: appWindow.visibility = ApplicationWindow.Windowed }
     //Shortcut { sequence: StandardKey.Cancel; context: Qt.ApplicationShortcut; onActivated: appWindow.visibility = ApplicationWindow.Maximized }
-    //StandardKey.Cancel == ecs
+    //StandardKey.Cancel == esc
     //StandardKey.FullScreen == F11, Ctrl+Shift+F
 }

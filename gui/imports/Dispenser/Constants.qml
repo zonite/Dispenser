@@ -67,6 +67,7 @@ QtObject {
     readonly property int height: 480
     readonly property int leftSideBarWidth: 366
     readonly property int spacing: 6
+    readonly property int margins: 10
     readonly property int borderW: 4
 
     readonly property int buttonW: 160

@@ -20,5 +20,6 @@
         <file>GreenBox.qml</file>
         <file>Alarm.qml</file>
         <file>TimeDiff.qml</file>
+        <file>varsa.png</file>
     </qresource>
 </RCC>
