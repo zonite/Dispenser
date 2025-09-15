@@ -307,7 +307,9 @@ static void dispenser_unit_mmap_set(void)
 				s->state->state = CLOSING;
 			}
 
-			if (s->state->state == CLOSED)
+			//if (s->state->state == CLOSED)
+			//Now based on lock state
+			if (s->release->value && *s->release->value == 0)
 				s->full = 1;
 
 			printk("Slot %i/%i full = %i. initialized = %i", c->col_id, s->slot_id, s->full, s->initialized);
@@ -716,7 +718,9 @@ static void dispenser_slot_update(struct dispenser_slot_list *slot)
 
 	dispenser_update_slot_status(slot->state);
 
-	if (slot->state->state == CLOSED)
+	//if (slot->state->state == CLOSED)
+	//Update full based on lock status! For fail safe...
+	if (slot->release->value && *slot->release->value == 0)
 		slot->full = 1;
 
 	if (old != slot->state->state) {

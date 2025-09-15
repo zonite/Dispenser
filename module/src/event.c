@@ -57,8 +57,9 @@ static void dispenser_button_event(struct dispenser_gpiod* dev, char pressed)
 		printk("Button event: Pressed = %i. GPIO value = %i.\n", pressed, *dev->value);
 
 		if (*cDispenser.p_sLed->value) {
-			dispenser_unit_locks_on();
 			dispenser_unit_filled();
+		} else {
+			dispenser_unit_locks_on();
 		}
 
 		dispenser_gpiod_set(cDispenser.p_sLed, !(*cDispenser.p_sLed->value));
@@ -151,7 +152,7 @@ static void dispenser_down_event(struct dispenser_gpiod* dev, char new_val)
 	if (slot->state->down) {
 		if (slot->state->release) {
 			//release == 1 && up == 0 -> release = 0
-			dispenser_gpiod_set_tmout(slot->release, 0, 0);
+			//dispenser_gpiod_set_tmout(slot->release, 0, 0); //don't automatically relock
 			dispenser_update_slot_status(slot->state); //update release bit
 		}
 
@@ -159,7 +160,8 @@ static void dispenser_down_event(struct dispenser_gpiod* dev, char new_val)
 			dispenser_unit_release_slot(slot->next, 0, 0);
 
 		dispenser_release_event(dev, 0); //Down. Stop timer.
-		slot->full = 0;
+		//Set full = 0 when lock is opened...
+		//slot->full = 0;
 	}
 
 	enum slot_state new = slot->state->state;
@@ -192,6 +194,7 @@ static void dispenser_release_event(struct dispenser_gpiod* dev, char new_val)
 			//immediate release
 			slot->pendingRelease = 0;
 			dispenser_gpiod_set(dev, 1); //Open the lock
+			slot->full = 0;
 			dispenser_update_slot_status(slot->state); //update release bit
 		}
 	} else {
@@ -201,16 +204,20 @@ static void dispenser_release_event(struct dispenser_gpiod* dev, char new_val)
 			slot->pendingRelease = 0;
 			slot->release_delayed = 0;
 			dispenser_gpiod_set(dev, 1); //start lock timeout
+			slot->full = 0;
 			dispenser_update_slot_status(slot->state); //update release bit
 		} else if (slot->state->release && slot->state->up && !slot->state->down) {
 			//release failed! re-release
 			printk("Dispenser: Release %s failed, re-release!\n", dev->gpiod->name);
 			slot->pendingRelease = 0;
 			dispenser_gpiod_set(dev, 1);
+			slot->full = 0;
 		} else {
 			//release success!
 			slot->pendingRelease = 0;
-			dispenser_gpiod_set_tmout(dev, 0, 0);
+			//dispenser_gpiod_set_tmout(dev, 0, 0);
+			//Leave lock open (=1). Use button to reset locks!
+			dispenser_gpiod_set_tmout(dev, 1, 0);
 			printk("Dispenser: Release %s success.\n", dev->gpiod->name);
 		}
 	}
