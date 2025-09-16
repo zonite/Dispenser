@@ -226,6 +226,7 @@ static void dispenser_gpiod_out_tmr_callback(struct timer_list *timer)
     struct dispenser_gpiod *pgpiod = from_timer(pgpiod, timer, timer);
     printk("Timer callback on %s.\n", pgpiod->gpiod->name);
 
+    //Reset output to 0 incase of timeout
     if (pgpiod->value) {
 	dispenser_gpiod_event(pgpiod, 0);
     }
