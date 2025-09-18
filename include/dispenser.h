@@ -180,7 +180,7 @@ enum slot_state {
 	OPEN     = 0xa, // 1010 (VALID_MASK | DOWN_MASK)
 	RELEASED = 0xb, // 1011 (VALID_MASK | RELEASE_MASK | DOWN_MASK)
 	CLOSED   = 0xc, // 1100 (VALID_MASK | UP_MASK)
-	RELEASE  = 0xd, // 1101 (VALID_MASK | RELEASE_MASK)
+	RELEASE  = 0xd, // 1101 (VALID_MASK | UP_MASK | RELEASE_MASK)
 	FAILED   = 0xe, // 1110 -> (VALID_MASK | UP_MASK | DOWN_MASK)
 } __attribute__ ((__packed__));
 static_assert( sizeof(enum slot_state) == 1 );

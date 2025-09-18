@@ -243,12 +243,12 @@ QString SlotItem::guiState() const
 	case UNKNOWN:  // = 0x0, // 0000
 		return QStringLiteral("unknown");
 	case OPEN:     // = 0xa, // 1010 (VALID_MASK | DOWN_MASK)
+	case RELEASED: // = 0xb, // 1011 (VALID_MASK | RELEASE_MASK | DOWN_MASK)
 		return QStringLiteral("down");
 	case CLOSED:   // = 0xc, // 1100 (VALID_MASK | UP_MASK)
 		return QStringLiteral("up");
 	case CLOSING:  // = 0x8, // 1000 (VALID_MASK)
 	case OPENING:  // = 0x9, // 1001 (VALID_MASK | RELEASE_MASK)
-	case RELEASED: // = 0xb, // 1011 (VALID_MASK | RELEASE_MASK | DOWN_MASK)
 	case RELEASE:  // = 0xd, // 1101 (VALID_MASK | RELEASE_MASK)
 	case FAILED:   // = 0xe, // 1110 -> (VALID_MASK | UP_MASK | DOWN_MASK)
 		return QStringLiteral("transit");
