@@ -463,7 +463,7 @@ void Alarm::connectTimer()
 //template<typename T>
 QDebug operator<<(QDebug dbg, const Alarm &alarm)
 {
-	dbg.nospace() << "Alarm " << alarm.getTimevalue() << ". Days " << alarm.getDays() << ".";
+	dbg.nospace() << "Alarm " << alarm.getTimevalue() << ". Days " << alarm.getDays() << ". Multiplier " << alarm.getMultiplier();
 
 	return dbg;
 }

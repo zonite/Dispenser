@@ -92,14 +92,21 @@ UnitItem::UnitItem(QObject *parent)
 		//new_alarm->setDays(EVERYDAY);
 		//new_alarm->setSeconds(8 * 3600); //Alarm at 8.
 		//m_pAlarms.insert(new_alarm->getSeconds(), new_alarm);
+		m_pAlarms.insert(0 * 3600, new Alarm(this, 0 * 3600, EVERYDAY, 300, 1));
 		//m_pAlarms.insert(0 * 3600, new Alarm(this, 0 * 3600, EVERYDAY, 120));
 		//m_pAlarms.insert(0 * 3600, new Alarm(this, 0 * 3600, EVERYDAY, 4 * 3600));
-		m_pAlarms.insert(0 * 3600, new Alarm(this, 0 * 3600, EVERYDAY));
-		m_pAlarms.insert(4 * 3600, new Alarm(this, 4 * 3600, EVERYDAY));
-		m_pAlarms.insert(8 * 3600, new Alarm(this, 8 * 3600, EVERYDAY));
-		m_pAlarms.insert(12 * 3600, new Alarm(this, 12 * 3600, EVERYDAY));
-		m_pAlarms.insert(16 * 3600, new Alarm(this, 16 * 3600, EVERYDAY));
-		m_pAlarms.insert(20 * 3600, new Alarm(this, 20 * 3600, EVERYDAY));
+
+		//m_pAlarms.insert(0 * 3600, new Alarm(this, 0 * 3600, EVERYDAY, 86400, 1));
+		//m_pAlarms.insert(0 * 3600, new Alarm(this, 0 * 3600, EVERYDAY, 86400, 1));
+		//m_pAlarms.insert(0 * 3600, new Alarm(this, 0 * 3600, EVERYDAY, 86400, 1));
+
+		//m_pAlarms.insert(0 * 3600, new Alarm(this, 0 * 3600, EVERYDAY));
+		//m_pAlarms.insert(4 * 3600, new Alarm(this, 4 * 3600, EVERYDAY));
+		//m_pAlarms.insert(8 * 3600, new Alarm(this, 8 * 3600, EVERYDAY));
+		//m_pAlarms.insert(12 * 3600, new Alarm(this, 12 * 3600, EVERYDAY));
+		//m_pAlarms.insert(16 * 3600, new Alarm(this, 16 * 3600, EVERYDAY));
+		//m_pAlarms.insert(20 * 3600, new Alarm(this, 20 * 3600, EVERYDAY));
+
 		//Unit=61847529062527 =  @ 0:00:00 + 4:00:00 interval
 		//Unit=515396075647 = @ 0:00:00 + 0:02:00 interval
 		//Unit=371085174374527, 371085178060927, 371085181747327, 371085185433727, 371085189120127, 371085192806527
