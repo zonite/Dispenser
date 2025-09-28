@@ -104,6 +104,8 @@ UnitItem::UnitItem(QObject *parent)
 		//Unit=515396075647 = @ 0:00:00 + 0:02:00 interval
 		//Unit=371085174374527, 371085178060927, 371085181747327, 371085185433727, 371085189120127, 371085192806527
 		// = @ 0:00:00 + 0:00:00, 4:00:00, 8:00:00, 12:00:00, 16:00:00, 20:00:00 interval
+		//8 high bits are mulptilier (added to release moltiple times)
+		//Unit=72058882528116863 @ 0:00:00 + 0:05:00 interval + 1 multiplier
 	}
 
 	m_iAlarmMinimumScheduling = m_cSettings.value("AlarmMinSched", ALARM_MIN_SCHEDULING).toUInt(); //Minimum time to schedule alarm (min time between releases)

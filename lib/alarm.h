@@ -52,7 +52,7 @@ public:
 	//explicit Alarm(qint32 sec, enum weekdays days = EVERYDAY);
 	//Alarm(UnitItem *unit, const int *i = nullptr);
 	//Alarm(ColItem *col, const int *i = nullptr);
-	Alarm(const Timer *parent, qint32 sec, enum weekdays days = EVERYDAY, int interval = 86400);
+	Alarm(const Timer *parent, qint32 sec, enum weekdays days = EVERYDAY, int interval = 86400, int multiplier = 0);
 	Alarm(const Timer *parent, const __u64 *i = nullptr);
 	//Alarm(const T *parent, qint32 sec, enum weekdays days = EVERYDAY);
 	//Alarm(const T *parent, const int *i = nullptr);
@@ -81,7 +81,7 @@ public:
 	//static QList<int> toIntList(QList<Alarm> alarms);
 	static QList<__u64> toIntList(const QMap<int, Alarm*> alarms);
 	static QList<QVariant> toVariantList(const QMap<int, Alarm*> alarms);
-	__u64 toInt() const { return (((__u64)(m_iInterval/1000) << 32) | (((m_iSeconds/1000) << 8) & 0xFFFFFF00 ) | m_iActive); }
+	__u64 toInt() const { return ((((__u64)(m_iMultiplier & 0xFF) << 56) | ((__u64)(m_iInterval/1000) & 0xFFFFFF) << 32) | (((m_iSeconds/1000) << 8) & 0xFFFFFF00 ) | (m_iActive & 0xFF)); }
 
 
 	//QTimer *setParent(UnitItem *unit);
@@ -89,6 +89,7 @@ public:
 	void setAlarm(QTime time);
 	void setSeconds(qint32 seconds);
 	void setInterval(quint32 interval);
+	void setMultiplier(quint32 multiplier);
 	void setDays(enum weekdays days);
 	void orDays(enum weekdays days);
 	void setupInt(const __u64 *i);
@@ -99,6 +100,7 @@ public:
 	//const T *getParent() { return m_pParent; }
 	//UnitItem *getUnit() { return m_pUnit; }
 	//ColItem *getCol() { return m_pCol; }
+	qint32 getMultiplier() const { return m_iMultiplier; }
 	qint32 getSeconds() const { return m_iSeconds/1000; }
 	quint32 getInterval() const {return m_iInterval/1000; }
 	QString getTimevalue() const;
@@ -125,6 +127,7 @@ private:
 	qint32 m_iSeconds = -1;
 	qint32 m_iInterval = 86400000;
 	enum weekdays m_iActive = NONE;
+	qint32 m_iMultiplier = 0;
 	bool m_bInhibit = 0;
 	//ColItem *m_pCol = nullptr;
 	//UnitItem *m_pUnit = nullptr;

@@ -21,13 +21,14 @@ Alarm::Alarm(Alarm::T *p, const int *i)
 */
 //template<typename T>
 //Alarm<T>::Alarm(const T *parent, qint32 sec, weekdays days)
-Alarm::Alarm(const Timer *parent, qint32 sec, weekdays days, int interval)
+Alarm::Alarm(const Timer *parent, qint32 sec, weekdays days, int interval, int multiplier)
 {
 	setParent(parent);
 
 	setDays(days);
 	setInterval(interval);
 	setSeconds(sec);
+	setMultiplier(multiplier);
 }
 
 //template<typename T>
@@ -335,11 +336,12 @@ void Alarm::setSeconds(qint32 seconds)
 	m_iSeconds = (((seconds % 86400) + 86400) % 86400) * 1000;
 
 	startTimer();
-	qDaemonLog(QString("Alarm started. Currect time is %1. Alarm is at %2:%3:%4. Interval %5. To go %6min.")
+	qDaemonLog(QString("Alarm started. Currect time is %1. Alarm is at %2:%3:%4. Interval %5. To go %6min., Multiplier %7")
 	           .arg(QTime::currentTime().toString("hh:mm"))
 	           .arg(m_iSeconds / 3600000).arg((m_iSeconds / 60000) % 60).arg((m_iSeconds/1000) % 60)
 	           .arg(QTime::fromMSecsSinceStartOfDay(m_iInterval).toString())
 	           .arg(QTime::fromMSecsSinceStartOfDay(m_cTimer.remainingTime()).toString())
+	           .arg(m_iMultiplier)
 	           , QDaemonLog::NoticeEntry);
 }
 
@@ -347,6 +349,11 @@ void Alarm::setInterval(quint32 interval)
 {
 	m_iInterval = ((interval > 86400 * 2) ? 86400 : interval) * 1000;
 	m_cTimer.setInterval(m_iInterval);
+}
+
+void Alarm::setMultiplier(quint32 multiplier)
+{
+	m_iMultiplier = multiplier;
 }
 
 //template<typename T>
@@ -366,8 +373,9 @@ void Alarm::setupInt(const __u64 *i)
 {
 	if (i) {
 		setDays((enum weekdays) ((char) (*i) & 0xFF));
-		setInterval(((*i) >> 32) & 0xFFFFFFFF);
+		setInterval(((*i) >> 32) & 0xFFFFFF);
 		setSeconds(((*i) >> 8) & 0xFFFFFF);
+		setMultiplier(((*i) >> 52) & 0xFF);
 	}
 }
 
@@ -496,8 +504,11 @@ void Alarm::timeout() {
 
 	m_cTimer.start(nextAlarm);
 	qDaemonLog(QString("Alarm timed out at %1.").arg(QTime::currentTime().toString("hh:mm:ss")), QDaemonLog::NoticeEntry);
-	if (checkDay())
-		emit releaseTimeout(this);
+	if (checkDay()) {
+		for (int i = -1; i < m_iMultiplier; ++i) {
+			emit releaseTimeout(this);
+		}
+	}
 }
 
 /*
