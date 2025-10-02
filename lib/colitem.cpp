@@ -51,7 +51,16 @@ void ColItem::setColId(__s8 id)
 	//QList<int> alarmList = m_cSettings.value(QString("Col%1").arg(m_sCol.col_id)).value<QList<int>>();
 	//Alarm::mapFromIntList(this, m_pAlarms, alarmList);
 	Alarm::mapFromVariantList(this, m_pAlarms, m_cSettings.value(QString("Col%1").arg(m_sCol.col_id)).toList());
+	Alarm::mapFromVariant(this, m_pAlarms, m_cSettings.value(QString("Col%1").arg(m_sCol.col_id)));
+	//Alarm::mapFromVariant(this, m_pAlarms, m_cSettings.value("Unit"));
 
+	//m_pAlarms.insert(0 * 3600, new Alarm(this, 0 * 3600, EVERYDAY, 300, 1));
+	m_pAlarms.insert(0 * 3600, new Alarm(this, 0 * 3600, EVERYDAY));
+	m_pAlarms.insert(4 * 3600, new Alarm(this, 4 * 3600, EVERYDAY));
+	m_pAlarms.insert(8 * 3600, new Alarm(this, 8 * 3600, EVERYDAY));
+	m_pAlarms.insert(20 * 3600, new Alarm(this, 20 * 3600, EVERYDAY));
+
+	saveAlarms();
 	//emit idChanged(this);
 }
 
