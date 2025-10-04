@@ -92,7 +92,7 @@ UnitItem::UnitItem(QObject *parent)
 		//new_alarm->setDays(EVERYDAY);
 		//new_alarm->setSeconds(8 * 3600); //Alarm at 8.
 		//m_pAlarms.insert(new_alarm->getSeconds(), new_alarm);
-		m_pAlarms.insert(0 * 3600, new Alarm(this, 0 * 3600, EVERYDAY, 300, 1));
+		//m_pAlarms.insert(0 * 3600, new Alarm(this, 0 * 3600, EVERYDAY, 300, 1));
 		//m_pAlarms.insert(0 * 3600, new Alarm(this, 0 * 3600, EVERYDAY, 120));
 		//m_pAlarms.insert(0 * 3600, new Alarm(this, 0 * 3600, EVERYDAY, 4 * 3600));
 
