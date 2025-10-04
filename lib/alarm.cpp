@@ -439,7 +439,7 @@ void Alarm::startTimer()
 	           .arg(QTime::currentTime().toString("hh:mm:ss"))
 	           .arg(QTime::fromMSecsSinceStartOfDay(m_cTimer.remainingTime()).toString())
 	           .arg(QTime::fromMSecsSinceStartOfDay(m_cTimer.interval()).toString())
-	           .arg(QTime::currentTime().addMSecs(m_cTimer.remainingTime()).toString())
+	           .arg(QTime::currentTime().addMSecs(((int)(m_cTimer.remainingTime() / 1000) + 1) * 1000).toString())
 	           .arg(QTime::fromMSecsSinceStartOfDay(m_iSeconds).toString())
 	           .arg(QTime::fromMSecsSinceStartOfDay(m_iInterval).toString()), QDaemonLog::NoticeEntry);
 

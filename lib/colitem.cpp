@@ -50,8 +50,8 @@ void ColItem::setColId(__s8 id)
 
 	//QList<int> alarmList = m_cSettings.value(QString("Col%1").arg(m_sCol.col_id)).value<QList<int>>();
 	//Alarm::mapFromIntList(this, m_pAlarms, alarmList);
-	Alarm::mapFromVariantList(this, m_pAlarms, m_cSettings.value(QString("Col%1").arg(m_sCol.col_id)).toList());
-	Alarm::mapFromVariant(this, m_pAlarms, m_cSettings.value(QString("Col%1").arg(m_sCol.col_id)));
+	Alarm::mapFromVariantList(this, m_pAlarms, m_cSettings.value(QString("Col%1").arg((int)m_sCol.col_id)).toList());
+	Alarm::mapFromVariant(this, m_pAlarms, m_cSettings.value(QString("Col%1").arg((int)m_sCol.col_id)));
 	//Alarm::mapFromVariant(this, m_pAlarms, m_cSettings.value("Unit"));
 
 	//m_pAlarms.insert(0 * 3600, new Alarm(this, 0 * 3600, EVERYDAY, 300, 1));
@@ -263,11 +263,11 @@ void ColItem::saveAlarms()
 	//m_cSettings.setValue(QString("Col%1").arg(m_sCol.col_id), QVariant::fromValue(Alarm::toVariantList(m_pAlarms)));
 	//m_cSettings.setValue(QString("Col%1").arg(m_sCol.col_id), QVariant::fromValue(Alarm::toVariantList(m_pAlarms)));
 	if (m_pAlarms.size() == 0) {
-		m_cSettings.setValue(QString("Col%1").arg(m_sCol.col_id), QVariant());
+		m_cSettings.setValue(QString("Col%1").arg((int)m_sCol.col_id), QVariant());
 	} else if (m_pAlarms.size() == 1) {
-		m_cSettings.setValue(QString("Col%1").arg(m_sCol.col_id), m_pAlarms.first()->toInt());
+		m_cSettings.setValue(QString("Col%1").arg((int)m_sCol.col_id), m_pAlarms.first()->toInt());
 	} else {
-		m_cSettings.setValue(QString("Col%1").arg(m_sCol.col_id), QVariant::fromValue(Alarm::toVariantList(m_pAlarms)));
+		m_cSettings.setValue(QString("Col%1").arg((int)m_sCol.col_id), QVariant::fromValue(Alarm::toVariantList(m_pAlarms)));
 	}
 
 	m_cSettings.sync();
