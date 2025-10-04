@@ -271,5 +271,7 @@ void ColItem::saveAlarms()
 	}
 
 	m_cSettings.sync();
+
+	qDaemonLog(QString("Alarms are synced. Count = %1").arg(m_pAlarms.count()), QDaemonLog::NoticeEntry);
 }
 
