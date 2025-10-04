@@ -13,7 +13,8 @@ int main(int argc, char *argv[])
     QDaemonApplication a(argc, argv);
     QDaemonApplication::setApplicationName(DAEMON_NAME);
     QDaemonApplication::setApplicationVersion(DAEMON_VER);
-    QDaemonApplication::setOrganizationDomain("dispenser.daemon");
+    QDaemonApplication::setOrganizationDomain(DOMAIN);
+    QDaemonApplication::setOrganizationName(ORGANIZATION);
 
     /*
     QCommandLineParser parser;

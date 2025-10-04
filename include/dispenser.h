@@ -8,7 +8,7 @@
 #define DOMAIN "nykyri.eu"
 #define APPNAME "Dispenser"
 
-#define DAEMON_NAME "Dispenser Daemon"
+#define DAEMON_NAME "DispenserD"
 #define DAEMON_VER "0.1"
 
 #define SEC_TO_MSEC(A) ((A) * 1000)
