@@ -54,8 +54,8 @@ void ColItem::setColId(__s8 id)
 	Alarm::mapFromVariant(this, m_pAlarms, m_cSettings.value(QString("Col%1").arg((int)m_sCol.col_id)));
 	//Alarm::mapFromVariant(this, m_pAlarms, m_cSettings.value("Unit"));
 
-	m_pAlarms.insert(0 * 3600 + 300, new Alarm(this, 0 * 3600 + 300, EVERYDAY, 600)); //Col0= 2576980454527
-	m_pAlarms.insert(0 * 3600, new Alarm(this, 0 * 3600, EVERYDAY, 600)); // 2576980377727
+	//m_pAlarms.insert(0 * 3600 + 300, new Alarm(this, 0 * 3600 + 300, EVERYDAY, 600)); //Col0= 2576980454527
+	//m_pAlarms.insert(0 * 3600, new Alarm(this, 0 * 3600, EVERYDAY, 600)); // 2576980377727
 	//m_pAlarms.insert(0 * 3600, new Alarm(this, 0 * 3600, EVERYDAY));
 	//m_pAlarms.insert(4 * 3600, new Alarm(this, 4 * 3600, EVERYDAY));
 	//m_pAlarms.insert(8 * 3600, new Alarm(this, 8 * 3600, EVERYDAY));
