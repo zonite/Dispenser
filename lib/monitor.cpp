@@ -325,9 +325,9 @@ ReEncoder::ReEncoder(Monitor *monitor)
 {
 	m_pMonitor = monitor;
 
-	QCoreApplication::setOrganizationName(ORGANIZATION);
-	QCoreApplication::setOrganizationDomain(DOMAIN);
-	QCoreApplication::setApplicationName(APPNAME);
+	//QCoreApplication::setOrganizationName(ORGANIZATION);
+	//QCoreApplication::setOrganizationDomain(DOMAIN);
+	//QCoreApplication::setApplicationName(APPNAME);
 
 	m_cSettings.value("DestAddresses");
 
