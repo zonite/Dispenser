@@ -15,9 +15,9 @@ Monitor::Monitor(UnitItem *unit)
 	ReEncoder *encoder;
 	m_pUnit = unit;
 
-	QCoreApplication::setOrganizationName(ORGANIZATION);
-	QCoreApplication::setOrganizationDomain(DOMAIN);
-	QCoreApplication::setApplicationName(APPNAME);
+	//QCoreApplication::setOrganizationName(ORGANIZATION);
+	//QCoreApplication::setOrganizationDomain(DOMAIN);
+	//QCoreApplication::setApplicationName(APPNAME);
 
 	m_cReportScript = m_cSettings.value("ReportScript", "/usr/bin/createReport.sh").toString();
 	m_cSendScript = m_cSettings.value("SendScript", "/usr/bin/sendReport.sh").toString();
