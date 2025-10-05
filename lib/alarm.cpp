@@ -75,7 +75,7 @@ void Alarm::setParent(const Timer *parent)
 		if (col) {
 			connect(this, &Alarm::releaseTimeout, col, &ColItem::releaseTimeout, Qt::QueuedConnection);
 			connect(this, &Alarm::timerStarted, col, &ColItem::timerStarted, Qt::QueuedConnection);
-			qDaemonLog(QString("Alarms connected to col.").arg(QString::number((long long int)this)), QDaemonLog::NoticeEntry);
+			qDaemonLog(QString("Alarms(%1) connected to col.").arg(QString::number((long long int)this)), QDaemonLog::NoticeEntry);
 		}
 
 		//connectTimer();
