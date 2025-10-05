@@ -1,7 +1,7 @@
 #include "alarm.h"
 
 #include <QTime>
-#include<QDaemonLog>
+#include <QDaemonLog>
 
 //qRegisterMetaTypeStreamOperators<QList<Alarm>>("Alarm");
 

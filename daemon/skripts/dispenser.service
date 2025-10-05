@@ -3,7 +3,7 @@ Description=Dispenser daemon
 #Requires=camerastream.service
 
 [Service]
-BusName=daemon.dispenser.dispenser
+BusName=eu.nykyri.dispenser
 Type=dbus
 ExecStart=/usr/sbin/dispenser -d
 #Type=forking
