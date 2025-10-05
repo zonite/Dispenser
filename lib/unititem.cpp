@@ -107,7 +107,7 @@ UnitItem::UnitItem(QObject *parent)
 		//m_pAlarms.insert(16 * 3600, new Alarm(this, 16 * 3600, EVERYDAY));
 		//m_pAlarms.insert(20 * 3600, new Alarm(this, 20 * 3600, EVERYDAY));
 
-		m_pAlarms.insert(9 * 3600, new Alarm(this, 9 * 3600, EVERYDAY));
+		//m_pAlarms.insert(9 * 3600, new Alarm(this, 9 * 3600, EVERYDAY));
 
 		//Unit=61847529062527 =  @ 0:00:00 + 4:00:00 interval
 		//Unit=515396075647 = @ 0:00:00 + 0:02:00 interval
