@@ -27,8 +27,8 @@ Alarm::Alarm(const Timer *parent, qint32 sec, weekdays days, int interval, int m
 
 	setDays(days);
 	setInterval(interval);
-	setSeconds(sec);
 	setMultiplier(multiplier);
+	setSeconds(sec);
 }
 
 //template<typename T>
@@ -380,8 +380,8 @@ void Alarm::setupInt(const __u64 *i)
 	if (i) {
 		setDays((enum weekdays) ((char) (*i) & 0xFF));
 		setInterval(((*i) >> 32) & 0xFFFFFF);
+		setMultiplier(((*i) >> 56) & 0xFF);
 		setSeconds(((*i) >> 8) & 0xFFFFFF);
-		setMultiplier(((*i) >> 52) & 0xFF);
 	}
 }
 
