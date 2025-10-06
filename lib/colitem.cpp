@@ -84,6 +84,8 @@ void ColItem::setColId(__s8 id)
 	//Col0=2576980454527
 	//Col1=2576980377727
 
+	qDaemonLog(QStringLiteral("ColItem%1 alarms count=%2.").arg(m_sCol.col_id).arg(m_pAlarms.count()), QDaemonLog::NoticeEntry);
+
 	saveAlarms();
 	//emit idChanged(this);
 }
@@ -112,7 +114,7 @@ void ColItem::setSlots(int i)
 	//QVector<QObject> lista;
 	//lista.resize(10);
 
-	qDaemonLog(QStringLiteral("ColItem slot count has changed %1 -> %2.").arg(m_cSlots.size()).arg(i), QDaemonLog::ErrorEntry);
+	qDaemonLog(QStringLiteral("ColItem slot count has changed %1 -> %2.").arg(m_cSlots.size()).arg(i), QDaemonLog::NoticeEntry);
 
 	if (i == m_cSlots.size())
 		return;
