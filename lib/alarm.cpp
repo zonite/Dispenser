@@ -441,13 +441,14 @@ void Alarm::startTimer()
 	//m_cTimer.setInterval(m_iInterval * 1000);
 	m_cTimer.start(msecToRelease);
 
-	qDaemonLog(QString("Alarm Start %1. To timeout %2, interval %3 @ %4, Alarm stores tmout %5, interv %6.")
+	qDaemonLog(QString("Alarm Start %1. To timeout %2, interval %3 @ %4, Alarm stores tmout %5, interv %6, multiple %7.")
 	           .arg(QTime::currentTime().toString("hh:mm:ss"))
 	           .arg(QTime::fromMSecsSinceStartOfDay(m_cTimer.remainingTime()).toString())
 	           .arg(QTime::fromMSecsSinceStartOfDay(m_cTimer.interval()).toString())
 	           .arg(QTime::currentTime().addMSecs(((int)(m_cTimer.remainingTime() / 1000) + 1) * 1000).toString())
 	           .arg(QTime::fromMSecsSinceStartOfDay(m_iSeconds).toString())
-	           .arg(QTime::fromMSecsSinceStartOfDay(m_iInterval).toString()), QDaemonLog::NoticeEntry);
+	           .arg(QTime::fromMSecsSinceStartOfDay(m_iInterval).toString())
+	           .arg(m_iMultiplier), QDaemonLog::NoticeEntry);
 
 	emit timerStarted(this);
 }
