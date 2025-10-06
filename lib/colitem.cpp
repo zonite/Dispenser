@@ -50,7 +50,7 @@ void ColItem::setColId(__s8 id)
 
 	//QList<int> alarmList = m_cSettings.value(QString("Col%1").arg(m_sCol.col_id)).value<QList<int>>();
 	//Alarm::mapFromIntList(this, m_pAlarms, alarmList);
-	Alarm::mapFromVariantList(this, m_pAlarms, m_cSettings.value(QString("Col%1").arg((int)m_sCol.col_id)).toList());
+	//Alarm::mapFromVariantList(this, m_pAlarms, m_cSettings.value(QString("Col%1").arg((int)m_sCol.col_id)).toList());
 	Alarm::mapFromVariant(this, m_pAlarms, m_cSettings.value(QString("Col%1").arg((int)m_sCol.col_id)));
 	//Alarm::mapFromVariant(this, m_pAlarms, m_cSettings.value("Unit"));
 
@@ -61,6 +61,15 @@ void ColItem::setColId(__s8 id)
 	//m_pAlarms.insert(8 * 3600, new Alarm(this, 8 * 3600, EVERYDAY));
 	//m_pAlarms.insert(20 * 3600, new Alarm(this, 20 * 3600, EVERYDAY));
 
+	//m_pAlarms.insert(0 * 3600, new Alarm(this, 0 * 3600, EVERYDAY, 3600));
+	//m_pAlarms.insert(0 * 3600 + 900, new Alarm(this, 0 * 3600 + 900, EVERYDAY, 3600));
+	//m_pAlarms.insert(0 * 3600 + 1800, new Alarm(this, 0 * 3600 + 1800, EVERYDAY, 3600));
+	//m_pAlarms.insert(0 * 3600 + 2700, new Alarm(this, 0 * 3600 + 2700, EVERYDAY, 3600));
+
+	//ColX=15461882265727, 15461882496127, 15461882726527, 15461882956927 @ 00:15:00
+	//Col0=15461882496127, 15461882726527, 15461882956927
+	//Col1=15461882265727, 15461882496127, 15461882726527
+
 	//Col0=371085174374527, 371085178060927, 371085181747327, 371085192806527
 	//Col1=371085174374527, 371085178060927, 371085181747327, 371085192806527
 	//371085174374527 0 * 3600
@@ -68,9 +77,12 @@ void ColItem::setColId(__s8 id)
 	//371085181747327 8 * 3600
 	//371085192806527 20 * 3600
 
+	//Oikeet!
 	//Col0=371085174374527, 371085178060927, 371085181747327
 	//Col1=371085192806527, 371085174374527, 371085178060927
 
+	//Col0=2576980454527
+	//Col1=2576980377727
 
 	saveAlarms();
 	//emit idChanged(this);

@@ -163,7 +163,13 @@ void Alarm::mapFromVariantList(Timer *parent, QMap<int, Alarm *> &map, const QLi
 	for (const QVariant &var : list) {
 		__u64 i = var.toULongLong();
 		Alarm *alarm = new Alarm(parent, &i);
-		map.insert(alarm->getSeconds(), alarm);
+		if (map.contains(alarm->getSeconds())) {
+			map[alarm->getSeconds()]->orDays(alarm->getDays());
+			delete alarm;
+			alarm = nullptr;
+		} else {
+			map.insert(alarm->getSeconds(), alarm);
+		}
 	}
 
 }
